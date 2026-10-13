@@ -1,0 +1,15 @@
+# Build trees
+/build*/
+/out/
+
+# Dependencies downloaded by FetchContent (see cmake/Find<Name>.cmake)
+/extern/*
+!/extern/.gitkeep
+
+# Install trees (the CMake: install task)
+/install/
+
+# Generated or per-user tool files
+compile_commands.json
+CMakeUserPresets.json
+/.vs/

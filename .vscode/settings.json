@@ -1,0 +1,20 @@
+{
+    // Explorer: hidden entries are true. Set an entry to false to show that
+    // item again (this also brings it back into search).
+    "files.exclude": {
+        ".git": true,
+        "build": true,
+        "install": true,
+        "extern": false
+    },
+
+    // Compiler for the CMake tasks (tasks.json): "msvc", "gcc" or "clang",
+    // one of the files in .vscode/cmake/. Also part of the build and install
+    // folder names.
+    "hollow.toolchain": "msvc",
+
+    // The build is driven by the CMake tasks; CMake Tools, if installed,
+    // doesn't configure on its own.
+    "cmake.useCMakePresets": "never",
+    "cmake.configureOnOpen": false
+}
