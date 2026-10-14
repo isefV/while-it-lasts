@@ -19,9 +19,8 @@ project(
 # alone.
 # -----------------------------------------------------------------------------
 
-option(HOLLOW_BUILD_SHARED "Build hollow as a shared library (default: static)"     ${BUILD_SHARED_LIBS})
 option(HOLLOW_BUILD_TESTS  "Build the tests and register them with CTest"         ${PROJECT_IS_TOP_LEVEL})
-option(HOLLOW_BUILD_APPS   "Build the game in apps/ (needs raylib)"               ${PROJECT_IS_TOP_LEVEL})
+option(HOLLOW_BUILD_APPS   "Build the game in apps/"                              ${PROJECT_IS_TOP_LEVEL})
 option(HOLLOW_BUILD_DOCS   "Build the API documentation with Doxygen (target docs)" OFF)
 option(HOLLOW_INSTALL      "Generate install rules and the hollow CMake package"    ${PROJECT_IS_TOP_LEVEL})
 
@@ -37,8 +36,8 @@ if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
     # All runnable artifacts in <build>/bin, for every configuration, so that
-    # .vscode/launch.json finds them and a shared hollow sits next to the
-    # programs that load it. As part of another project the parent decides.
+    # .vscode/launch.json finds them. As part of another project the parent
+    # decides.
     foreach(suffix IN ITEMS "" _DEBUG _RELEASE _RELWITHDEBINFO _MINSIZEREL)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY${suffix} "${CMAKE_BINARY_DIR}/bin")
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY${suffix} "${CMAKE_BINARY_DIR}/lib")
@@ -56,6 +55,8 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(Threads REQUIRED)                             # Threads::Threads
+find_package(Raylib REQUIRED)                              # raylib
+find_package(NlohmannJson REQUIRED)                        # nlohmann_json::nlohmann_json
 
 # -----------------------------------------------------------------------------
 # Library, install rules, tests, apps, docs
@@ -76,7 +77,6 @@ if(HOLLOW_BUILD_TESTS)
 endif()
 
 if(HOLLOW_BUILD_APPS)
-    find_package(Raylib REQUIRED)                          # raylib
     add_subdirectory(apps)
 endif()
 

@@ -1,0 +1,29 @@
+// STAGE 04: the summit. After the cigarette the player may look at the
+// horizon, X or the cigarette; the room's script starts the Reaper scene
+// after two of those, or after half a minute.
+{
+    "summit": {
+        "name": "The Summit",
+        "background": "backgrounds/summit.png",
+        "color": "#26242e",
+        "tint": "#d8bcae",
+        "ambient": ["wind"],
+        "script": "summit",
+        "player_x": 112,
+        "walk": [100, 150],
+        "enter": [
+            { "dialogue": "summit.arrive" }
+        ],
+        "companion": { "x": 162, "mode": "stay", "pose": "sit", "dialogue": "summit.x" },
+        "objects": [
+            { "id": "town", "x": 200, "y": 112, "w": 120, "h": 8, "color": "#2e2a36", "interactive": false },
+            { "id": "rock", "x": 146, "y": 140, "w": 36, "h": 10, "color": "#3a3844", "interactive": false },
+            { "id": "ground", "name": "The ground", "x": 96, "y": 146, "w": 22, "h": 4, "color": "#2c2a34",
+              "dialogue": "summit.ground" },
+            { "id": "horizon", "name": "Horizon", "x": 96, "y": 24, "w": 220, "h": 70, "hidden": true,
+              "if": "cig_scene_done", "dialogue": "summit.horizon" },
+            { "id": "cigarette", "name": "Cigarette", "x": 152, "y": 124, "w": 2, "h": 2, "color": "#d8d2c4",
+              "effect": "ember", "if": "cig_lit && !ember_out", "dialogue": "summit.cigarette" }
+        ]
+    }
+}

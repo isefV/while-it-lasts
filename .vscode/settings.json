@@ -3,7 +3,7 @@
     // item again (this also brings it back into search).
     "files.exclude": {
         ".git": true,
-        "build": true,
+        "build": false,
         "install": true,
         "extern": false
     },
@@ -14,7 +14,10 @@
     "hollow.toolchain": "msvc",
 
     // The build is driven by the CMake tasks; CMake Tools, if installed,
-    // doesn't configure on its own.
+    // doesn't configure on its own. Its "CMake: Select a Kit" offers the
+    // kits in cmake-kits.json, named like the toolchains above, and it
+    // builds in the same folders as the tasks.
     "cmake.useCMakePresets": "never",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.buildDirectory": "${workspaceFolder}/build/${buildKit}-${buildType}"
 }

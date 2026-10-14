@@ -1,0 +1,135 @@
+// STAGE 02: THE PERIMETER. Lines are the script's; "_added" marks new ones.
+// The checkpoint is a stealth room (apps/app/scripts/checkpoint.cpp); its
+// script starts "checkpoint.spotted" and "checkpoint.chase".
+{
+    "checkpoint.arrive": [
+        { "x": "Please tell me you're not thinking about fighting that." },
+        { "y": "I'm not." },
+        { "x": "Good. Because I'm not dragging you back." },
+        { "y": "You can barely drag yourself." },
+        { "x": "So I'm saving my energy. It's called strategy." },
+        { "narration": "The creature stops. Its head turns slowly toward them." },
+        { "x": "Do you think it can see us?" },
+        { "y": "Let's find out." },
+        { "x": "That's the worst plan I've heard today." },
+        { "y": "It's the only plan we have." },
+        { "narration": "Move while it looks away. Hide behind cover when it watches. Keep still when it listens.", "_added": "how the stealth works" },
+        { "do": ["event stealth_start"] }
+    ],
+
+    "checkpoint.spotted": [
+        { "y": "Down. Down!" },
+        { "narration": "{y} pulls {x} behind cover. The creature approaches, listens, and moves off." },
+        { "x": "(whispering) That was too close." },
+        { "y": "(whispering) I know. Sorry." },
+        { "x": "Stop apologizing. Just don't get us killed." },
+        { "if": "spotted_count == 2", "then": [
+            { "narration": "{x} is breathing harder now.", "do": ["x_condition -= 1"], "_added": "the second spotting costs X_CONDITION" }
+        ] },
+        { "do": ["event stealth_reset"] }
+    ],
+
+    "checkpoint.chase": [
+        { "narration": "It sees them. It comes.", "_added": "the third spotting: a chase, never game over" },
+        { "x": "{y}! Run!" },
+        { "choice": [
+            { "text": "Run for the road!", "next": "checkpoint.escape" },
+            { "timeout": true, "next": "checkpoint.stumble" }
+        ], "timer": 3 }
+    ],
+    "checkpoint.escape": [
+        { "narration": "They run. At the edge of the road the creature stops, as if it hit a wall.", "_added": "" },
+        { "do": ["goto barricade"] }
+    ],
+    "checkpoint.stumble": [
+        { "narration": "{x} stumbles. {y} hauls {x} up and they run, and somehow it does not follow.", "do": ["x_condition -= 1"], "_added": "" },
+        { "do": ["goto barricade"] }
+    ],
+
+    "barricade.arrive": [
+        { "narration": "A fallen metal gate blocks the road." },
+        { "y": "Okay. Gate. Heavy. Annoying." }
+    ],
+    "barricade.gate": [
+        { "thought": "Too heavy to lift. Something's pinning it.", "_added": "hint" }
+    ],
+    "barricade.rod": [
+        { "narration": "Got: Metal Rod.", "do": ["give rod", "rod_taken = true"] },
+        { "thought": "Long enough to lever something.", "_added": "" }
+    ],
+    "barricade.slab": [
+        { "y": "This slab's pinning the gate.", "_added": "" },
+        { "choice": [
+            { "text": "Lever it with the rod.", "if": "item.rod", "next": "barricade.lever" },
+            { "text": "Push it.", "next": "barricade.push" },
+            { "text": "Leave it." }
+        ] }
+    ],
+    "barricade.push": [
+        { "narration": "It doesn't move. Not even a little.", "_added": "" },
+        { "thought": "I need something to lever it with." }
+    ],
+    "barricade.lever": [
+        { "narration": "{y} jams the rod under the slab and leans on it. Concrete grinds. A gap opens.", "do": ["take rod", "gap_open = true", "sound grind"] },
+        { "y": "Got it. Easy. Come on." },
+        { "x": "One minute. Let me look at this charming scenery first." },
+        { "y": "{x}." },
+        { "x": "I'm coming!" },
+        { "narration": "{y} helps {x} through the gap and follows. Far off, the creature stands completely still.", "do": ["place y 282", "place x 268"] },
+        { "x": "We could've taken a nicer road." },
+        { "y": "I'll bring it up with the apocalypse." },
+        { "x": "Please do. Leave a review." }
+    ],
+
+    "shelter.arrive": [
+        { "narration": "{y} sits {x} down beside a ruined wall." }
+    ],
+    "shelter.not_yet": [
+        { "thought": "He needs a minute. So do I.", "_added": "the mountain path before the cigarette scene" }
+    ],
+    "shelter.pack": [
+        { "narration": "A crushed pack. One cigarette inside.", "do": ["cig_count += 1", "wall_pack_found = true"] },
+        { "y": "Lucky day." },
+        { "x": "You found one?" },
+        { "narration": "{y} holds it up." },
+        { "x": "Give it here." },
+        { "y": "I found it. I get the first drag." },
+        { "x": "You have two good legs and a bat. I have a bad side and a dream." },
+        { "y": "...Fine." },
+        { "choice": [
+            { "text": "Smoke it together.", "next": "shelter.smoke" },
+            { "text": "Save it.", "next": "shelter.save" }
+        ] }
+    ],
+    "shelter.smoke": [
+        { "do": ["cig_count -= 1", "smoked_with_x += 1", "sound lighter"] },
+        { "x": "Remember the place up the mountain? Where we used to go?" },
+        { "y": "The one where you got us lost?" },
+        { "x": "I did not get us lost." },
+        { "y": "We ended up in someone's backyard." },
+        { "x": "It was a shortcut." },
+        { "y": "There was a dog." },
+        { "x": "A really friendly dog." },
+        { "y": "It chased us halfway down the hill." },
+        { "narration": "{x} laughs, then coughs hard. {y} reaches out automatically." },
+        { "x": "I'm fine." },
+        { "y": "...I know." },
+        { "narration": "{y} leaves his hand there a moment longer than he needs to." },
+        { "x": "Hey. I'm still here." },
+        { "y": "Yeah." },
+        { "goto": "shelter.go" }
+    ],
+    "shelter.save": [
+        { "x": "You know it's still a cigarette if you smoke it, right?" },
+        { "y": "I'm saving it." },
+        { "x": "For what?" },
+        { "y": "Not sure yet." },
+        { "x": "Mysterious. Fine." },
+        { "goto": "shelter.go" }
+    ],
+    "shelter.go": [
+        { "x": "Let's go home." },
+        { "y": "...Yeah." },
+        { "do": ["stage02_done = true", "pose x idle", "companion follow"] }
+    ]
+}

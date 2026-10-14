@@ -2,14 +2,53 @@
 
 **Hollow** is a C++20 game built with [raylib](https://www.raylib.com).
 
-The game code lives in the `hollow` library (static or shared, on Windows and
-Linux); the program in `apps/app` links it with raylib, opens the window and
+The game code lives in the static `hollow` library (Windows and Linux); the
+program in `apps/app` links it with raylib, opens the window and
 loads its files from `assets/`. The library can also be used from another
 CMake project through `find_package` or as part of it (`add_subdirectory`, git
 submodule, `FetchContent`), including debugging into its sources.
 
 - Building, internals and contributing: [docs/README-Guideline.md](docs/README-Guideline.md)
 - History of changes: [docs/README-Catalog.md](docs/README-Catalog.md)
+
+## The game: The Last Light
+
+A short narrative game: Y half-carries his friend X up the mountain where they
+grew up. Five stages (campfire, factory, perimeter, mountain steps, summit),
+told through dialogue, a few simple actions and choices that come back later.
+
+| Key | |
+|---|---|
+| A / D, ← / → | walk |
+| E, or a click while standing next to it | use the nearest thing, talk to X |
+| E, Space, Enter, click | next line (the first press shows the whole line) |
+| ↑ / ↓, 1–4, mouse | choose an option |
+| Tab, I | inventory |
+| Esc | pause |
+| F11, Alt+Enter | fullscreen / window |
+
+The story is data, not code: dialogue, rooms, items and the story variables
+are JSON files in `assets/data/`, described in
+[docs/DATA-FORMAT.md](docs/DATA-FORMAT.md). The decisions behind the
+prototype are in [docs/DECISIONS.md](docs/DECISIONS.md). Every object is a
+coloured rectangle until its image exists in `assets/`, so art never blocks a
+playable build (file names: visual-asset-config.txt).
+
+```
+hollow_app                         fullscreen; --windowed for a 1280 x 720 window
+hollow_app --check                 read and check every data file, no window
+hollow_app --room summit --set cig_count=0      start anywhere, with any state
+hollow_app --walkthrough tests/walkthrough/full.txt   play the game by itself
+```
+
+Where the code is:
+
+| Folder | |
+|---|---|
+| `include/hollow/`, `src/` | the library: `system/` (canvas, input, assets, audio, story state, conditions and effects, dialogue runner), `data/` (loading and checking the JSON), `objects/` (rooms, items, characters, sprite sheets, actors), `effects/` (fades, shake, firelight, apparitions, particles), `ui/` (dialogue box, inventory, prompts, barks, menus), `utility/` |
+| `apps/app/` | the game: `game.cpp` (screens, rooms, interaction, X following and being dragged), `scripts/` (the campsite timer, the creature, the checkpoint stealth, the sunset, the ending), `walkthrough.cpp` |
+| `assets/data/` | the story |
+| `tests/` | unit tests, story branches on the real data, `walkthrough/` playthroughs |
 
 ```
 hollow/
@@ -23,7 +62,7 @@ hollow/
 ├── docs/                README-Guideline.md, README-Catalog.md, Doxygen (HOLLOW_BUILD_DOCS)
 ├── extern/              dependencies cloned by FetchContent (not in git)
 ├── README.md  LICENSE.md
-└── .vscode/             tasks (configure, build, rebuild, clean, install, ctest), launch configurations, settings
+└── .vscode/             tasks (configure, build, rebuild, clean, install, ctest), CMake Tools kits, launch configurations, settings
 ```
 
 ---
@@ -36,42 +75,48 @@ hollow/
 | Compiler | MSVC (Visual Studio 2022/2026), GCC or Clang with C++20 support |
 | CMake | 3.21 or newer |
 | OS | Windows and Linux |
-| Dependencies | Threads (system); raylib for the game and GoogleTest for the tests, cloned with git into `extern/raylib` and `extern/googletest` unless `RAYLIB_ROOT_DIR` / `GOOGLETEST_ROOT_DIR` name ones you have (see [5. Dependencies](#5-dependencies)) |
+| Dependencies | Threads (system); raylib and nlohmann/json for the library, GoogleTest for the tests, cloned with git into `extern/raylib`, `extern/nlohmann_json` and `extern/googletest` unless `RAYLIB_ROOT_DIR` / `NLOHMANN_JSON_ROOT_DIR` / `GOOGLETEST_ROOT_DIR` name ones you have (see [5. Dependencies](#5-dependencies)) |
 
 ## 2. Build, test, install
 
 In VS Code every step is a task: *Terminal › Run Task › CMake: ...*
-(Ctrl+Shift+B = `CMake: build`). Each task asks **Debug | Release › static
-library | shared library** and runs plain `cmake` commands. On Windows the
+(Ctrl+Shift+B = `CMake: build`). Each task asks **Debug | Release** and
+runs plain `cmake` commands. On Windows the
 tasks load the Visual Studio developer environment themselves; choose the
 compiler with `"hollow.toolchain"` (`msvc`, `gcc`, `clang`) in
 `.vscode/settings.json`.
 
 | Task | Does |
 |---|---|
-| `CMake: configure` | configure `build/<toolchain>-<config>-<linkage>` from scratch (new CMake cache) |
+| `CMake: configure` | configure `build/<toolchain>-<config>` from scratch (new CMake cache) |
 | `CMake: build` | configure, then build the library |
 | `CMake: rebuild` | configure, then clean and build the library |
 | `CMake: clean` | delete the build outputs; the configuration stays |
-| `CMake: install` | build the library and install it to `install/<toolchain>/<linkage>` |
+| `CMake: install` | build the library and install it to `install/<toolchain>` |
 | `CMake: ctest` | build everything (library, tests, apps) and run the tests |
 
 The same in a terminal (Windows: a *Developer PowerShell for VS*):
 
 ```bash
-cmake -S . -B build/msvc-Debug-static -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=cl -DHOLLOW_BUILD_SHARED=OFF
-cmake --build build/msvc-Debug-static                                   # library, tests, apps
-ctest --test-dir build/msvc-Debug-static                                # tests
-cmake --install build/msvc-Debug-static --prefix install/msvc/static   # package
+cmake -S . -B build/msvc-Debug -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+cmake --build build/msvc-Debug                            # library, tests, apps
+ctest --test-dir build/msvc-Debug                         # tests
+cmake --install build/msvc-Debug --prefix install/msvc    # package
 ```
+
+With the CMake Tools extension the compiler can also be picked with *CMake:
+Select a Kit*: `.vscode/cmake-kits.json` lists `msvc`, `gcc` and `clang`, and
+the extension then builds in the same `build/<kit>-<config>` folders as the
+tasks. The `msvc` kit names a Visual Studio by its instance id; on another PC
+replace it with the `instanceId` that `vswhere` prints.
 
 Install Debug **and** Release into the same prefix; a consuming project then
-picks the matching one. Static and shared go to different prefixes.
+picks the matching one.
 
 ```
-install/msvc/static/
+install/msvc/
 ├── include/hollow/...          public headers
-├── lib/hollow.lib, hollowd.lib  libraries (shared: import libraries, plus bin/*.dll and bin/hollowd.pdb)
+├── lib/hollow.lib, hollowd.lib  static libraries
 ├── src/...                    library sources, for debugging into it (Debug install)
 └── lib/cmake/hollow/           the CMake package: find_package(hollow)
 ```
@@ -87,13 +132,6 @@ project(my_app LANGUAGES CXX)
 find_package(hollow CONFIG REQUIRED)
 add_executable(my_app main.cpp)
 target_link_libraries(my_app PRIVATE hollow::hollow)
-
-# Shared library on Windows: copy the DLLs next to the executable. (On Linux
-# the program finds libhollow.so through the RPATH that CMake sets.)
-if(WIN32 AND hollow_SHARED)
-    add_custom_command(TARGET my_app POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory "${hollow_RUNTIME_DIR}" "$<TARGET_FILE_DIR:my_app>")
-endif()
 ```
 
 Configure with `-DCMAKE_PREFIX_PATH=<package folder>`. Debug builds link
@@ -131,9 +169,8 @@ complete consumer that builds both ways.
 
 | CMake option | Default | Meaning |
 |---|---|---|
-| `HOLLOW_BUILD_SHARED` | `OFF` (follows `BUILD_SHARED_LIBS`) | Shared instead of static library |
 | `HOLLOW_BUILD_TESTS` | `ON` when top-level | Tests |
-| `HOLLOW_BUILD_APPS` | `ON` when top-level | The game in `apps/` (needs raylib) |
+| `HOLLOW_BUILD_APPS` | `ON` when top-level | The game in `apps/` |
 | `HOLLOW_BUILD_DOCS` | `OFF` | Target `docs` (Doxygen) |
 | `HOLLOW_INSTALL` | `ON` when top-level | Install rules and the CMake package |
 
@@ -164,6 +201,11 @@ provides the target `raylib`:
 | `RAYLIB_GIT_TAG` | `6.0` | Tag, branch or commit to clone |
 | `RAYLIB_SOURCE_DIR` | `extern/raylib` | Where the clone goes |
 
+[cmake/FindNlohmannJson.cmake](cmake/FindNlohmannJson.cmake) provides the
+target `nlohmann_json::nlohmann_json` the same way (`NLOHMANN_JSON_ROOT_DIR`,
+`NLOHMANN_JSON_GIT_REPOSITORY`, `NLOHMANN_JSON_GIT_TAG` = `v3.12.0`,
+`NLOHMANN_JSON_SOURCE_DIR` = `extern/nlohmann_json`).
+
 raylib is written in C, so the build also needs a C compiler (the files in
 `.vscode/cmake/` set it next to the C++ one).
 
@@ -191,11 +233,12 @@ Rules for a `cmake/Find<Name>.cmake`:
    (`GoogleTest: ...`) and name only the library's own variables, nothing of
    this project.
 
-A dependency of the installed library (a `PUBLIC` one, or any library a static
-hollow links) is also found again by `cmake/hollowConfig.cmake.in` with
+A dependency of the installed library (any library hollow links, since it is
+static) is also found again by `cmake/hollowConfig.cmake.in` with
 `find_dependency(<Name>)`; its `Find<Name>.cmake`, if it has one, is installed
-next to the package (`cmake/hollow_install.cmake`). GoogleTest is used by the
-tests only and raylib by the game in `apps/app` only, so they need neither.
+next to the package (`cmake/hollow_install.cmake`): raylib, with
+`FindRaylib.cmake`. GoogleTest is used by the tests only, and nlohmann/json is
+header-only and private to the library's `.cpp` files, so they need neither.
 
 ## 6. Assets
 

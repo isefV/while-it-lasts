@@ -1,0 +1,198 @@
+// STAGE 03: THE MOUNTAIN STEPS. Lines are the script's; "_added" marks new
+// ones, including variants of X's lines for a low X_CONDITION (appendix B:
+// quiet, breaks off mid-sentence).
+{
+    "foot.arrive": [
+        { "x": "You've got to be kidding me." },
+        { "y": "You said it was up here." },
+        { "x": "I said \"somewhere up here.\" Not a thousand stairs." },
+        { "y": "Want to turn back?" },
+        { "x": "And go where? The charming factory?" },
+        { "narration": "{y} offers his arm. {x} takes it." },
+        { "x": "Fine. But if I die, I'm blaming the stairs." },
+        { "y": "Noted." },
+        { "thought": "I wish he'd stop saying that." }
+    ],
+
+    "landing.lantern": [
+        { "y": "This one used to light up in summer. Remember?" },
+        { "if": "x_condition <= 1",
+          "then": [ { "x": "I remember you... tripping. Over it.", "_added": "low condition variant" } ],
+          "else": [ { "x": "I remember you tripping over it." } ] }
+    ],
+    "landing.ribbon": [
+        { "x": "You tied that one, didn't you?" },
+        { "y": "You said it was stupid." },
+        { "x": "It was stupid." },
+        { "y": "You kept yours." },
+        { "x": "I have terrible taste." },
+        { "narration": "{y} smiles faintly." }
+    ],
+    "landing.marker": [
+        { "y": "Our initials are still here." },
+        { "x": "Barely. We carved them with a spoon." },
+        { "y": "A spoon and a rock." },
+        { "x": "Craftsmanship." }
+    ],
+    "landing.sign": [
+        { "y": "\"Summit,\" arrow, and a missing letter." },
+        { "if": "x_condition <= 1",
+          "then": [ { "x": "Still... more reliable than you.", "_added": "low condition variant" } ],
+          "else": [ { "x": "Honestly more reliable than your directions." } ] }
+    ],
+
+    "collapse.fall": [
+        { "narration": "{x} stumbles and {y} catches him.", "do": ["pose x sit"] },
+        { "y": "Hey! Look at me." },
+        { "x": "I'm fine." },
+        { "y": "You're not." },
+        { "x": "Then stop asking stupid questions." },
+        { "narration": "{y} tries to stand him up. {x} cries out." },
+        { "y": "We have to keep going." },
+        { "x": "No." },
+        { "y": "What do you mean, \"no\"?" },
+        { "x": "You have to keep going. I'll catch up." },
+        { "y": "Don't do that." },
+        { "x": "{y}..." },
+        { "y": "No." },
+        { "x": "Then what, you'll drag me up the whole mountain?" },
+        { "narration": "{y} kneels and takes hold of him.", "do": ["pose y kneel"] },
+        { "y": "Yes." },
+        { "narration": "{x} gives a weak, disbelieving laugh." },
+        { "x": "You're such an idiot." },
+        { "y": "You've mentioned it." },
+        { "narration": "Walk to pull {x} along. Rest where you can.", "_added": "how dragging works" },
+        { "do": ["companion drag"] }
+    ],
+
+    "collapse.narrow": [
+        { "thought": "Too narrow to pull him through like this.", "_added": "a passage that needs X repositioned" },
+        { "choice": [
+            { "text": "Turn him and go sideways.", "do": ["turned_x = true"], "next": "collapse.turned" },
+            { "text": "Not yet." }
+        ] }
+    ],
+    "collapse.turned": [
+        { "narration": "{y} shifts {x} around, slow and careful, and edges into the gap sideways.", "_added": "" },
+        { "x": "Ow. Okay. Ow." }
+    ],
+
+    "mountain.rest": [
+        { "narration": "{y} lowers {x} for a moment.", "_added": "" },
+        { "if": "rests == 0", "then": [
+            { "x": "Give me a second. I'm just... admiring the view of my own knees." }
+        ] },
+        { "if": "rests == 1", "then": [
+            { "x": "Do you remember when we used to run this in under ten minutes?" },
+            { "y": "We never ran this in under ten minutes." },
+            { "x": "In my head we did." }
+        ] },
+        { "if": "rests == 2", "then": [
+            { "x": "{y}. Thanks. For not leaving me." },
+            { "y": "Don't thank me yet. We're not there." }
+        ] },
+        { "if": "rests == 3", "then": [
+            { "x": "(very quiet) Is it still far?" },
+            { "y": "Not really. Just a bit more." },
+            { "x": "You always say that." },
+            { "y": "And I'm always right." }
+        ] },
+        { "do": ["rests += 1"] }
+    ],
+    "mountain.not_without": [
+        { "thought": "Not without him.", "_added": "" }
+    ],
+
+    "stairs.leave_x": [
+        { "narration": "A creature blocks the collapsed stairs ahead." },
+        { "y": "Stay here. Behind the wall." },
+        { "do": ["companion stay 100", "pose x sit"] },
+        { "x": "Wasn't planning on going anywhere." },
+        { "y": "I mean it. Don't move." },
+        { "x": "You say that like I've got a choice." }
+    ],
+    "stairs.cant_drag": [
+        { "thought": "Not with him on my back. Not past that.", "_added": "" }
+    ],
+    "stairs.creature": [
+        { "narration": "It turns its head toward {y}.", "_added": "the mountain creature (the script has no lines for it)" },
+        { "choice": [
+            { "text": "Throw a rock down the slope.", "next": "stairs.distract" },
+            { "text": "Swing the bat.", "if": "item.bat", "next": "stairs.fight" },
+            { "text": "Shoot.", "if": "item.pistol && ammo >= 1", "next": "stairs.shoot" },
+            { "timeout": true, "next": "stairs.hurt" }
+        ], "timer": 6 }
+    ],
+    "stairs.distract": [
+        { "narration": "The rock clatters down the slope. The creature follows the sound into the dark.", "do": ["sound clatter", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
+    ],
+    "stairs.fight": [
+        { "narration": "{y} swings hard. It reels, and slinks off down the mountain.", "do": ["sound thud", "shake 0.4 3", "y_hurt = true", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
+    ],
+    "stairs.shoot": [
+        { "narration": "The shot echoes off the whole mountain. It flees.", "do": ["ammo -= 1", "sound shot", "shake 0.3 2", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
+    ],
+    "stairs.hurt": [
+        { "narration": "It lunges. {y} dives aside, and it lumbers past and away down the slope.", "do": ["shake 0.5 3", "y_hurt = true", "creature_cleared = true", "event creature_leave -60"], "_added": "" },
+        { "y": "Okay. Still here." }
+    ],
+    "stairs.beam": [
+        { "if": "!creature_cleared",
+          "then": [ { "thought": "Not with that thing watching.", "_added": "" } ],
+          "else": [ { "narration": "{y} braces against the beam and shoves. It scrapes aside.", "do": ["beam_moved = true", "sound scrape"] } ] }
+    ],
+    "stairs.x": [
+        { "if": "beam_moved",
+          "then": [
+            { "narration": "{x} is barely awake." },
+            { "y": "Hey. I'm back." },
+            { "x": "Took you long enough." },
+            { "y": "Did you miss me?" },
+            { "x": "Like a hole in the head." },
+            { "y": "Wow. Even now." },
+            { "x": "Especially now." },
+            { "narration": "{y} helps him up and starts dragging again.", "do": ["companion drag"] }
+          ],
+          "else": [
+            { "if": "creature_cleared",
+              "then": [
+                { "x": "Is it gone?", "_added": "" },
+                { "y": "It's gone. The way's still blocked." }
+              ],
+              "else": [
+                { "x": "Go. I'm not going anywhere.", "_added": "" }
+              ] }
+          ] }
+    ],
+
+    "ascent.talk": [
+        { "x": "Remember the first time we came up here?" },
+        { "y": "You got us lost." },
+        { "x": "I did not." },
+        { "y": "Three hours, {x}. Three." },
+        { "x": "Because you insisted you knew the way." },
+        { "y": "I did know the way." },
+        { "x": "We ended up in someone's backyard." },
+        { "y": "That was a shortcut." },
+        { "x": "There was a dog." },
+        { "y": "A very friendly dog." },
+        { "narration": "{x} laughs weakly." },
+        { "x": "We were happy here. Weren't we?" },
+        { "narration": "{y} keeps pulling." },
+        { "y": "Yeah." },
+        { "x": "Even when everything else was a mess." },
+        { "y": "Especially then." },
+        { "narration": "{x} rests his head against {y}'s shoulder." },
+        { "x": "I miss that." },
+        { "y": "We're almost there." },
+        { "x": "I know." },
+        { "narration": "The last stretch of path comes into view." },
+        { "y": "We're close. Just a little farther. Come on." },
+        { "pause": 1.5 },
+        { "narration": "{x} doesn't answer." },
+        { "y": "{x}?" },
+        { "pause": 1.2, "do": ["sound breath"] },
+        { "narration": "A faint breath." },
+        { "narration": "{y} adjusts his grip and keeps walking." }
+    ]
+}

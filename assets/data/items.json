@@ -1,0 +1,15 @@
+// Inventory items, in the order the inventory lists them. "count": shown while
+// that variable is above 0, with its value ("Cigarettes x2").
+{
+    "last_bandage": { "name": "Last Bandage", "description": "The last clean one. Barely.", "icon": "items/bandage.png", "color": "#b8b2a4" },
+    "bandages":     { "name": "Bandages", "description": "A fresh roll from the factory. Enough for a change or two.", "icon": "items/bandage.png", "color": "#c4beb0" },
+    "antiseptic":   { "name": "Antiseptic", "description": "Stings like a grudge. Works, supposedly.", "icon": "items/antiseptic.png", "color": "#6a8a8c" },
+    "antibiotics":  { "name": "Antibiotics", "description": "In date. Mostly.", "icon": "items/antibiotics.png", "color": "#8a9cb4" },
+    "cigarette":    { "name": "Cigarettes", "description": "Saved, not smoked. Not yet.", "icon": "items/cigarette.png", "color": "#d8d2c4", "count": "cig_count" },
+    "bat":          { "name": "Bat", "description": "Old, dented, reliable.", "icon": "items/bat.png", "color": "#7a6a56" },
+    "pistol":       { "name": "Pistol", "description": "Heavy. Useless without rounds.", "icon": "items/pistol.png", "color": "#4c5258" },
+    "ammunition":   { "name": "Rounds", "description": "A few rounds. Somebody was optimistic.", "icon": "items/ammunition.png", "color": "#9a8a5a", "count": "ammo" },
+    "key":          { "name": "Small Key", "description": "Found behind the office clock.", "icon": "items/key.png", "color": "#a0946a" },
+    "rod":          { "name": "Metal Rod", "description": "Long enough to lever something heavy.", "icon": "items/rod.png", "color": "#7c848c" },
+    "bolt":         { "name": "Bolt", "description": "Heavy for its size. Good for throwing.", "icon": "items/bolt.png", "color": "#6c747c" }
+}

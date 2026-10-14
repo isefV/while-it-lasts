@@ -1,0 +1,18 @@
+[
+    {
+        "name": "msvc",
+        "visualStudio": "26a92011",
+        "visualStudioArchitecture": "x64",
+        "preferredGenerator": { "name": "Ninja" }
+    },
+    {
+        "name": "gcc",
+        "compilers": { "C": "gcc", "CXX": "g++" },
+        "preferredGenerator": { "name": "Ninja" }
+    },
+    {
+        "name": "clang",
+        "compilers": { "C": "clang", "CXX": "clang++" },
+        "preferredGenerator": { "name": "Ninja" }
+    }
+]

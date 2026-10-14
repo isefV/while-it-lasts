@@ -1,0 +1,134 @@
+# The whole game on a careful route: every item, the key, the antibiotics,
+# no spotting, one shared cigarette, two saved for the summit, both notes.
+#   hollow_app --walkthrough tests/walkthrough/full.txt
+# The commands are explained in apps/app/walkthrough.hpp.
+
+# --- Stage 00: the campsite -------------------------------------------------
+room campsite
+use magazines
+use magazines                 # a second look plays another line
+use car
+use medical_kit
+expect item.last_bandage
+use cigarette_pack
+choose Take
+expect cig_count == 1
+use fire
+use backpack
+use forest_exit               # locked until the fire is out
+expect !fire_out
+inventory
+talk
+choose Apply
+expect wound_dressed && fire_out && !item.last_bandage
+use blanket
+use forest_exit
+
+# --- Stage 01: the factory --------------------------------------------------
+room factory_entrance
+use road                      # locked until the floor is done
+talk
+use door
+room factory_office
+use desk
+use radio
+use clock
+expect item.key
+use filing_cabinet
+use calendar
+use notice
+expect notes_read == 2
+use window
+use window
+use first_aid_cabinet
+choose Use the key
+expect cabinet_open && !noisy_entry && cig_count == 2
+use sink                      # nothing yet: the shelf has the hint
+expect !has_antibiotics
+use shelves
+use sink
+expect has_antibiotics
+use floor_door
+room factory_floor
+use bolt
+walk 110                      # walks into the creature
+choose Throw the bolt
+expect factory_won && !item.bolt
+use lost_backpack
+expect backpack_looted && cig_count == 3
+use exit_office
+room factory_office
+use exit_entrance
+choose Share                  # back at the entrance: the dressing, then the cigarette
+room factory_entrance
+expect stage01_done && x_condition == 3 && smoked_with_x == 1 && cig_count == 2
+use road
+
+# --- Stage 02: the perimeter ------------------------------------------------
+room checkpoint
+# The creature's loop starts when the talk ends: turned 2.5 s, walk 1.5,
+# listen 1.5 (keep still), watch 2.5 (stay hidden), then again.
+walk 80                       # behind the barrier
+wait 6.8                      # through listen and watch
+walk 228                      # past the sandbags to the vehicle, while it looks away
+wait 4.9
+use exit_road
+room barricade
+expect spotted_count == 0
+use slab                      # no rod yet
+choose Push
+use rod
+use slab
+choose Lever
+expect gap_open
+use exit_road
+room sheltered_wall
+use mountain_path             # locked until the cigarette scene
+use crushed_pack
+choose Save
+expect stage02_done && cig_count == 3
+use mountain_path
+
+# --- Stage 03: the mountain steps -------------------------------------------
+room foot
+use steps
+room landing
+use lantern
+use ribbon
+use stone_marker
+use broken_sign
+use steps
+room collapse
+expect dragging
+use rest_rock
+walk 200                      # the narrow gap asks to turn him first
+expect turned_x
+use rest_stump
+use steps
+room broken_stairs
+walk 105                      # behind the wall: X stays here
+expect !dragging
+use creature
+choose Throw a rock
+expect creature_cleared
+use fallen_beam
+expect beam_moved
+talk
+expect dragging
+use rest_step
+use steps
+room final_ascent
+use rest_bench
+expect rests == 4
+walk 160                      # the last talk on the way
+use summit_path
+
+# --- Stage 04: the summit ---------------------------------------------------
+room summit
+use ground
+talk
+expect cig_scene_done && cig_lit && cig_count == 2
+use horizon
+use cigarette                 # the second moment starts the Reaper scene
+ended
+expect ember_out

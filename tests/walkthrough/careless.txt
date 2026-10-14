@@ -1,0 +1,88 @@
+# The whole game on a careless route: the cigarette left behind, too slow to
+# leave the campsite, the noisy cabinet, seen in the factory, spotted three
+# times, every timed choice run out, no cigarette left for the summit.
+#   hollow_app --walkthrough tests/walkthrough/careless.txt
+# The game must still reach its end, with the choices visible in it.
+
+# --- Stage 00 ---------------------------------------------------------------
+room campsite
+use cigarette_pack
+choose Leave
+expect cig_count == 0
+talk                          # no bandage yet
+expect x_woken && !wound_dressed
+use medical_kit
+talk
+choose Wait                   # not yet
+talk
+choose Apply
+expect fire_out
+wait 34                       # too slow: branches snap, then the silhouette
+expect x_condition == 2
+use forest_exit
+
+# --- Stage 01 ---------------------------------------------------------------
+room factory_entrance
+use door
+room factory_office
+use first_aid_cabinet
+choose Force it
+expect noisy_entry && cabinet_open && cig_count == 1
+use floor_door
+room factory_floor
+walk 110
+choose Sneak                  # it heard the cabinet: seen
+expect factory_lost && !factory_won
+use exit_office
+room factory_office
+use exit_entrance
+choose Share
+room factory_entrance
+expect !has_antibiotics && x_condition == 2 && cig_count == 0 && smoked_with_x == 1
+use road
+
+# --- Stage 02 ---------------------------------------------------------------
+room checkpoint
+wait 30                       # standing in the open: spotted each time it watches,
+                              # put back at the start; the second time costs
+                              # X_CONDITION, the third is the chase...
+choose timeout                # ...and too slow to run
+room barricade
+expect spotted_count == 3 && x_condition == 0
+use rod
+use slab
+choose Lever
+use exit_road
+room sheltered_wall
+use crushed_pack
+choose Smoke
+expect smoked_with_x == 2 && cig_count == 0
+use mountain_path
+
+# --- Stage 03 ---------------------------------------------------------------
+room foot
+use steps
+room landing
+use lantern                   # X's line for a low condition
+use steps
+room collapse
+walk 200
+use steps
+room broken_stairs
+walk 105
+use creature
+choose timeout                # it lunges; Y gets hurt but it is gone
+expect creature_cleared && y_hurt
+use fallen_beam
+talk
+use steps
+room final_ascent
+walk 160
+use summit_path
+
+# --- Stage 04 ---------------------------------------------------------------
+room summit
+talk                          # no cigarette left: X's own falls out of the blanket
+expect cig_scene_done && cig_lit
+wait 31                       # nothing touched: the Reaper comes anyway
+ended

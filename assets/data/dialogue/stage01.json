@@ -1,0 +1,276 @@
+// STAGE 01: THE ABANDONED FACTORY. Lines are the script's; "_added" marks new
+// ones. The factory creature is a timed choice (step 3): sneak, throw the
+// bolt, the bat, or shoot. Being seen loses the backpack behind the machines.
+{
+    "factory.arrive": [
+        { "x": "How long have we been walking?" },
+        { "y": "Since this morning." },
+        { "x": "It feels like since birth." },
+        { "narration": "{x} leans against the wall, breathing hard.", "do": ["pose x sit"] },
+        { "y": "Sit. I'll look around." },
+        { "x": "Find me a cigarette." },
+        { "y": "Medicine." },
+        { "x": "Cigarette and medicine. I'm flexible." },
+        { "y": "Don't wander off." },
+        { "x": "Wander where? I'm basically furniture right now." }
+    ],
+
+    "factory.x": [
+        { "if": "stage01_done",
+          "then": [ { "x": "After you, doctor." } ],
+          "else": [
+            { "x": "Find anything?", "_added": "talking to X before the floor is done" },
+            { "y": "Not yet." },
+            { "x": "Then why are you looking at me? Go." }
+          ] }
+    ],
+
+    "factory.road_locked": [
+        { "thought": "Not yet. I need to find something for his wound.", "_added": "" }
+    ],
+
+    "factory.return": [
+        { "y": "Hey. I'm back." },
+        { "x": "Please tell me that's a cigarette." },
+        { "if": "item.bandages",
+          "then": [
+            { "y": "It's a bandage." },
+            { "x": "Then I'll... tolerate you." },
+            { "y": "Wow. Warm." },
+            { "x": "I save the warmth for fire." },
+            { "narration": "{y} changes the dressing.", "do": ["take bandages", "dressed_at_factory = true"] }
+          ],
+          "else": [
+            { "y": "It's... nothing. No bandages either.", "_added": "came back without bandages" },
+            { "x": "Then I'll tolerate you anyway." }
+          ] },
+        { "if": "y_hurt", "then": [
+            { "x": "You're bleeding.", "_added": "consequence of fighting the creature" },
+            { "y": "It's not mine. Mostly." },
+            { "x": "That's not how that works." }
+        ] },
+        { "if": "has_antibiotics",
+          "then": [
+            { "y": "These are antibiotics. Take them." },
+            { "x": "Dealer, doctor, hero. What can't you do?" },
+            { "y": "Quit talking and swallow." },
+            { "narration": "{x} sits up straighter. His voice is clearer.", "do": ["x_condition += 1", "take antibiotics"] },
+            { "x": "Hm. That's... a little better, actually." },
+            { "y": "See? You're welcome." }
+          ],
+          "else": [
+            { "y": "Couldn't find antibiotics. I'm sorry." },
+            { "if": "dressed_at_factory",
+              "then": [ { "x": "Hey. You got bandages. That's more than the deer would've done." } ],
+              "else": [ { "x": "Hey. You came back. That's more than the deer would've done.", "_added": "variant without bandages" } ] }
+          ] },
+        { "x": "Find anything else?" },
+        { "y": "Some supplies. No car." },
+        { "x": "Shame. I was hoping to die in a comfortable seat." },
+        { "y": "Don't joke about that." },
+        { "x": "...Okay. Sorry." },
+        { "pause": 1.5 },
+        { "x": "I'm okay, you know. I'm still here." },
+        { "y": "I know." },
+        { "y": "Come on. We keep going." },
+        { "x": "After you, doctor." },
+        { "if": "cig_count >= 1", "then": [
+            { "choice": [
+                { "text": "Share a cigarette.", "next": "factory.cigarette" },
+                { "text": "Save it for later." }
+            ] }
+        ] },
+        { "goto": "factory.leave" }
+    ],
+
+    "factory.cigarette": [
+        { "do": ["cig_count -= 1", "smoked_with_x += 1", "sound lighter"] },
+        { "x": "Okay, now we're talking." },
+        { "y": "That's literally the opposite of medicine." },
+        { "x": "You sound like a pamphlet." },
+        { "narration": "{x} takes a slow drag and closes his eyes." },
+        { "x": "Thanks. I needed that." },
+        { "y": "Yeah. Me too." },
+        { "narration": "They sit for a moment, then stand." },
+        { "goto": "factory.leave" }
+    ],
+
+    "factory.leave": [
+        { "do": ["stage01_done = true", "pose x idle", "companion follow"] }
+    ],
+
+    "office.drawer": [
+        { "y": "A box of rounds. Somebody was optimistic." },
+        { "narration": "Got: a few rounds.", "do": ["ammo += 3"] }
+    ],
+    "office.drawer_again": [
+        { "y": "Paper clips and regret.", "_added": "second look" }
+    ],
+    "office.clock": [
+        { "y": "Found a key behind the clock. Fancy." },
+        { "narration": "Got: Small Key.", "do": ["give key", "key_found = true"] }
+    ],
+    "office.clock_again": [
+        { "y": "Just a clock. It stopped at ten past four.", "_added": "second look" }
+    ],
+    "office.filing": [
+        { "y": "Shift logs, safety memos... \"Reminder: do not enter Sublevel 2 under any circumstances.\" Great. Love that for me.", "do": ["notes_read += 1"] }
+    ],
+    "office.filing_again": [
+        { "y": "I'm still not going to Sublevel 2.", "_added": "second look" }
+    ],
+    "office.calendar": [
+        { "y": "Last circled date is a Friday. Then nothing." },
+        { "y": "Whatever happened here, it happened fast." }
+    ],
+    "office.notice": [
+        { "y": "\"All personnel must report immediately to...\" and then it's torn." },
+        { "y": "Super helpful." },
+        { "narration": "Something is tucked beneath the notice. A note." },
+        { "narration": "\"Don't let them follow you home.\"", "do": ["notes_read += 1"] },
+        { "y": "...Okay." },
+        { "thought": "I should not have read that." }
+    ],
+    "office.notice_again": [
+        { "thought": "Don't let them follow you home. Great. Thanks.", "_added": "second look" }
+    ],
+    "office.window": [
+        { "do": ["window_figure = true", "sound sting"] },
+        { "narration": "A tall silhouette stands outside." },
+        { "y": "Nope. Nope, nope.", "do": ["step y -18"] },
+        { "do": ["window_figure = false"] }
+    ],
+    "office.window_again": [
+        { "narration": "Nothing. Just the yard, and the wind.", "_added": "the second look shows nothing" },
+        { "thought": "Nothing. Sure." }
+    ],
+    "office.radio": [
+        { "do": ["sound static"] },
+        { "narration": "Static. A faint, warped voice. Then silence." },
+        { "y": "Well, that's not creepy at all." }
+    ],
+
+    "office.cabinet": [
+        { "y": "Locked. Obviously." },
+        { "choice": [
+            { "text": "Use the key.", "if": "item.key", "next": "office.cabinet_key" },
+            { "text": "Look for a key.", "if": "!item.key", "next": "office.cabinet_search" },
+            { "text": "Force it with the bat.", "if": "item.bat", "next": "office.cabinet_bat" },
+            { "text": "Leave it." }
+        ] }
+    ],
+    "office.cabinet_search": [
+        { "thought": "If I were a key, where would I hide? Somewhere in the office.", "_added": "hint" }
+    ],
+    "office.cabinet_key": [
+        { "narration": "The cabinet opens quietly.", "do": ["take key", "cabinet_open = true", "sound click"] },
+        { "goto": "office.cabinet_loot" }
+    ],
+    "office.cabinet_bat": [
+        { "y": "Sorry about this." },
+        { "narration": "A loud metallic crack.", "do": ["sound crack", "shake 0.3 2", "noisy_entry = true", "cabinet_open = true"] },
+        { "pause": 0.8, "do": ["sound heavy_steps"] },
+        { "narration": "Something heavy moves in the production area." },
+        { "y": "...That was louder than I planned." },
+        { "goto": "office.cabinet_loot" }
+    ],
+    "office.cabinet_loot": [
+        { "narration": "Got: Bandages, Antiseptic, a cigarette, a couple of rounds.", "do": ["give bandages", "give antiseptic", "cig_count += 1", "ammo += 2"] },
+        { "thought": "Nothing for an infection. Not in here, anyway.", "_added": "hint: keep searching" }
+    ],
+    "office.cabinet_open": [
+        { "y": "Empty. I took everything that wasn't screwed down.", "_added": "the open cabinet" }
+    ],
+    "office.shelves": [
+        { "if": "shelf_searched",
+          "then": [ { "y": "Nothing else on the shelves.", "_added": "" } ],
+          "else": [
+            { "y": "Bottom shelf... an empty pill box. Antibiotics.", "_added": "the bottom shelf points to the sink" },
+            { "y": "Someone scribbled on it: \"rest under the sink.\"" },
+            { "do": ["shelf_searched = true"] }
+          ] }
+    ],
+    "office.sink": [
+        { "if": "has_antibiotics",
+          "then": [ { "y": "Nothing else under there. Just the spider.", "_added": "" } ],
+          "else": [
+            { "if": "shelf_searched",
+              "then": [
+                { "narration": "Under the rags in the box: a sealed packet.", "_added": "" },
+                { "y": "These are... actually in date. Mostly.", "do": ["has_antibiotics = true", "give antibiotics"] },
+                { "thought": "Please work. Please just work." }
+              ],
+              "else": [
+                { "y": "Rags. Rust. A very dead spider.", "_added": "the box before the shelf's hint" }
+              ] }
+          ] }
+    ],
+
+    "floor.enter": [
+        { "thought": "Don't run. Don't make noise. Be a boring piece of machinery." }
+    ],
+    "floor.bolt": [
+        { "y": "A bolt. Heavy enough to throw.", "_added": "" },
+        { "narration": "Got: Bolt.", "do": ["give bolt", "bolt_taken = true"] }
+    ],
+    "floor.encounter": [
+        { "if": "noisy_entry",
+          "then": [
+            { "narration": "It's already hunting. It heard the cabinet.", "_added": "" },
+            { "choice": [
+                { "text": "Sneak behind the machines.", "next": "floor.sneak" },
+                { "text": "Throw the bolt.", "if": "item.bolt", "next": "floor.distract" },
+                { "text": "Swing the bat.", "if": "item.bat", "next": "floor.fight" },
+                { "text": "Shoot.", "if": "item.pistol && ammo >= 1", "next": "floor.shoot" },
+                { "timeout": true, "next": "floor.seen" }
+            ], "timer": 4 }
+          ],
+          "else": [
+            { "narration": "The creature lumbers between the machines. It hasn't seen {y}.", "_added": "" },
+            { "choice": [
+                { "text": "Sneak behind the machines.", "next": "floor.sneak" },
+                { "text": "Throw the bolt.", "if": "item.bolt", "next": "floor.distract" },
+                { "text": "Swing the bat.", "if": "item.bat", "next": "floor.fight" },
+                { "text": "Shoot.", "if": "item.pistol && ammo >= 1", "next": "floor.shoot" },
+                { "timeout": true, "next": "floor.seen" }
+            ], "timer": 7 }
+          ] }
+    ],
+    "floor.sneak": [
+        { "if": "noisy_entry", "then": [ { "goto": "floor.seen" } ] },
+        { "narration": "{y} slips from machine to machine while it looks away.", "_added": "" },
+        { "goto": "floor.win" }
+    ],
+    "floor.distract": [
+        { "narration": "The bolt clangs off a pipe far away. The creature lurches after the sound.", "do": ["take bolt", "sound clang"], "_added": "" },
+        { "goto": "floor.win" }
+    ],
+    "floor.fight": [
+        { "narration": "{y} swings. Wood meets something that isn't wood.", "do": ["sound thud", "shake 0.4 3", "y_hurt = true"], "_added": "" },
+        { "narration": "It staggers back, and then it runs." },
+        { "y": "Okay. Okay. That happened." },
+        { "goto": "floor.win" }
+    ],
+    "floor.shoot": [
+        { "narration": "The shot is enormous in the empty hall.", "do": ["ammo -= 1", "sound shot", "shake 0.3 2"], "_added": "" },
+        { "narration": "It flees into the dark." },
+        { "goto": "floor.win" }
+    ],
+    "floor.win": [
+        { "do": ["factory_cleared = true", "factory_won = true", "event creature_leave 360"] },
+        { "pause": 1.5 },
+        { "y": "...I think it's gone." }
+    ],
+    "floor.seen": [
+        { "y": "Okay. Okay. Not good.", "do": ["sound roar", "shake 0.5 3"] },
+        { "narration": "{y} backs away fast. The creature plants itself by the far wall.", "do": ["factory_cleared = true", "factory_lost = true", "event creature_guard 262", "step y -70"], "_added": "" },
+        { "thought": "Whatever was back there, it's staying there.", "_added": "the backpack is lost" }
+    ],
+    "floor.backpack": [
+        { "narration": "A discarded backpack behind the machines. Bandages, and a cigarette.", "do": ["give bandages", "cig_count += 1", "backpack_looted = true"] },
+        { "y": "Somebody's lunch bag. And a lucky one for us." }
+    ],
+    "floor.guarded": [
+        { "thought": "Not past that thing. Not today.", "_added": "" }
+    ]
+}

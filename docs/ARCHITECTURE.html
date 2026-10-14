@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hollow Code Guide</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #1d232b; --muted: #5d6875; --line: #c9d0d8;
+  --accent: #c8702a; --code-bg: #eef1f4;
+  --c-app: #dbe8f7; --c-app-l: #3d6ea8;
+  --c-lib: #e3efe2; --c-lib-l: #4a7f47;
+  --c-data: #f6ead9; --c-data-l: #a06a2a;
+  --c-ext: #ebe7f3; --c-ext-l: #6b5a99;
+  --arrow: #6b7682;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151b; --panel: #171c23; --ink: #dde3ea; --muted: #8e99a6; --line: #2e3742;
+    --accent: #e0873a; --code-bg: #1f262f;
+    --c-app: #1c2b3d; --c-app-l: #7fa8d8;
+    --c-lib: #1d2b1f; --c-lib-l: #8cc286;
+    --c-data: #33281a; --c-data-l: #d9a766;
+    --c-ext: #262236; --c-ext-l: #a796d6;
+    --arrow: #8e99a6;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151b; --panel: #171c23; --ink: #dde3ea; --muted: #8e99a6; --line: #2e3742;
+  --accent: #e0873a; --code-bg: #1f262f;
+  --c-app: #1c2b3d; --c-app-l: #7fa8d8;
+  --c-lib: #1d2b1f; --c-lib-l: #8cc286;
+  --c-data: #33281a; --c-data-l: #d9a766;
+  --c-ext: #262236; --c-ext-l: #a796d6;
+  --arrow: #8e99a6;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 1060px; margin: 0 auto; padding: 24px 16px 80px; }
+header h1 { margin: 0 0 4px; font-size: 28px; }
+header p { margin: 0; color: var(--muted); }
+nav { margin: 20px 0 8px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+nav ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+nav a { color: var(--ink); }
+h2 { margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 22px; }
+h3 { margin: 28px 0 8px; font-size: 17px; }
+p, li { max-width: 78ch; }
+code { font: 13px/1.4 ui-monospace, Consolas, "Cascadia Mono", monospace; background: var(--code-bg); padding: 1px 4px; border-radius: 3px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; font: 13px/1.5 ui-monospace, Consolas, monospace; }
+pre code { background: none; padding: 0; }
+.figure { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 16px 0; }
+.figure svg { width: 100%; height: auto; display: block; }
+.figure figcaption { color: var(--muted); font-size: 13px; margin-top: 8px; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; background: var(--panel); font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+td:first-child { white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px; margin-right: 6px; vertical-align: 2px; }
+.tag.app { background: var(--c-app); color: var(--c-app-l); }
+.tag.lib { background: var(--c-lib); color: var(--c-lib-l); }
+.tag.data { background: var(--c-data); color: var(--c-data-l); }
+.steps { counter-reset: s; list-style: none; padding-left: 0; }
+.steps li { counter-increment: s; position: relative; padding-left: 34px; margin: 8px 0; }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; text-align: center; line-height: 22px; }
+.note { border-left: 3px solid var(--accent); padding: 6px 12px; background: var(--panel); margin: 12px 0; }
+/* diagrams */
+svg text { fill: var(--ink); font-family: system-ui, "Segoe UI", sans-serif; font-size: 13px; }
+svg .small { font-size: 11px; fill: var(--muted); }
+svg .title { font-weight: 700; }
+svg .app  { fill: var(--c-app);  stroke: var(--c-app-l);  stroke-width: 1.5; }
+svg .lib  { fill: var(--c-lib);  stroke: var(--c-lib-l);  stroke-width: 1.5; }
+svg .data { fill: var(--c-data); stroke: var(--c-data-l); stroke-width: 1.5; }
+svg .ext  { fill: var(--c-ext);  stroke: var(--c-ext-l);  stroke-width: 1.5; }
+svg .plain { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+svg .edge { stroke: var(--arrow); stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+svg .edge.dash { stroke-dasharray: 5 4; }
+svg .inherit { stroke: var(--arrow); stroke-width: 1.5; fill: none; marker-end: url(#hollow); }
+svg .accent { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg.canvasmap { max-width: 720px; margin: 0 auto; }
+svg.canvasmap text { font-size: 9px; }
+svg.canvasmap .title { font-size: 10px; }
+svg.canvasmap .small { font-size: 8px; }
+@media (max-width: 640px) { nav ol { columns: 1; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill: var(--arrow)"/>
+    </marker>
+    <marker id="hollow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M1,1 L11,6 L1,11 z" style="fill: var(--panel); stroke: var(--arrow); stroke-width: 1.2"/>
+    </marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header>
+  <h1>Hollow: how the code works</h1>
+  <p>The Last Light, a C++20 / raylib game. A guide to <code>include/hollow</code>, <code>src</code> and <code>apps/app</code>: every class, how they connect, and what happens in a frame.</p>
+</header>
+
+<nav>
+  <ol>
+    <li><a href="#big-picture">The big picture</a></li>
+    <li><a href="#startup">Starting the program</a></li>
+    <li><a href="#frame">One frame</a></li>
+    <li><a href="#dialogue">Dialogue, conditions and effects</a></li>
+    <li><a href="#game-owns">What the Game owns</a></li>
+    <li><a href="#screen">Screen and coordinates</a></li>
+    <li><a href="#lib-classes">Library classes, folder by folder</a></li>
+    <li><a href="#app-classes">Game classes (apps/app)</a></li>
+    <li><a href="#walk">Walk-throughs of real moments</a></li>
+    <li><a href="#extend">Changing and extending</a></li>
+  </ol>
+</nav>
+
+<!-- ================================================================== -->
+<h2 id="big-picture">1. The big picture</h2>
+<p>The project has three layers. The <strong>story</strong> is data: JSON files in <code>assets/data/</code>. The <strong>library</strong> (<code>include/hollow</code> + <code>src</code>, the static library <code>hollow::hollow</code>) holds systems that know nothing about this particular story: a dialogue runner, a dialogue box, rooms, actors, effects. The <strong>game</strong> (<code>apps/app</code>) ties them together: the main loop, the rules for walking and using things, and small scripts for the rooms that need code.</p>
+
+<figure class="figure">
+<svg viewBox="0 0 760 400" role="img" aria-label="Layers: JSON data and the game app use the hollow library, which uses raylib and nlohmann/json">
+  <rect class="data" x="20" y="20" width="210" height="76" rx="6"/>
+  <text x="34" y="44" class="title">assets/data/*.json</text>
+  <text x="34" y="64" class="small">game, items, barks,</text>
+  <text x="34" y="80" class="small">dialogue/, rooms/</text>
+
+  <rect class="app" x="270" y="20" width="470" height="76" rx="6"/>
+  <text x="286" y="44" class="title">apps/app: the game</text>
+  <text x="286" y="64" class="small">main.cpp · Game · scripts/ (campsite, creature, checkpoint, sunset, summit)</text>
+  <text x="286" y="80" class="small">Walkthrough (scripted playthroughs)</text>
+
+  <rect class="lib" x="20" y="130" width="720" height="176" rx="6"/>
+  <text x="34" y="152" class="title">hollow library: include/hollow/ (declarations) + src/ (code)</text>
+  <rect class="plain" x="36" y="164" width="222" height="58" rx="4"/>
+  <text x="48" y="186" class="title">system/</text><text x="48" y="206" class="small">canvas, input, assets, audio, story, dialogue</text>
+  <rect class="plain" x="269" y="164" width="222" height="58" rx="4"/>
+  <text x="281" y="186" class="title">data/</text><text x="281" y="206" class="small">load + check every JSON file</text>
+  <rect class="plain" x="502" y="164" width="222" height="58" rx="4"/>
+  <text x="514" y="186" class="title">objects/</text><text x="514" y="206" class="small">rooms, items, characters, sprites, actors</text>
+  <rect class="plain" x="36" y="232" width="222" height="58" rx="4"/>
+  <text x="48" y="254" class="title">effects/</text><text x="48" y="274" class="small">fade, shake, glow, apparitions, particles</text>
+  <rect class="plain" x="269" y="232" width="222" height="58" rx="4"/>
+  <text x="281" y="254" class="title">ui/</text><text x="281" y="274" class="small">layout, text, dialogue box, inventory, menus</text>
+  <rect class="plain" x="502" y="232" width="222" height="58" rx="4"/>
+  <text x="514" y="254" class="title">utility/</text><text x="514" y="274" class="small">text wrap, random, colours, diagnostics</text>
+
+  <rect class="ext" x="130" y="336" width="220" height="48" rx="6"/>
+  <text x="146" y="358" class="title">raylib 6.0</text><text x="146" y="374" class="small">window, drawing, input, audio</text>
+  <rect class="ext" x="410" y="336" width="220" height="48" rx="6"/>
+  <text x="426" y="358" class="title">nlohmann/json 3.12</text><text x="426" y="374" class="small">only inside src/ (.cpp)</text>
+
+  <path class="edge" d="M505,96 L505,128"/>
+  <text x="514" y="118" class="small">uses</text>
+  <path class="edge" d="M125,96 C125,140 300,140 360,162"/>
+  <text x="138" y="122" class="small">read by data/</text>
+  <path class="edge" d="M240,306 L240,334"/>
+  <path class="edge dash" d="M520,306 L520,334"/>
+</svg>
+<figcaption>Arrows mean “uses”. Public headers include <code>raylib.h</code> (colours, rectangles); nlohmann/json stays private to the library's .cpp files.</figcaption>
+</figure>
+
+<p>Two rules keep this tidy:</p>
+<ul>
+  <li><strong>Headers declare, <code>src/</code> implements.</strong> Systems with a lot of state (<code>StoryState</code>, <code>DialogueRunner</code>, <code>Audio</code>) keep it behind a private <code>Impl</code> struct (<code>d_</code> pointer); small value types have plain members.</li>
+  <li><strong>The library never names a room, a character or a variable of this story.</strong> Anything story-specific lives in <code>assets/data</code> or <code>apps/app</code>.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="startup">2. Starting the program</h2>
+<ol class="steps">
+  <li><code>main()</code> (<code>apps/app/main.cpp</code>) reads the command line: <code>--check</code>, <code>--windowed</code>, <code>--room</code>, <code>--set</code>, <code>--screenshot</code>, <code>--walkthrough</code>.</li>
+  <li>It creates a <code>Game</code> with the path of <code>assets/</code> next to the program and calls <code>Game::load()</code>:
+    <ul>
+      <li><code>loadGameData()</code> reads <code>data/game.json</code> and every file it lists into one <code>GameData</code> struct, collecting mistakes in a <code>Diagnostics</code>.</li>
+      <li><code>checkGameData()</code> checks references across files (unknown conversation, variable, item, room, command verb).</li>
+      <li>The game also checks the conversations its room scripts start by name, and that each room's <code>"script"</code> exists.</li>
+      <li>Each declared variable goes into the <code>StoryState</code>; a <code>DialogueRunner</code> is created over all conversations, with <code>Game::onCommand</code> as its command handler.</li>
+    </ul>
+  </li>
+  <li>With <code>--check</code> it prints the problems and stops here (no window). This is the CTest test <code>hollow.app</code>.</li>
+  <li>Otherwise it opens the window (borderless fullscreen unless <code>--windowed</code>), then <code>Game::initGraphics()</code> creates the 480×270 canvas, the 320×180 scene layer, the font, the audio device and the character sprite sheets.</li>
+  <li>The loop: <code>while (!WindowShouldClose() &amp;&amp; !game.quitRequested()) game.frame(GetFrameTime());</code> In a walkthrough, <code>Walkthrough::step()</code> runs before each frame to press virtual keys.</li>
+</ol>
+
+<figure class="figure">
+<svg viewBox="0 0 760 170" role="img" aria-label="Loading: game.json to loadGameData to GameData to checkGameData to Diagnostics">
+  <rect class="data" x="10" y="20" width="150" height="56" rx="6"/>
+  <text x="22" y="44" class="title">game.json</text><text x="22" y="62" class="small">+ files it lists</text>
+  <rect class="lib" x="200" y="20" width="160" height="56" rx="6"/>
+  <text x="212" y="44" class="title">loadGameData()</text><text x="212" y="62" class="small">data/game_data.cpp</text>
+  <rect class="lib" x="400" y="20" width="160" height="56" rx="6"/>
+  <text x="412" y="44" class="title">GameData</text><text x="412" y="62" class="small">rooms, conversations, …</text>
+  <rect class="lib" x="600" y="20" width="150" height="56" rx="6"/>
+  <text x="612" y="44" class="title">checkGameData()</text><text x="612" y="62" class="small">cross-file checks</text>
+  <rect class="lib" x="400" y="104" width="160" height="50" rx="6"/>
+  <text x="412" y="126" class="title">Diagnostics</text><text x="412" y="143" class="small">errors, warnings</text>
+  <rect class="app" x="600" y="104" width="150" height="50" rx="6"/>
+  <text x="612" y="126" class="title">Game::load()</text><text x="612" y="143" class="small">StoryState, runner</text>
+  <path class="edge" d="M160,48 L198,48"/>
+  <path class="edge" d="M360,48 L398,48"/>
+  <path class="edge" d="M560,48 L598,48"/>
+  <path class="edge dash" d="M280,76 C280,128 340,129 398,129"/>
+  <path class="edge dash" d="M675,76 C675,90 600,96 560,112"/>
+  <path class="edge" d="M480,76 L480,90 L675,90 L675,102"/>
+</svg>
+<figcaption>Every problem found while loading or checking lands in <code>Diagnostics</code>, with its file and the place inside it (or file:line:column for a JSON syntax error).</figcaption>
+</figure>
+
+<!-- ================================================================== -->
+<h2 id="frame">3. One frame</h2>
+<p><code>Game::frame(dt)</code> clamps <code>dt</code> to 0.1 s (so a stall never skips a timer), then calls <code>update(dt)</code> and <code>draw()</code>. Everything that moves happens in that order:</p>
+
+<figure class="figure">
+<svg viewBox="0 0 760 560" role="img" aria-label="Flow of one frame through update and draw">
+  <rect class="app" x="230" y="10" width="300" height="40" rx="6"/>
+  <text x="246" y="35" class="title">Game::frame(dt) → update(dt)</text>
+
+  <rect class="lib" x="230" y="70" width="300" height="40" rx="6"/>
+  <text x="246" y="95">Input::update: keys + mouse → canvas pixels</text>
+
+  <rect class="app" x="230" y="130" width="300" height="40" rx="6"/>
+  <text x="246" y="155">switch (screen_): Title · Paused · EndCard · <tspan class="title">Playing</tspan></text>
+
+  <rect class="app" x="230" y="190" width="300" height="40" rx="6"/>
+  <text x="246" y="215">updatePlaying: fade, shake, tint, room change</text>
+
+  <rect class="lib" x="10" y="256" width="230" height="68" rx="6"/>
+  <text x="22" y="278" class="title">inventory open</text>
+  <text x="22" y="298" class="small">InventoryPanel::update</text>
+  <text x="22" y="313" class="small">(nothing else moves)</text>
+
+  <rect class="lib" x="265" y="256" width="230" height="68" rx="6"/>
+  <text x="277" y="278" class="title">a conversation runs</text>
+  <text x="277" y="298" class="small">DialogueBox::update → advance()/choose()</text>
+  <text x="277" y="313" class="small">DialogueRunner::update (pauses, timers)</text>
+
+  <rect class="app" x="520" y="256" width="230" height="68" rx="6"/>
+  <text x="532" y="278" class="title">exploring</text>
+  <text x="532" y="298" class="small">updateExploring: walk, blocks, E/click,</text>
+  <text x="532" y="313" class="small">triggers, idle barks</text>
+
+  <rect class="app" x="230" y="350" width="300" height="40" rx="6"/>
+  <text x="246" y="375">updateCompanion · Actor::update ×2 · barks</text>
+  <rect class="app" x="230" y="404" width="300" height="40" rx="6"/>
+  <text x="246" y="429">lights + particles · RoomScript::update</text>
+
+  <rect class="app" x="230" y="466" width="300" height="40" rx="6"/>
+  <text x="246" y="491" class="title">draw()</text>
+  <rect class="lib" x="20" y="520" width="220" height="34" rx="6"/>
+  <text x="32" y="542" class="small">drawScene → scene_ (320×180)</text>
+  <rect class="lib" x="270" y="520" width="220" height="34" rx="6"/>
+  <text x="282" y="542" class="small">scene + HUD + box → canvas (480×270)</text>
+  <rect class="lib" x="520" y="520" width="230" height="34" rx="6"/>
+  <text x="532" y="542" class="small">Canvas::present → screen, ×N</text>
+
+  <path class="edge" d="M380,50 L380,68"/>
+  <path class="edge" d="M380,110 L380,128"/>
+  <path class="edge" d="M380,170 L380,188"/>
+  <path class="edge" d="M330,230 L125,254"/>
+  <path class="edge" d="M380,230 L380,254"/>
+  <path class="edge" d="M430,230 L635,254"/>
+  <path class="edge" d="M125,324 L330,348"/>
+  <path class="edge" d="M380,324 L380,348"/>
+  <path class="edge" d="M635,324 L430,348"/>
+  <path class="edge" d="M380,390 L380,402"/>
+  <path class="edge" d="M380,444 L380,464"/>
+  <path class="edge" d="M330,506 L130,518"/>
+  <path class="edge" d="M240,537 L268,537"/>
+  <path class="edge" d="M490,537 L518,537"/>
+</svg>
+<figcaption>Exactly one of the three middle boxes runs per frame. The world (X walking, the creature, fires flickering, room scripts) keeps updating during conversations, which is how a script can make X sit down in the middle of a line.</figcaption>
+</figure>
+
+<h3>The three middle branches in detail</h3>
+<ul>
+  <li><strong>Inventory open</strong>: Tab/I opened <code>InventoryPanel</code>. It shows <code>Game::inventory()</code> (held items, plus items that follow a count variable such as cigarettes) and closes on Tab, I or Esc.</li>
+  <li><strong>Conversation</strong>: the <code>DialogueRunner</code> decides <em>what</em> is on screen (a <code>DialogueView</code>); the <code>DialogueBox</code> decides <em>how</em> (typing, pages, options) and turns key presses into <code>advance()</code> or <code>choose(i)</code>.</li>
+  <li><strong>Exploring</strong>: A/D move the player, clamped by the room's walk range and by objects with an active <code>block</code>; pushing into a block plays its <code>blocked</code> conversation. E uses <code>nearestTarget()</code>; a click uses <code>hoveredTarget()</code> if it is in reach. Then <code>updateTriggers()</code> and, after 20–32 s of standing still, an idle bark.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="dialogue">4. Dialogue, conditions and effects</h2>
+<p>This is the heart of the game. Conversations are lists of entries (<code>DialogueEntry</code>). The runner walks them with a small stack (so <code>then</code>/<code>else</code> blocks can nest), and stops whenever something has to be shown.</p>
+
+<figure class="figure">
+<svg viewBox="0 0 760 340" role="img" aria-label="DialogueRunner reads conversations and StoryState, gives a view to DialogueBox and commands to Game">
+  <rect class="lib" x="20" y="20" width="230" height="58" rx="6"/>
+  <text x="32" y="44" class="title">ConversationMap</text><text x="32" y="63" class="small">GameData::conversations</text>
+
+  <rect class="lib" x="290" y="120" width="190" height="70" rx="6"/>
+  <text x="304" y="148" class="title">DialogueRunner</text><text x="304" y="168" class="small">stack of entry lists</text>
+
+  <rect class="lib" x="20" y="232" width="230" height="70" rx="6"/>
+  <text x="32" y="256" class="title">StoryState</text>
+  <text x="32" y="275" class="small">variables · items · seen counts</text>
+  <text x="32" y="291" class="small">Condition reads · Effect writes</text>
+
+  <rect class="lib" x="530" y="20" width="210" height="58" rx="6"/>
+  <text x="542" y="44" class="title">DialogueBox</text><text x="542" y="63" class="small">draws the DialogueView</text>
+
+  <rect class="app" x="530" y="210" width="210" height="58" rx="6"/>
+  <text x="542" y="234" class="title">Game::onCommand</text><text x="542" y="253" class="small">goto, sound, pose, companion…</text>
+
+  <rect class="app" x="530" y="290" width="210" height="40" rx="6"/>
+  <text x="542" y="315" class="title">RoomScript::event</text>
+
+  <path class="edge" d="M250,49 C300,60 330,90 360,118"/>
+  <text x="270" y="78" class="small">entries</text>
+  <path class="edge" d="M300,190 C270,220 260,240 252,252"/>
+  <text x="196" y="210" class="small">if: evaluate</text>
+  <path class="edge" d="M252,280 C300,276 340,230 360,192"/>
+  <text x="262" y="320" class="small">do: Set/Add/Give/Take</text>
+  <path class="edge" d="M470,120 C500,90 520,70 528,58"/>
+  <text x="440" y="96" class="small">view()</text>
+  <path class="edge" d="M560,78 C550,110 510,130 482,145"/>
+  <text x="560" y="112" class="small">advance() / choose(i)</text>
+  <path class="edge" d="M482,170 C510,190 520,210 528,226"/>
+  <text x="490" y="208" class="small">commands</text>
+  <path class="edge" d="M635,268 L635,288"/>
+  <text x="644" y="283" class="small">event &lt;name&gt;</text>
+</svg>
+<figcaption>Effects that change variables or items are applied by the library itself (<code>applyStateEffect</code>); anything else is a <em>command</em> and goes to the game.</figcaption>
+</figure>
+
+<h3>How the runner moves</h3>
+<p><code>DialogueRunner::start(id)</code> pushes the conversation and calls the private <code>step()</code>, which loops:</p>
+<ul>
+  <li>Take the next entry of the top list (pop finished lists). If its <code>if</code> is false, skip it (a block with <code>else</code> pushes the else list instead).</li>
+  <li><strong>Line</strong> (speaker, thought, narration): fill the view, apply its <code>do</code>, <em>stop</em> until <code>advance()</code>.</li>
+  <li><strong>Choice</strong>: keep only options whose <code>if</code> is true and that have text; <em>stop</em> until <code>choose(i)</code>, or until the timer runs out (<code>update(dt)</code> then takes the <code>timeout</code> option).</li>
+  <li><strong>Pause</strong>: <em>stop</em> for N seconds (counted in <code>update(dt)</code>).</li>
+  <li><strong>Block</strong> pushes <code>then</code>; <strong>Goto</strong> clears the stack and pushes the target; <strong>Action</strong> applies its effects and goes on; <strong>End</strong> clears everything.</li>
+</ul>
+<p>Every new thing on screen increments <code>DialogueView::serial</code>. The <code>DialogueBox</code> watches that number: a new serial means “lay out the new text and ignore input this frame”, so one key press can never both open and skip a line.</p>
+<p>If a command handler starts another conversation in the middle (for example a script reacting to an event), the runner notices through an internal <code>generation</code> counter and stops working on the old one.</p>
+
+<h3>Conditions and effects</h3>
+<p><code>Condition::parse()</code> turns text like <code>"x_condition &lt;= 1 &amp;&amp; item.bandages"</code> into a small tree once, at load time; <code>evaluate(state)</code> walks the tree every time it is needed. <code>Effect::parse()</code> turns <code>"cig_count += 1"</code>, <code>"give key"</code> or <code>"sound crack"</code> into a <code>Set</code>, <code>Add</code>, <code>Give</code>, <code>Take</code> or <code>Command</code>. <code>StoryState::get()</code> understands three kinds of name: declared variables, <code>item.&lt;id&gt;</code> and <code>seen.&lt;conversation&gt;</code>.</p>
+
+<!-- ================================================================== -->
+<h2 id="game-owns">5. What the Game owns</h2>
+<p><code>Game</code> (<code>apps/app/game.hpp</code>) is the one object that holds everything for the whole run. Room scripts get a <code>Game&amp;</code> and use its public methods; nothing else is global.</p>
+
+<figure class="figure">
+<svg viewBox="0 0 760 540" role="img" aria-label="Game owns data, engine, interface and world objects; RoomScript subclasses">
+  <rect class="app" x="300" y="20" width="160" height="44" rx="6"/>
+  <text x="314" y="40" class="title">Walkthrough</text><text x="314" y="56" class="small">friend: virtual input</text>
+
+  <rect class="data" x="20" y="90" width="250" height="118" rx="6"/>
+  <text x="32" y="112" class="title">Data &amp; story</text>
+  <text x="32" y="134" class="small">GameData data_</text>
+  <text x="32" y="152" class="small">StoryState state_</text>
+  <text x="32" y="170" class="small">DialogueRunner runner_</text>
+  <text x="32" y="188" class="small">Random random_</text>
+
+  <rect class="lib" x="490" y="90" width="250" height="118" rx="6"/>
+  <text x="502" y="112" class="title">Engine</text>
+  <text x="502" y="134" class="small">Assets assets_ · Audio audio_</text>
+  <text x="502" y="152" class="small">Canvas canvas_ (480×270)</text>
+  <text x="502" y="170" class="small">RenderLayer scene_ (320×180)</text>
+  <text x="502" y="188" class="small">Input input_</text>
+
+  <rect class="app" x="300" y="170" width="160" height="60" rx="6"/>
+  <text x="352" y="198" class="title">Game</text><text x="314" y="218" class="small">screens, rooms, rules</text>
+
+  <rect class="lib" x="20" y="240" width="250" height="118" rx="6"/>
+  <text x="32" y="262" class="title">Interface</text>
+  <text x="32" y="284" class="small">TextRenderer text_</text>
+  <text x="32" y="302" class="small">DialogueBox · InventoryPanel</text>
+  <text x="32" y="320" class="small">BarkPlayer barks_ (+ NoRepeatPicker)</text>
+  <text x="32" y="338" class="small">Menu titleMenu_, pauseMenu_</text>
+
+  <rect class="app" x="490" y="240" width="250" height="118" rx="6"/>
+  <text x="502" y="262" class="title">World</text>
+  <text x="502" y="284" class="small">Actor player_, companion_</text>
+  <text x="502" y="302" class="small">const RoomDef* room_</text>
+  <text x="502" y="320" class="small">unique_ptr&lt;RoomScript&gt; script_</text>
+  <text x="502" y="338" class="small">Fade · Shake · Particles · glow</text>
+
+  <path class="edge" d="M380,64 L380,168"/>
+  <path class="edge" d="M300,190 L272,170"/>
+  <path class="edge" d="M460,190 L488,170"/>
+  <path class="edge" d="M300,212 L272,260"/>
+  <path class="edge" d="M460,212 L488,260"/>
+
+  <rect class="app" x="300" y="400" width="160" height="40" rx="6"/>
+  <text x="314" y="425" class="title">RoomScript</text>
+  <path class="edge" d="M560,358 C540,380 500,395 462,415"/>
+  <text x="520" y="384" class="small">owns one</text>
+
+  <rect class="plain" x="10"  y="480" width="140" height="44" rx="5"/><text x="20" y="500" class="title">Campsite</text><text x="20" y="516" class="small">timer, Reaper hint</text>
+  <rect class="plain" x="160" y="480" width="140" height="44" rx="5"/><text x="170" y="500" class="title">CreatureRoom</text><text x="170" y="516" class="small">floor, broken stairs</text>
+  <rect class="plain" x="310" y="480" width="140" height="44" rx="5"/><text x="320" y="500" class="title">Checkpoint</text><text x="320" y="516" class="small">stealth loop</text>
+  <rect class="plain" x="460" y="480" width="140" height="44" rx="5"/><text x="470" y="500" class="title">Sunset</text><text x="470" y="516" class="small">tint by position</text>
+  <rect class="plain" x="610" y="480" width="140" height="44" rx="5"/><text x="620" y="500" class="title">Summit</text><text x="620" y="516" class="small">pacing, ending</text>
+  <path class="inherit" d="M80,478 C80,455 300,450 330,442"/>
+  <path class="inherit" d="M230,478 C230,460 330,455 350,442"/>
+  <path class="inherit" d="M380,478 L380,442"/>
+  <path class="inherit" d="M530,478 C530,460 430,455 410,442"/>
+  <path class="inherit" d="M680,478 C680,455 460,450 430,442"/>
+</svg>
+<figcaption>Solid arrows: ownership. Open arrowheads: “is a” (each script derives from <code>RoomScript</code>). <code>CreatureRoom</code> and <code>Checkpoint</code> use the <code>Creature</code> and <code>PhaseLoop</code> helpers; <code>Campsite</code> and <code>Summit</code> use <code>Apparition</code>s.</figcaption>
+</figure>
+
+<!-- ================================================================== -->
+<h2 id="screen">6. Screen and coordinates</h2>
+<p>There are three sizes, and every drawing call uses one of them:</p>
+<figure class="figure">
+<svg class="canvasmap" viewBox="0 0 480 290" role="img" aria-label="Canvas layout: scene box, dialogue box and bar slots">
+  <rect x="0" y="0" width="480" height="270" style="fill:#000; stroke: var(--line)"/>
+  <rect x="80" y="16" width="320" height="180" class="lib"/>
+  <text x="90" y="34" class="title">scene box · 320×180 · at (80, 16)</text>
+  <text x="90" y="52" class="small">rooms are drawn here in scene pixels</text>
+  <line x1="80" y1="166" x2="400" y2="166" class="accent"/>
+  <text x="270" y="160" class="small">ground line: scene y = 150</text>
+  <rect x="80" y="202" width="320" height="64" class="app"/>
+  <text x="90" y="222" class="title">dialogue box · 320×64 · at (80, 202)</text>
+  <text x="90" y="240" class="small">4 lines of text, or up to 4 options</text>
+  <rect x="8" y="16" width="64" height="8" class="data"/>
+  <rect x="8" y="28" width="64" height="8" class="data"/>
+  <rect x="8" y="40" width="64" height="8" class="data"/>
+  <text x="8" y="64" class="small">bar slots</text>
+  <text x="0" y="285" class="small">canvas 480×270, enlarged by a whole number (×2, ×3, ×4 …) and centred; black around it</text>
+</svg>
+</figure>
+<ul>
+  <li><strong>Scene pixels</strong> (0–320, 0–180): rooms, objects, actors, apparitions, prompts and barks. The game draws them into the <code>RenderLayer scene_</code>, which is then copied onto the canvas at (80, 16), shifted by the screen shake.</li>
+  <li><strong>Canvas pixels</strong> (0–480, 0–270): the HUD, dialogue box, inventory, menus, title and end card. Constants are in <code>hollow::layout</code> (<code>ui/theme.hpp</code>).</li>
+  <li><strong>Screen pixels</strong>: only <code>Canvas::present()</code> and <code>Canvas::toCanvas()</code> know them. <code>Input</code> converts the mouse to canvas pixels at once; the game subtracts the scene box origin to test clicks on objects.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="lib-classes">7. Library classes, folder by folder</h2>
+<p>Everything is in namespace <code>hollow</code>. File names are relative to <code>include/hollow/</code>; the code is in the same path under <code>src/</code>.</p>
+
+<h3><span class="tag lib">utility/</span> small helpers</h3>
+<div class="tablewrap"><table>
+<tr><th>Name</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>Diagnostics</code></td><td>diagnostics.hpp</td><td>Two lists of messages, <code>errors</code> and <code>warnings</code>, each starting with where the problem is. <code>ok()</code> is true with no errors.</td></tr>
+<tr><td><code>replaceTokens</code></td><td>text.hpp</td><td>Turns <code>{x}</code>, <code>{y}</code> into names (any <code>{key}</code> in a <code>TokenMap</code>).</td></tr>
+<tr><td><code>wrapText</code></td><td>text.hpp</td><td>Splits text into lines no wider than N pixels, using a measuring function; the first line can be narrower (room for “Y: ”).</td></tr>
+<tr><td><code>utf8Count</code>, <code>utf8Prefix</code></td><td>text.hpp</td><td>Count letters and cut text by letters (for typing text letter by letter).</td></tr>
+<tr><td><code>trim</code>, <code>splitWords</code></td><td>text.hpp</td><td>Strip spaces; split on spaces.</td></tr>
+<tr><td><code>Random</code></td><td>random.hpp</td><td>A seeded random generator: <code>range</code>, <code>uniform</code>, <code>chance</code>.</td></tr>
+<tr><td><code>NoRepeatPicker</code></td><td>random.hpp</td><td>Picks an index different from the last one: random barks never repeat back to back.</td></tr>
+<tr><td><code>approach</code>, <code>lerp</code>, <code>smoothstep</code></td><td>math.hpp</td><td>Move towards a value by a step; blend; ease in and out.</td></tr>
+<tr><td><code>parseColor</code>, <code>multiply</code>, <code>mix</code></td><td>color.hpp</td><td>Read <code>"#rrggbb"</code>; tint a colour; blend two colours.</td></tr>
+<tr><td><code>detail::Json</code> helpers</td><td>src/utility/json_util.*</td><td>Private: load a JSON file (comments allowed), turn a syntax error's byte into line:column, typed reads (<code>readString</code>, <code>readColor</code> …) that report wrong types, <code>checkKeys</code> that reports misspelled keys.</td></tr>
+</table></div>
+
+<h3><span class="tag lib">system/</span> the engine and the story machinery</h3>
+<div class="tablewrap"><table>
+<tr><th>Class</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>StoryState</code></td><td>story_state.hpp</td><td>All story variables (whole numbers, each clamped to its range), the inventory in pick-up order, and how many times each conversation started. <code>reset()</code> returns to the start values.</td></tr>
+<tr><td><code>Condition</code></td><td>script.hpp</td><td>A parsed “if”: tokenizer + recursive-descent parser → a tree of Or / And / Not / Compare / Value nodes. <code>evaluate(state)</code>, <code>names()</code> (used by the data check).</td></tr>
+<tr><td><code>Effect</code></td><td>script.hpp</td><td>A parsed “do”: Set, Add, Give, Take or Command (verb + arguments). <code>applyEffects()</code> applies a list and hands commands to a callback.</td></tr>
+<tr><td><code>LineStyle</code>, <code>DialogueOption</code>, <code>DialogueEntry</code>, <code>Conversation</code></td><td>dialogue.hpp</td><td>The dialogue as data: what a JSON entry becomes after loading. An entry knows its kind and its <code>where</code> (file and path, for messages).</td></tr>
+<tr><td><code>DialogueView</code></td><td>dialogue_runner.hpp</td><td>What is on screen now: a line (style, speaker, text), a choice (options, timer) or a pause, plus a <code>serial</code> number that changes each time.</td></tr>
+<tr><td><code>DialogueRunner</code></td><td>dialogue_runner.hpp</td><td>Plays a conversation: <code>start</code>, <code>advance</code>, <code>choose</code>, <code>update</code> (pauses and timers), <code>stop</code>. See section 4.</td></tr>
+<tr><td><code>RenderLayer</code></td><td>canvas.hpp</td><td>An off-screen picture (raylib render texture) with nearest-pixel filtering; <code>draw()</code> flips it right way up.</td></tr>
+<tr><td><code>Canvas</code></td><td>canvas.hpp</td><td>The 480×270 layer plus the whole-number scaling to the screen, centred, black around it. <code>toCanvas()</code> converts the mouse.</td></tr>
+<tr><td><code>Action</code>, <code>Input</code></td><td>input.hpp</td><td>Keys grouped into actions (Left, Interact, Advance, Inventory …). <code>pressed()</code>, <code>down()</code>, <code>mouse()</code>, <code>clicked()</code>, <code>number()</code>. <code>consume()</code> stops a press from being used twice in one frame. Virtual input (<code>pressVirtual</code>, <code>clickVirtual</code> …) lets the walkthrough play.</td></tr>
+<tr><td><code>Assets</code></td><td>assets.hpp</td><td>Paths in <code>assets/</code> and a texture cache. A missing image returns <code>nullptr</code> (remembered), and the caller draws a rectangle.</td></tr>
+<tr><td><code>Audio</code></td><td>audio.hpp</td><td>Sound effects (<code>play</code>), ambient loops that fade in and out (<code>setAmbient</code>), music. Looks for <code>sounds/&lt;id&gt;.ogg|.wav|.mp3</code>; missing files are silently skipped.</td></tr>
+</table></div>
+
+<h3><span class="tag lib">data/</span> loading and checking</h3>
+<div class="tablewrap"><table>
+<tr><th>Name</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>GameData</code></td><td>game_data.hpp</td><td>Everything read from <code>assets/data</code>: title, start room and items, characters, variables, items, rooms, conversations, barks, UI colours, bars, end card. <code>tokens()</code> gives <code>{x}</code>/<code>{y}</code> → names.</td></tr>
+<tr><td><code>VariableDef</code>, <code>BarDef</code>, <code>BarkLine</code>, <code>BarkPool</code></td><td>game_data.hpp</td><td>Plain records for variables, HUD bars and bark pools.</td></tr>
+<tr><td><code>loadGameData()</code></td><td>game_data.hpp</td><td>Reads <code>game.json</code>, then each file it lists. Inside: <code>parseGame</code>, <code>parseItems</code>, <code>parseBarks</code>, <code>parseDialogue</code> (→ <code>parseEntry</code> / <code>parseOption</code>), <code>parseRoom</code> (→ <code>parseObject</code>).</td></tr>
+<tr><td><code>checkGameData()</code></td><td>game_data.hpp</td><td>A private <code>Checker</code> walks every conversation, room, object and bark and reports unknown conversations, rooms, characters, items, variables and command verbs, and timed choices without a timeout option.</td></tr>
+<tr><td><code>parseDialogueText()</code></td><td>game_data.hpp</td><td>Parses one dialogue file from a string (used by the tests).</td></tr>
+</table></div>
+
+<h3><span class="tag lib">objects/</span> what is in a room</h3>
+<div class="tablewrap"><table>
+<tr><th>Class</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>ItemDef</code></td><td>item.hpp</td><td>Name, description, icon, placeholder colour; <code>countVar</code> makes it follow a variable (cigarettes, rounds).</td></tr>
+<tr><td><code>CharacterDef</code></td><td>character.hpp</td><td>Name (shown and used for <code>{x}</code>), body and text colours, sprite sheet, placeholder size, speed.</td></tr>
+<tr><td><code>ObjectDef</code></td><td>room.hpp</td><td>One thing in a room. The same struct is a prop, an exit, a trigger zone, a block, a hiding spot or a rest spot depending on which fields are set.</td></tr>
+<tr><td><code>CompanionDef</code>, <code>EnterRule</code></td><td>room.hpp</td><td>X in this room (mode, pose, what talking to him plays); conversations/effects on entering.</td></tr>
+<tr><td><code>PatrolPhase</code>, <code>CreatureDef</code></td><td>room.hpp</td><td>The creature: size, colour, patrol range, and its loop of phases (watch, turned, walk, listen) for the stealth room.</td></tr>
+<tr><td><code>RoomDef</code></td><td>room.hpp</td><td>Background, colour, tint, sounds, start position, walk range, companion, creature, enter rules, objects, idle barks, script name.</td></tr>
+<tr><td><code>Animation</code>, <code>SpriteSheet</code>, <code>loadSpriteSheet()</code></td><td>sprite.hpp</td><td>A sheet config from visual-asset-config.txt section 5 (frame size, origin at the feet, one animation per row). No config → no sheet → rectangle.</td></tr>
+<tr><td><code>Animator</code>, <code>drawSprite()</code></td><td>sprite.hpp</td><td>Which frame of which animation is showing; draws it at the feet, mirrored when facing left.</td></tr>
+<tr><td><code>Actor</code></td><td>actor.hpp</td><td>A character in a room: <code>x</code>, <code>facing</code>, <code>pose</code>, speed. <code>step(dx)</code> (player control), <code>walkTo(x)</code> (on its own), <code>update</code> picks walk/drag/pose animation, <code>bounds()</code> and <code>draw()</code> (a pose-shaped rectangle with a head band and an eye until the sprite exists).</td></tr>
+</table></div>
+
+<h3><span class="tag lib">effects/</span> mood</h3>
+<div class="tablewrap"><table>
+<tr><th>Class</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>Fade</code></td><td>effects.hpp</td><td>A value moving to a target over a time; drawn as a black (or any colour) cover. Used for room changes and the ending.</td></tr>
+<tr><td><code>Shake</code></td><td>effects.hpp</td><td>Whole-pixel jitter for a moment (spotted, a loud crack).</td></tr>
+<tr><td><code>Flicker</code>, <code>drawGlow()</code></td><td>effects.hpp</td><td>Unsteady flame brightness; soft additive light in the warm accent colour.</td></tr>
+<tr><td><code>Apparition</code></td><td>effects.hpp</td><td>A shape (or image) that fades and drifts: the Reaper, the silhouette, X's spirit.</td></tr>
+<tr><td><code>Particles</code></td><td>effects.hpp</td><td>Small rising pixels: embers from the fire and the cigarette.</td></tr>
+</table></div>
+
+<h3><span class="tag lib">ui/</span> the interface</h3>
+<div class="tablewrap"><table>
+<tr><th>Class</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>layout</code>, <code>UiConfig</code></td><td>theme.hpp</td><td>Canvas size, scene box, dialogue box, bar slots, ground line; colours and text speed from <code>game.json</code> → <code>ui</code>.</td></tr>
+<tr><td><code>TextRenderer</code></td><td>text_renderer.hpp</td><td>The one pixel font (a .ttf from <code>assets/fonts</code>, or raylib's own): draw, draw with shadow, draw scaled, measure.</td></tr>
+<tr><td><code>DialogueBox</code></td><td>dialogue_box.hpp</td><td>Lays out a line (name prefix, wrapping, pages of 4 lines), types it letter by letter, shows options with an arrow and the timer bar. <code>update()</code> returns <code>advance</code> or <code>choice</code>.</td></tr>
+<tr><td><code>InventoryEntry</code>, <code>InventoryPanel</code></td><td>inventory_panel.hpp</td><td>The item grid over the scene, the description in the dialogue box.</td></tr>
+<tr><td><code>BarkPlayer</code></td><td>bark.hpp</td><td>Plays one line or a short exchange over a head, each line fading in and out by its length.</td></tr>
+<tr><td><code>drawPanel</code>, <code>drawBar</code>, <code>drawPrompt</code>, <code>drawArrow</code>, <code>Menu</code></td><td>widgets.hpp</td><td>Framed box (9-slice image when it exists), a bar, the “[E] Name” label kept inside the scene, small arrows, a vertical menu for the title and pause screens.</td></tr>
+</table></div>
+
+<!-- ================================================================== -->
+<h2 id="app-classes">8. Game classes (apps/app)</h2>
+<div class="tablewrap"><table>
+<tr><th>Class / function</th><th>File</th><th>What it does</th></tr>
+<tr><td><code>main()</code></td><td>main.cpp</td><td>Command line, window, the loop (section 2).</td></tr>
+<tr><td><code>Game</code></td><td>game.hpp/.cpp</td><td>Owns everything (section 5). Screens: Title → Playing ⇄ Paused → EndCard. Rooms: <code>enterRoom</code>, <code>runEnterRules</code>, <code>goTo</code> (fade, then change at black). Rules: <code>updateExploring</code>, <code>interact</code>, <code>talkToCompanion</code>, <code>updateTriggers</code>, <code>updateCompanion</code>. Commands from dialogue: <code>onCommand</code>. Drawing: <code>drawScene</code>, <code>drawObject</code>, <code>drawEffect</code>, <code>drawHud</code>, <code>drawTitle</code>, <code>drawPause</code>, <code>drawEndCard</code>.</td></tr>
+<tr><td><code>CompanionMode</code></td><td>game.hpp</td><td>Absent, Stay (at a place, in a pose), Follow (16 px behind, speed by X's condition), Drag (lying, pulled; the player at 45% speed; sets the variable <code>dragging</code>).</td></tr>
+<tr><td><code>RoomScript</code>, <code>makeRoomScript()</code></td><td>scripts/room_script.hpp, scripts.cpp</td><td>Base class with <code>enter</code>, <code>update</code>, <code>drawBack</code>, <code>drawFront</code>, <code>event</code>; the factory function maps a room's <code>"script"</code> name to a class.</td></tr>
+<tr><td><code>CampsiteScript</code></td><td>scripts/campsite.cpp</td><td>Events <code>reaper_hint</code>, <code>fire_out</code> (moonlight tint, only wind), <code>escape_start</code>. After 20 s free: branches + “Now. Please.”; after 32 s: the silhouette and <code>x_condition -1</code>.</td></tr>
+<tr><td><code>CreatureRoomScript</code></td><td>scripts/creature_room.cpp</td><td>Factory floor and broken stairs: patrols back and forth; events <code>creature_alert</code>, <code>creature_guard &lt;x&gt;</code>, <code>creature_leave [x]</code>.</td></tr>
+<tr><td><code>CheckpointScript</code></td><td>scripts/checkpoint.cpp</td><td>The stealth loop (section 9.4).</td></tr>
+<tr><td><code>SunsetScript</code></td><td>scripts/summit.cpp</td><td>The final ascent: the tint warms as the player gets further right.</td></tr>
+<tr><td><code>SummitScript</code></td><td>scripts/summit.cpp</td><td>Starts <code>summit.reaper</code> after two moments or 30 s; events <code>wind_stop</code>, <code>reaper_appear</code>, <code>spirit_rise</code>, <code>spirit_to_reaper</code>, <code>reaper_vanish</code>, <code>final_image</code>.</td></tr>
+<tr><td><code>Creature</code></td><td>scripts/creature.hpp/.cpp</td><td>The creature in a room: position, walking, leaving (fade), and its look (watch shows eyes, listen one eye, turned none). Sprite or placeholder.</td></tr>
+<tr><td><code>PhaseLoop</code></td><td>scripts/creature.hpp/.cpp</td><td>Steps through <code>PatrolPhase</code>s round and round; <code>current</code>, <code>next</code>, <code>timeLeft</code>.</td></tr>
+<tr><td><code>Walkthrough</code></td><td>walkthrough.hpp/.cpp</td><td>Reads a script (<code>use</code>, <code>talk</code>, <code>walk</code>, <code>choose</code>, <code>wait</code>, <code>expect</code>, <code>room</code>, <code>ended</code> …) and plays the game with virtual keys and clicks; fails if the player gets stuck or a condition is false.</td></tr>
+</table></div>
+
+<!-- ================================================================== -->
+<h2 id="walk">9. Walk-throughs of real moments</h2>
+
+<h3>9.1 The player presses E next to the medical kit</h3>
+<ol class="steps">
+  <li><code>Input::update</code> sees E down this frame: <code>pressed(Action::Interact)</code> is true.</li>
+  <li>No conversation and no inventory, so <code>updatePlaying</code> calls <code>updateExploring</code>. <code>nearestTarget()</code> checks every <code>usable()</code> object (present by its <code>if</code>, interactive, not used up) whose x-range ±6 px contains the player, and picks the closest centre: the kit.</li>
+  <li><code>interact(kit)</code>: turns the player towards it, counts the use (<code>useCount_</code>); the first use plays <code>dialogue</code> (<code>campsite.kit</code>), later ones <code>again</code>. <code>startDialogue()</code> stops barks, consumes the key press and calls <code>DialogueRunner::start</code>.</li>
+  <li>The runner shows the first line. Next frame the <code>DialogueBox</code> sees a new serial, wraps “Y: One bandage…” and starts typing at 45 letters a second.</li>
+  <li>At the line “Got: Last Bandage.” the entry's <code>do</code> runs: <code>give last_bandage</code> and <code>kit_taken = true</code> change the <code>StoryState</code> directly.</li>
+  <li>After the last line the view becomes <code>None</code>; the game is exploring again. Talking to X now offers “Apply the Last Bandage.” because that option's <code>if</code> is <code>item.last_bandage</code>.</li>
+</ol>
+
+<h3>9.2 A room change</h3>
+<ol class="steps">
+  <li>Using an exit object: if its <code>exit_if</code> is true, <code>goTo(room, spawn_x)</code>; otherwise its <code>locked</code> conversation plays. A dialogue can also do <code>goto &lt;room&gt;</code>.</li>
+  <li><code>goTo</code> stores the room and starts <code>fade_</code> towards black (0.45 s). While it is pending, <code>busy()</code> is true and nothing reacts to input.</li>
+  <li>When the fade is fully black, <code>enterRoom</code>: creates the room's script, places the player and X (by the room's <code>companion</code> mode), sets tint and ambient sounds, lights burning fires at full strength, calls <code>script-&gt;enter</code>, then <code>runEnterRules</code> (all matching rules apply their effects; the first with a conversation starts it). The fade goes back to clear.</li>
+</ol>
+
+<h3>9.3 A timed choice (the factory creature)</h3>
+<ol class="steps">
+  <li>The trigger object <code>encounter</code> (an invisible zone, <code>if: !factory_cleared</code>) fires when the player walks into it: <code>updateTriggers</code> starts <code>floor.encounter</code>.</li>
+  <li>A <code>then</code>/<code>else</code> block picks the 4-second or the 7-second choice by <code>noisy_entry</code>. Options with an <code>if</code> appear only with the bolt, the bat, or the pistol and rounds.</li>
+  <li><code>DialogueRunner::update</code> counts the time down; the box draws a shrinking line. If time runs out, the hidden <code>timeout</code> option (no text) is taken: <code>floor.seen</code>.</li>
+  <li>The chosen branch runs commands: <code>event creature_leave 360</code> (to <code>CreatureRoomScript</code>) or <code>event creature_guard 262</code> and <code>step y -70</code>; variables record what happened for later rooms.</li>
+</ol>
+
+<h3>9.4 Stealth at the checkpoint</h3>
+<ol class="steps">
+  <li>The arrival conversation ends with <code>event stealth_start</code>; <code>CheckpointScript</code> becomes active.</li>
+  <li>Each frame (while not busy) <code>PhaseLoop</code> advances through the room's phases. The creature's <code>look</code> follows the phase; a phase with <code>to</code> walks it there.</li>
+  <li><code>Game::coverAt(player.x)</code> tells whether the player stands inside a <code>cover</code> object. Hidden players kneel; covers are drawn <code>front</code>, so they hide the player.</li>
+  <li>Danger: phase <code>watch</code> and not in cover, or phase <code>listen</code> and the player moved this frame. Danger fills <code>suspicion_</code>; at 0.4 s the player is spotted (a short grace window). A dim “!” blinks 0.9 s before each dangerous phase.</li>
+  <li>Spotted: <code>spotted_count += 1</code>, shake, and <code>checkpoint.spotted</code> (whose lines cost <code>x_condition</code> the second time). It ends with <code>event stealth_reset</code>: both back at the last hiding spot, the loop restarts. The third time it is <code>checkpoint.chase</code>, which always ends in the next room.</li>
+</ol>
+
+<h3>9.5 Dragging X</h3>
+<ol class="steps">
+  <li><code>companion drag</code> (a dialogue command) calls <code>setCompanionMode(Drag)</code>: the player's pose becomes <code>drag</code> and speed 45%, X lies down, and the variable <code>dragging</code> becomes 1.</li>
+  <li><code>updateCompanion</code> keeps X on the side the player walks away from.</li>
+  <li>Because <code>dragging</code> is a normal variable, data can react to it: the narrow gap is <code>"block": "dragging &amp;&amp; !turned_x"</code>, rest spots are <code>"if": "dragging"</code>, exits are <code>"exit_if": "dragging"</code>. No code knows about these places.</li>
+</ol>
+
+<h3>9.6 Drawing a frame</h3>
+<ol class="steps">
+  <li><code>drawScene</code> renders into the 320×180 layer: background (or the room's colour and a darker ground band), the script's back layer (the creature), objects behind, X, the player, objects in front, lights, particles, the script's front layer (apparitions), the bark and the “[E] Name” prompt.</li>
+  <li>The canvas gets the scene at (80, 16) plus shake, the bars, then the dialogue box, inventory, or the room name and keys; the fade covers everything; pause draws over it.</li>
+  <li><code>Canvas::present</code> picks the biggest whole-number scale for the window and draws the canvas centred, so every art pixel stays a sharp square.</li>
+</ol>
+
+<div class="note"><strong>One idea runs through all of this:</strong> the code provides <em>mechanisms</em> (conditions, effects, blocks, triggers, exits, companion modes, timed choices) and the JSON decides <em>where</em> they happen. Only things that need a clock or a shape on screen (a timer, a patrol, an apparition) live in a room script.</div>
+
+<!-- ================================================================== -->
+<h2 id="extend">10. Changing and extending</h2>
+<div class="tablewrap"><table>
+<tr><th>To…</th><th>Change</th></tr>
+<tr><td>add or change lines, choices, objects, rooms</td><td><span class="tag data">data</span> only: <code>assets/data/</code>, then <code>hollow_app --check</code>. Format: <code>docs/DATA-FORMAT.md</code>.</td></tr>
+<tr><td>add a story variable</td><td><span class="tag data">data</span> declare it in <code>game.json</code> → <code>variables</code>; use it in any <code>if</code> / <code>do</code>.</td></tr>
+<tr><td>add a dialogue command</td><td><span class="tag app">app</span> add the verb to <code>Game::commands()</code> and handle it in <code>Game::onCommand()</code>.</td></tr>
+<tr><td>add a room script</td><td><span class="tag app">app</span> a class derived from <code>RoomScript</code> in <code>scripts/</code>, a line in <code>makeRoomScript()</code> and <code>roomScriptNames()</code>, the file in <code>apps/app/CMakeLists.txt</code>; conversations it starts by name go in <code>Game::scriptConversations()</code> so <code>--check</code> verifies them.</td></tr>
+<tr><td>add a new kind of entry or object field</td><td><span class="tag lib">library</span> the struct (<code>dialogue.hpp</code> / <code>room.hpp</code>), its parsing and checking in <code>src/data/game_data.cpp</code>, the behaviour in the runner or the game.</td></tr>
+<tr><td>verify the game still finishes</td><td><code>ctest</code> runs the unit tests, the data check and both walkthroughs (<code>tests/walkthrough/full.txt</code>, <code>careless.txt</code>).</td></tr>
+</table></div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+// The Last Light: what the game loads first. The format is described in
+// docs/DATA-FORMAT.md. Comments like this one are allowed in every data file.
+{
+    "title": "THE LAST LIGHT",
+    "start_room": "campsite",
+    "start_items": ["bat", "pistol"],
+
+    // The names are written once, here. In any line, {y} and {x} become them.
+    "player": "y",
+    "companion": "x",
+    "characters": {
+        "y": { "name": "Y", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
+        "x": { "name": "X", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 44, "sprite": "sprites/x.json" }
+    },
+
+    "files": {
+        "items": "data/items.json",
+        "barks": "data/barks.json",
+        "dialogue": [
+            "data/dialogue/stage00.json",
+            "data/dialogue/stage01.json",
+            "data/dialogue/stage02.json",
+            "data/dialogue/stage03.json",
+            "data/dialogue/stage04.json"
+        ],
+        "rooms": [
+            "data/rooms/stage00.json",
+            "data/rooms/stage01.json",
+            "data/rooms/stage02.json",
+            "data/rooms/stage03.json",
+            "data/rooms/stage04.json"
+        ]
+    },
+
+    // Every variable a condition or effect uses. true/false, a number, or
+    // { "value", "min", "max" } (values are kept inside that range).
+    "variables": {
+        "_story": "From the script's state table",
+        "x_condition":    { "value": 3, "min": 0, "max": 3 },
+        "has_antibiotics": false,
+        "cig_count":      { "value": 0, "min": 0, "max": 4 },
+        "smoked_with_x":  { "value": 0, "min": 0, "max": 3 },
+        "noisy_entry":    false,
+        "spotted_count":  { "value": 0, "min": 0, "max": 3 },
+        "notes_read":     { "value": 0, "min": 0, "max": 2 },
+
+        "_game": "Set by the game itself",
+        "dragging": false,
+
+        "_stage00": "The campsite",
+        "kit_taken": false,
+        "cig_pack_taken": false,
+        "x_woken": false,
+        "wound_dressed": false,
+        "fire_out": false,
+
+        "_stage01": "The factory",
+        "ammo":           { "value": 0, "min": 0, "max": 9 },
+        "window_figure": false,
+        "key_found": false,
+        "cabinet_open": false,
+        "shelf_searched": false,
+        "factory_cleared": false,
+        "factory_won": false,
+        "factory_lost": false,
+        "y_hurt": false,
+        "bolt_taken": false,
+        "backpack_looted": false,
+        "dressed_at_factory": false,
+        "stage01_done": false,
+
+        "_stage02": "The perimeter",
+        "gap_open": false,
+        "rod_taken": false,
+        "wall_pack_found": false,
+        "stage02_done": false,
+
+        "_stage03": "The mountain steps",
+        "turned_x": false,
+        "creature_cleared": false,
+        "beam_moved": false,
+        "rests":          { "value": 0, "min": 0, "max": 4 },
+
+        "_stage04": "The summit",
+        "cig_lit": false,
+        "cig_scene_done": false,
+        "summit_moments": { "value": 0, "min": 0, "max": 9 },
+        "ember_out": false
+    },
+
+    // Dark and cold, with one warm accent (fire, ember, sunset).
+    "ui": {
+        "text_speed": 45,
+        "font": "",
+        "font_size": 8,
+        "text": "#c8d2da",
+        "thought": "#7aa0c4",
+        "narration": "#707a88",
+        "dim": "#4a5664",
+        "box": "#0a0d12",
+        "frame": "#3a4654",
+        "highlight": "#e2e8ee",
+        "accent": "#e0873a"
+    },
+
+    // Up to 3 bars, top left. None in the prototype. Example:
+    //   { "label": "X", "var": "x_condition", "max": 3, "color": "#8fa4b8" }
+    "bars": [],
+
+    "end_card": [
+        "Some places are worth returning to.",
+        "Some people don't make it home.",
+        "",
+        "END"
+    ]
+}

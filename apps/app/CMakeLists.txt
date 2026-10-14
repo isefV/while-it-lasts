@@ -1,16 +1,40 @@
-# The game: a raylib program that uses the library.
+# The game: the main loop, the rooms' logic (scripts/) and the screens. The
+# systems it is built from are in the library (hollow::hollow).
 
 add_executable(
     hollow_app
     main.cpp
+    game.cpp
+    scripts/campsite.cpp
+    scripts/checkpoint.cpp
+    scripts/creature.cpp
+    scripts/creature_room.cpp
+    scripts/scripts.cpp
+    scripts/summit.cpp
+    walkthrough.cpp
 )
 
 target_link_libraries(
     hollow_app
     PRIVATE
         hollow::hollow
-        raylib
 )
+
+target_compile_options(
+    hollow_app
+    PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive- /utf-8>
+        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
+)
+
+# A Windows program without a console window in Release builds (single-config
+# generators such as Ninja; the console stays in Debug for messages).
+if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    set_target_properties(hollow_app PROPERTIES WIN32_EXECUTABLE ON)
+    if(MSVC)
+        target_link_options(hollow_app PRIVATE /ENTRY:mainCRTStartup)
+    endif()
+endif()
 
 # The game loads its files from assets/ next to the program, so every build
 # copies the project's assets/ folder there (<build>/bin/assets).
@@ -24,11 +48,24 @@ add_custom_command(
     VERBATIM
 )
 
-# A short run in CTest checks that the program starts and ends cleanly;
-# --check doesn't open a window, so it also runs where there is no display.
+# A short run in CTest reads and checks every data file in assets/ (--check
+# doesn't open a window, so it also runs where there is no display). A
+# mistake in a JSON file fails this test with the file and the place.
 if(HOLLOW_BUILD_TESTS)
     add_test(
         NAME hollow.app
         COMMAND hollow_app --check
     )
+
+    # Whole playthroughs with virtual input (tests/walkthrough/): the game
+    # must reach its end on a careful and on a careless route. They open a
+    # hidden window, so they need a desktop (label "window"; skip them on a
+    # machine without one: ctest -LE window).
+    foreach(route IN ITEMS full careless)
+        add_test(
+            NAME hollow.walkthrough.${route}
+            COMMAND hollow_app --walkthrough "${PROJECT_SOURCE_DIR}/tests/walkthrough/${route}.txt"
+        )
+        set_tests_properties(hollow.walkthrough.${route} PROPERTIES LABELS window TIMEOUT 120)
+    endforeach()
 endif()

@@ -1,0 +1,96 @@
+// STAGE 02 rooms. The checkpoint's creature runs an 8-second loop twice (two
+// positions): faces the road (watch), turns to the forest (turned), walks
+// behind the barriers (walk), pauses and listens (listen).
+{
+    "checkpoint": {
+        "name": "The Checkpoint",
+        "background": "backgrounds/checkpoint.png",
+        "color": "#1b2027",
+        "tint": "#a9b3c4",
+        "ambient": ["groan", "wind"],
+        "script": "checkpoint",
+        "player_x": 20,
+        "enter": [
+            { "dialogue": "checkpoint.arrive" }
+        ],
+        "companion": { "mode": "follow", "bark": "x_idle_good" },
+        "creature": {
+            "x": 270, "y": 118, "w": 22, "h": 36, "speed": 26, "color": "#0e1116",
+            "sprite": "sprites/creature.json", "patrol": [150, 280],
+            "phases": [
+                { "state": "turned", "time": 2.5 },
+                { "state": "walk",   "time": 1.5, "to": 180 },
+                { "state": "listen", "time": 1.5 },
+                { "state": "watch",  "time": 2.5 },
+                { "state": "turned", "time": 2.5 },
+                { "state": "walk",   "time": 1.5, "to": 270 },
+                { "state": "listen", "time": 1.5 },
+                { "state": "watch",  "time": 2.5 }
+            ]
+        },
+        "objects": [
+            { "id": "road_far", "x": 0, "y": 118, "w": 320, "h": 3, "color": "#232932", "interactive": false },
+
+            { "id": "barrier", "name": "Concrete barrier", "x": 56, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier.png", "cover": true, "interactive": false, "front": true },
+            { "id": "sandbags", "name": "Sandbag wall", "x": 126, "w": 48, "h": 32, "color": "#4f4a3c",
+              "sprite": "props/sandbags.png", "cover": true, "interactive": false, "front": true },
+            { "id": "vehicle", "name": "Ruined vehicle", "x": 196, "w": 64, "h": 32, "color": "#3a3530",
+              "sprite": "props/wrecked_vehicle.png", "cover": true, "interactive": false, "front": true },
+            { "id": "ditch", "name": "Drainage ditch", "x": 270, "y": 144, "w": 26, "h": 6, "color": "#0b0e12",
+              "cover": true, "interactive": false },
+
+            { "id": "exit_road", "name": "Road beyond", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217",
+              "exit": "barricade" }
+        ]
+    },
+
+    "barricade": {
+        "name": "The Barricade",
+        "background": "backgrounds/checkpoint.png",
+        "color": "#1d2229",
+        "tint": "#a9b3c4",
+        "ambient": ["wind"],
+        "player_x": 24,
+        "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak"],
+        "enter": [
+            { "dialogue": "barricade.arrive" }
+        ],
+        "companion": { "mode": "follow", "bark": "x_idle_good" },
+        "objects": [
+            { "id": "rod", "name": "Metal rod", "x": 92, "y": 146, "w": 24, "h": 4, "color": "#6c747c",
+              "if": "!rod_taken", "dialogue": "barricade.rod" },
+            { "id": "slab", "name": "Concrete slab", "x": 168, "y": 136, "w": 28, "h": 14, "color": "#4a4d50",
+              "if": "!gap_open", "dialogue": "barricade.slab" },
+            { "id": "fallen_gate", "name": "Fallen gate", "x": 200, "y": 102, "w": 64, "h": 48, "color": "#363b41",
+              "sprite": "props/fallen_gate.png", "dialogue": "barricade.gate", "if": "!gap_open",
+              "block": "!gap_open", "blocked": "barricade.gate" },
+            { "id": "fallen_gate_open", "x": 200, "y": 118, "w": 40, "h": 32, "color": "#30353b", "if": "gap_open", "interactive": false },
+            { "id": "distant_creature", "x": 300, "y": 98, "w": 6, "h": 14, "color": "#0b0d11", "if": "gap_open", "interactive": false },
+
+            { "id": "exit_road", "name": "Road", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217",
+              "exit": "sheltered_wall" }
+        ]
+    },
+
+    "sheltered_wall": {
+        "name": "The Sheltered Wall",
+        "background": "backgrounds/sheltered_wall.png",
+        "color": "#1a1f26",
+        "tint": "#a7b0c2",
+        "ambient": ["wind"],
+        "player_x": 120,
+        "idle_barks": ["x_idle_good", "x_idle_weak"],
+        "enter": [
+            { "dialogue": "shelter.arrive" }
+        ],
+        "companion": { "x": 150, "mode": "stay", "pose": "sit", "bark": "x_idle_weak" },
+        "objects": [
+            { "id": "wall", "x": 100, "y": 106, "w": 100, "h": 44, "color": "#2a2f36", "interactive": false },
+            { "id": "crushed_pack", "name": "Crushed pack", "x": 212, "y": 144, "w": 12, "h": 6, "color": "#6a6458",
+              "sprite": "props/crushed_pack.png", "if": "!wall_pack_found", "dialogue": "shelter.pack" },
+            { "id": "mountain_path", "name": "Mountain path", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#0e1217",
+              "exit": "foot", "exit_if": "stage02_done", "locked": "shelter.not_yet" }
+        ]
+    }
+}

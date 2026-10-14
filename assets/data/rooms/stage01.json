@@ -1,0 +1,109 @@
+// STAGE 01 rooms: the entrance (X waits here), the office with the storage
+// room (one background), and the production floor.
+{
+    "factory_entrance": {
+        "name": "Factory Entrance",
+        "background": "backgrounds/factory_entrance.png",
+        "color": "#20262e",
+        "tint": "#b8c0cc",
+        "ambient": ["wind", "metal", "sheet"],
+        "player_x": 40,
+        "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak"],
+        "enter": [
+            { "dialogue": "factory.arrive" },
+            { "if": "factory_cleared && !stage01_done", "dialogue": "factory.return" }
+        ],
+        "companion": { "x": 84, "mode": "stay", "pose": "sit", "dialogue": "factory.x" },
+        "objects": [
+            { "id": "loose_sheet", "x": 120, "y": 62, "w": 34, "h": 22, "color": "#353d46", "interactive": false },
+            { "id": "door", "name": "Factory door", "x": 200, "w": 24, "h": 48, "color": "#14191f",
+              "exit": "factory_office", "spawn_x": 24 },
+            { "id": "road", "name": "Road", "x": 300, "y": 80, "w": 20, "h": 70, "color": "#0e1217",
+              "exit": "checkpoint", "exit_if": "stage01_done", "locked": "factory.road_locked" }
+        ]
+    },
+
+    "factory_office": {
+        "name": "The Office",
+        "background": "backgrounds/factory_office.png",
+        "color": "#1e2329",
+        "tint": "#b0b8c6",
+        "ambient": ["metal", "wind"],
+        "player_x": 24,
+        "idle_barks": ["y_idle"],
+        "objects": [
+            { "id": "exit_entrance", "name": "Entrance", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217",
+              "exit": "factory_entrance", "spawn_x": 192 },
+
+            { "id": "window", "name": "Window", "x": 72, "y": 40, "w": 36, "h": 30, "color": "#2b3747",
+              "dialogue": "office.window", "again": "office.window_again" },
+            { "id": "figure", "x": 86, "y": 44, "w": 8, "h": 26, "color": "#07080b", "if": "window_figure", "interactive": false },
+
+            { "id": "desk", "name": "Desk drawer", "x": 16, "w": 48, "h": 32, "color": "#3b342c",
+              "sprite": "props/desk.png", "dialogue": "office.drawer", "again": "office.drawer_again" },
+            { "id": "radio", "name": "Radio", "x": 18, "y": 108, "w": 14, "h": 10, "color": "#4a4c48",
+              "sprite": "props/radio.png", "dialogue": "office.radio" },
+            { "id": "clock", "name": "Desk clock", "x": 48, "y": 106, "w": 12, "h": 12, "color": "#5a5448",
+              "sprite": "props/clock.png", "dialogue": "office.clock", "again": "office.clock_again" },
+            { "id": "filing_cabinet", "name": "Filing cabinet", "x": 114, "w": 32, "h": 48, "color": "#3d4650",
+              "sprite": "props/filing_cabinet.png", "dialogue": "office.filing", "again": "office.filing_again" },
+            { "id": "calendar", "name": "Wall calendar", "x": 150, "y": 66, "w": 16, "h": 16, "color": "#6d6a60",
+              "sprite": "props/calendar.png", "dialogue": "office.calendar" },
+            { "id": "notice", "name": "Evacuation notice", "x": 170, "y": 78, "w": 16, "h": 16, "color": "#7b7466",
+              "sprite": "props/notice.png", "dialogue": "office.notice", "again": "office.notice_again" },
+
+            { "id": "partition", "x": 190, "y": 40, "w": 4, "h": 110, "color": "#151a20", "interactive": false },
+
+            { "id": "first_aid_cabinet", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#4f5a5c",
+              "sprite": "props/first_aid_cabinet.png", "if": "!cabinet_open", "dialogue": "office.cabinet" },
+            { "id": "first_aid_cabinet_open", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#36403f",
+              "sprite": "props/first_aid_cabinet_open.png", "if": "cabinet_open", "dialogue": "office.cabinet_open" },
+            { "id": "shelves", "name": "Shelves", "x": 244, "y": 96, "w": 24, "h": 54, "color": "#33393f",
+              "dialogue": "office.shelves" },
+            { "id": "sink", "name": "Box under the sink", "x": 274, "y": 120, "w": 24, "h": 30, "color": "#444c52",
+              "dialogue": "office.sink" },
+
+            { "id": "floor_door", "name": "Production floor", "x": 304, "y": 94, "w": 16, "h": 56, "color": "#101419",
+              "exit": "factory_floor", "spawn_x": 22 }
+        ]
+    },
+
+    "factory_floor": {
+        "name": "Production Floor",
+        "background": "backgrounds/factory_floor.png",
+        "color": "#191d22",
+        "tint": "#a8b2c0",
+        "ambient": ["machines", "metal", "heavy_steps"],
+        "script": "creature",
+        "player_x": 22,
+        "enter": [
+            { "dialogue": "floor.enter" },
+            { "if": "noisy_entry && !factory_cleared", "do": ["event creature_alert"], "once": false },
+            { "if": "factory_lost", "do": ["event creature_guard 262"], "once": false }
+        ],
+        "creature": {
+            "if": "!factory_won", "x": 220, "y": 150, "w": 34, "h": 54, "speed": 26,
+            "color": "#0b0d11", "sprite": "sprites/creature.json", "patrol": [150, 270]
+        },
+        "objects": [
+            { "id": "exit_office", "name": "Office", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217",
+              "exit": "factory_office", "spawn_x": 296 },
+
+            { "id": "machine_1", "x": 60, "w": 40, "h": 52, "color": "#2a3037", "interactive": false },
+            { "id": "machine_2", "x": 140, "w": 50, "h": 62, "color": "#262c33", "interactive": false },
+            { "id": "machine_3", "x": 230, "w": 36, "h": 44, "color": "#2a3037", "interactive": false },
+
+            { "id": "bolt", "name": "Loose bolt", "x": 38, "y": 146, "w": 6, "h": 4, "color": "#7c848c",
+              "if": "!bolt_taken", "dialogue": "floor.bolt" },
+
+            { "id": "encounter", "x": 104, "w": 10, "h": 60, "trigger": true, "if": "!factory_cleared",
+              "dialogue": "floor.encounter" },
+            { "id": "creature_block", "x": 116, "w": 4, "h": 60, "hidden": true, "block": "!factory_cleared" },
+            { "id": "guard_block", "x": 246, "w": 4, "h": 60, "hidden": true, "block": "factory_lost",
+              "blocked": "floor.guarded" },
+
+            { "id": "lost_backpack", "name": "Discarded backpack", "x": 282, "w": 16, "h": 14, "color": "#4c4a3c",
+              "sprite": "props/lost_backpack.png", "if": "factory_won && !backpack_looted", "dialogue": "floor.backpack" }
+        ]
+    }
+}

@@ -1,0 +1,35 @@
+// Short lines over a character's head (script, appendix A). A room's
+// "idle_barks" plays one when the player stands still for a while; a pool
+// never repeats the same line back to back. An entry in "lines" is one line
+// or a short exchange [ {...}, {...} ].
+{
+    "y_idle": {
+        "lines": [
+            { "y": "Still no signal. Surprise." },
+            { "y": "I'd kill for a hot meal right now." },
+            { "y": "If this is a test, I'd like to see the rubric." }
+        ]
+    },
+    "x_idle_good": {
+        "if": "x_condition >= 2",
+        "lines": [
+            { "x": "{y}. Are we there yet?" },
+            { "x": "I'd complain, but I'm saving it for the stairs." },
+            { "x": "Not that I'm tired. I'm just resting my eyes. Aggressively." }
+        ]
+    },
+    "x_idle_weak": {
+        "if": "x_condition <= 1",
+        "lines": [
+            { "x": "It's okay. Keep going." },
+            { "x": "I'm here. Just slow." },
+            { "x": "Talk to me about something. Anything." }
+        ]
+    },
+    "hide": {
+        "lines": [
+            [ { "x": "Don't breathe." }, { "y": "I'm not." } ],
+            [ { "x": "You're breathing loud." }, { "y": "I'm breathing normal." } ]
+        ]
+    }
+}
