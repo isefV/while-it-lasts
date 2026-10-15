@@ -5,6 +5,7 @@
 // "script" in its JSON; makeRoomScript() creates it.
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,6 +32,19 @@ public:
     /// "event <name> ..." from dialogue or an object's "event". Returns false
     /// for events the script does not know.
     virtual bool event(Game&, std::string_view /*name*/, const std::vector<std::string>& /*args*/) { return false; }
+
+    // The room's creature in a fight (apps/app/fight.cpp).
+    struct CreatureState
+    {
+        float x = 0.0f;
+        float speedScale = 1.0f;
+    };
+    /// Where the creature stands, when this room has one to fight.
+    [[nodiscard]] virtual std::optional<CreatureState> creature() const { return std::nullopt; }
+    /// The fight has it now: stop drawing it.
+    virtual void creatureTaken() {}
+    /// The fight is over and it is still standing, at @p x.
+    virtual void creatureReturned(Game&, float /*x*/) {}
 };
 
 /// The script called @p name, or nullptr for an empty or unknown name.

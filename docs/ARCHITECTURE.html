@@ -132,7 +132,7 @@ svg.canvasmap .small { font-size: 8px; }
 
   <rect class="app" x="270" y="20" width="470" height="76" rx="6"/>
   <text x="286" y="44" class="title">apps/app: the game</text>
-  <text x="286" y="64" class="small">main.cpp · Game · scripts/ (campsite, creature, checkpoint, sunset, summit)</text>
+  <text x="286" y="64" class="small">main.cpp · Game · scripts/ (campsite, creature, checkpoint, sunrise, summit)</text>
   <text x="286" y="80" class="small">Walkthrough (scripted playthroughs)</text>
 
   <rect class="lib" x="20" y="130" width="720" height="176" rx="6"/>
@@ -397,7 +397,7 @@ svg.canvasmap .small { font-size: 8px; }
   <rect class="plain" x="10"  y="480" width="140" height="44" rx="5"/><text x="20" y="500" class="title">Campsite</text><text x="20" y="516" class="small">timer, Reaper hint</text>
   <rect class="plain" x="160" y="480" width="140" height="44" rx="5"/><text x="170" y="500" class="title">CreatureRoom</text><text x="170" y="516" class="small">floor, broken stairs</text>
   <rect class="plain" x="310" y="480" width="140" height="44" rx="5"/><text x="320" y="500" class="title">Checkpoint</text><text x="320" y="516" class="small">stealth loop</text>
-  <rect class="plain" x="460" y="480" width="140" height="44" rx="5"/><text x="470" y="500" class="title">Sunset</text><text x="470" y="516" class="small">tint by position</text>
+  <rect class="plain" x="460" y="480" width="140" height="44" rx="5"/><text x="470" y="500" class="title">Sunrise</text><text x="470" y="516" class="small">tint, glow by position</text>
   <rect class="plain" x="610" y="480" width="140" height="44" rx="5"/><text x="620" y="500" class="title">Summit</text><text x="620" y="516" class="small">pacing, ending</text>
   <path class="inherit" d="M80,478 C80,455 300,450 330,442"/>
   <path class="inherit" d="M230,478 C230,460 330,455 350,442"/>
@@ -524,13 +524,16 @@ svg.canvasmap .small { font-size: 8px; }
 <tr><td><code>CompanionMode</code></td><td>game.hpp</td><td>Absent, Stay (at a place, in a pose), Follow (16 px behind, speed by X's condition), Drag (lying, pulled; the player at 45% speed; sets the variable <code>dragging</code>).</td></tr>
 <tr><td><code>RoomScript</code>, <code>makeRoomScript()</code></td><td>scripts/room_script.hpp, scripts.cpp</td><td>Base class with <code>enter</code>, <code>update</code>, <code>drawBack</code>, <code>drawFront</code>, <code>event</code>; the factory function maps a room's <code>"script"</code> name to a class.</td></tr>
 <tr><td><code>CampsiteScript</code></td><td>scripts/campsite.cpp</td><td>Events <code>reaper_hint</code>, <code>fire_out</code> (moonlight tint, only wind), <code>escape_start</code>. After 20 s free: branches + “Now. Please.”; after 32 s: the silhouette and <code>x_condition -1</code>.</td></tr>
-<tr><td><code>CreatureRoomScript</code></td><td>scripts/creature_room.cpp</td><td>Factory floor and broken stairs: patrols back and forth; events <code>creature_alert</code>, <code>creature_guard &lt;x&gt;</code>, <code>creature_leave [x]</code>.</td></tr>
-<tr><td><code>CheckpointScript</code></td><td>scripts/checkpoint.cpp</td><td>The stealth loop (section 9.4).</td></tr>
-<tr><td><code>SunsetScript</code></td><td>scripts/summit.cpp</td><td>The final ascent: the tint warms as the player gets further right.</td></tr>
+<tr><td><code>CreatureRoomScript</code></td><td>scripts/creature_room.cpp</td><td>Factory floor and broken stairs: patrols back and forth; events <code>creature_alert</code>, <code>creature_guard &lt;x&gt;</code>, <code>creature_leave [x]</code>. Hands its creature to a <code>Fight</code> (<code>creature()</code>, <code>creatureTaken()</code>, <code>creatureReturned()</code>).</td></tr>
+<tr><td><code>CheckpointScript</code></td><td>scripts/checkpoint.cpp</td><td>The stealth loop (section 9.4). Event <code>distract</code> (a thrown bottle or bolt) sends the creature into the trees for 12 s; sets <code>stealth_active</code>.</td></tr>
+<tr><td><code>SunriseScript</code></td><td>scripts/summit.cpp</td><td>The final ascent: the tint warms and a dawn glow grows as the player gets further right.</td></tr>
 <tr><td><code>SummitScript</code></td><td>scripts/summit.cpp</td><td>Starts <code>summit.reaper</code> after two moments or 30 s; events <code>wind_stop</code>, <code>reaper_appear</code>, <code>spirit_rise</code>, <code>spirit_to_reaper</code>, <code>reaper_vanish</code>, <code>final_image</code>.</td></tr>
+<tr><td><code>Fight</code></td><td>fight.hpp/.cpp</td><td>The command <code>fight</code>: the room's <code>"fight"</code> in real time. Waves of crawlers from the sides, then the room's creature ("brute"). F swing, R shoot, Q dodge; windup "!", lunge, recover, stagger; hits cost <code>y_health</code> (and <code>x_condition</code> when a crawler reaches X). Ends in the room's <code>win</code> or <code>lose</code> conversation.</td></tr>
+<tr><td><code>Revive</code></td><td>revive.hpp/.cpp</td><td>The command <code>revive</code>: X stops breathing; the scene darkens and shakes, the Reaper walks in, E on the beat brings him back. Then the named conversation.</td></tr>
+<tr><td><code>Reaper</code></td><td>reaper.hpp/.cpp</td><td>The command <code>reaper show|hide|glimpse|follow|stop</code>: the Reaper in any room; following, it creeps up while the player stands still and goes for X left alone.</td></tr>
 <tr><td><code>Creature</code></td><td>scripts/creature.hpp/.cpp</td><td>The creature in a room: position, walking, leaving (fade), and its look (watch shows eyes, listen one eye, turned none). Sprite or placeholder.</td></tr>
 <tr><td><code>PhaseLoop</code></td><td>scripts/creature.hpp/.cpp</td><td>Steps through <code>PatrolPhase</code>s round and round; <code>current</code>, <code>next</code>, <code>timeLeft</code>.</td></tr>
-<tr><td><code>Walkthrough</code></td><td>walkthrough.hpp/.cpp</td><td>Reads a script (<code>use</code>, <code>talk</code>, <code>walk</code>, <code>choose</code>, <code>wait</code>, <code>expect</code>, <code>room</code>, <code>ended</code> …) and plays the game with virtual keys and clicks; fails if the player gets stuck or a condition is false.</td></tr>
+<tr><td><code>Walkthrough</code></td><td>walkthrough.hpp/.cpp</td><td>Reads a script (<code>use</code>, <code>talk</code>, <code>walk</code>, <code>choose</code>, <code>item</code>, <code>grab</code>, <code>fight</code>, <code>revive</code>, <code>wait</code>, <code>expect</code>, <code>room</code>, <code>ended</code> …) and plays the game with virtual keys and clicks; fails if the player gets stuck or a condition is false.</td></tr>
 </table></div>
 
 <!-- ================================================================== -->

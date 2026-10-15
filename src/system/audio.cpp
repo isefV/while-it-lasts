@@ -5,6 +5,7 @@
 #include <raylib.h>
 
 #include <algorithm>
+#include <cstdlib>
 #include <map>
 
 namespace hollow
@@ -99,7 +100,7 @@ namespace hollow
         d_->ready = false;
     }
 
-    void Audio::play(const std::string& id, float volume)
+    void Audio::play(const std::string& id, float volume, float pitch)
     {
         if (!d_->ready || id.empty()) return;
         auto it = d_->sounds.find(id);
@@ -115,6 +116,7 @@ namespace hollow
         }
         if (it->second.frameCount == 0) return;
         SetSoundVolume(it->second, volume);
+        SetSoundPitch(it->second, pitch);
         PlaySound(it->second);
     }
 
@@ -123,8 +125,13 @@ namespace hollow
         if (!d_->ready) return;
         for (auto& [id, loop] : d_->loops)
             if (id != d_->music) loop.target = 0.0f;
-        for (const auto& id : ids)
-            d_->loop(id)->target = 1.0f;
+        for (const auto& entry : ids)
+        {
+            // "fire@0.4": that loop at 40 %.
+            const auto at = entry.find('@');
+            const float volume = at == std::string::npos ? 1.0f : std::strtof(entry.c_str() + at + 1, nullptr);
+            d_->loop(entry.substr(0, at))->target = std::clamp(volume, 0.0f, 1.0f);
+        }
     }
 
     void Audio::setMusic(const std::string& id)

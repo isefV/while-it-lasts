@@ -9,16 +9,24 @@
 //   walk <x>             walk until the player stands at x
 //   choose <text>        at the next choice, pick the option starting with
 //                        <text>; "choose timeout" lets a timed choice run out
-//   wait <seconds>       do nothing (timers keep running)
+//   wait <seconds>       do nothing (timers keep running; in a fight, Y stands still)
 //   expect <condition>   fail unless the condition is true ("cig_count >= 1")
 //   room <id>            fail unless the player is in that room
 //   inventory            open and close the inventory
+//   item <id>            open the inventory, select that item, E (its "use")
+//   grab                 G: let go of X, or take hold of him
+//   fight                play the fight that is on: face the nearest creature,
+//                        swing when it is close; ends when the fight does
+//   fight lose           stand still in the fight until Y goes down
+//   revive               keep X breathing: E on every beat, until the scene ends
+//   revive slow          press nothing: the Reaper reaches him
 //   shot <file.png>      save the canvas
 //   ended                fail unless the game reached the end card (waits up to 20 s)
 //
 // Conversations advance on their own; a choice without a "choose" takes the
-// first option. The walkthrough fails when the player is stuck (cannot reach
-// what it walks to) or a command takes longer than a minute.
+// first option. A fight or a revive scene needs its command. The walkthrough
+// fails when the player is stuck (cannot reach what it walks to) or a command
+// takes longer than a minute.
 
 #include <string>
 #include <vector>
@@ -63,6 +71,7 @@ private:
     bool started_ = false;
     std::string startRoom_;
     bool waitingTimeout_ = false;
+    bool sawScene_ = false; // the fight or revive of this command has begun
     bool failed_ = false;
     std::string message_;
 };

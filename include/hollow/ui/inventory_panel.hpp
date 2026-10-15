@@ -4,7 +4,9 @@
  * @file inventory_panel.hpp
  * @brief The inventory: opened with Tab or I, it lists what the player
  * carries, and the dialogue box shows the selected item's description.
- * Items are used through options at the thing they are used on.
+ * E uses the selected item when it has a "use" conversation (a bandage, the
+ * antibiotics); other items are used through options at the thing they are
+ * used on.
  */
 
 #include <hollow/objects/item.hpp>
@@ -29,10 +31,13 @@ namespace hollow
     public:
         void open();
         void close() { open_ = false; }
+        void select(int index) { selected_ = index; }
         [[nodiscard]] bool isOpen() const { return open_; }
 
-        /// Arrow keys (or WASD) while open; closes on Tab, I or Esc.
-        void update(const std::vector<InventoryEntry>& entries, const Input& input);
+        /// Arrow keys (or WASD) while open; closes on Tab, I or Esc. Returns
+        /// the item to use when E or Enter was pressed on one that can be used
+        /// (the panel then closes), else nullptr.
+        const ItemDef* update(const std::vector<InventoryEntry>& entries, const Input& input);
         void draw(const std::vector<InventoryEntry>& entries, const TextRenderer& text, const UiConfig& ui,
                   Assets& assets) const;
 

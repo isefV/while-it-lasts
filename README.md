@@ -15,16 +15,19 @@ submodule, `FetchContent`), including debugging into its sources.
 
 A short narrative game: Y half-carries his friend X up the mountain where they
 grew up. Five stages (campfire, factory, perimeter, mountain steps, summit),
-told through dialogue, a few simple actions and choices that come back later.
+told through dialogue, a few simple actions and choices that come back later:
+the night starts at midnight and ends at sunrise on the summit.
 
 | Key | |
 |---|---|
 | A / D, ← / → | walk |
 | E, standing next to it | use the thing marked with the E prompt, talk to X |
 | W / S, ↑ / ↓ | pick another thing when several are within reach |
+| G | take hold of X when he can't walk, and let go of him |
+| F, R, Q | in a fight: swing the bat, shoot, dodge back |
 | E, Space, Enter | next line (the first press shows the whole line) |
 | ↑ / ↓, 1–4, then E or Enter | choose an option |
-| Tab, I | inventory (arrows to look through it) |
+| Tab, I | inventory (arrows to look through it, E to use a bandage, the antibiotics, a bottle, …) |
 | Esc | pause |
 | F11, Alt+Enter | fullscreen / window |
 
@@ -47,7 +50,7 @@ Where the code is:
 | Folder | |
 |---|---|
 | `include/hollow/`, `src/` | the library: `system/` (canvas, input, assets, audio, story state, conditions and effects, dialogue runner), `data/` (loading and checking the JSON), `objects/` (rooms, items, characters, sprite sheets, actors), `effects/` (fades, shake, firelight, apparitions, particles), `ui/` (dialogue box, inventory, prompts, barks, menus), `utility/` |
-| `apps/app/` | the game: `game.cpp` (screens, rooms, interaction, X following and being dragged), `scripts/` (the campsite timer, the creature, the checkpoint stealth, the sunset, the ending), `walkthrough.cpp` |
+| `apps/app/` | the game: `game.cpp` (screens, rooms, interaction, X following and being dragged), `fight.cpp` (the real-time fights and waves), `revive.cpp` (the near-death scene), `reaper.cpp` (the Reaper following them), `scripts/` (the campsite timer, the creature, the checkpoint stealth, the sunrise, the ending), `walkthrough.cpp` |
 | `assets/data/` | the story |
 | `tests/` | unit tests, story branches on the real data, `walkthrough/` playthroughs |
 

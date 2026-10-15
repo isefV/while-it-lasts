@@ -6,7 +6,7 @@
         "name": "The Summit",
         "background": "backgrounds/summit.png",
         "color": "#26242e",
-        "tint": "#d8bcae",
+        "tint": "#e6c6ae",
         "ambient": ["wind"],
         "script": "summit",
         "player_x": 112,

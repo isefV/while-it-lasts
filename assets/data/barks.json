@@ -26,6 +26,36 @@
             { "x": "Talk to me about something. Anything." }
         ]
     },
+    "y_hurt": {
+        "if": "y_health <= 2",
+        "lines": [
+            { "y": "Everything hurts. Fine. Everything's fine." },
+            { "y": "I should wrap that. Later." },
+            [ { "x": "You're limping." }, { "y": "I'm walking with character." } ]
+        ]
+    },
+    "x_hurt": {
+        "lines": [
+            { "x": "Ah! It got me." },
+            { "x": "{y}! Little help!" },
+            { "x": "Get it off, get it off!" }
+        ]
+    },
+    "x_reaper": {
+        "lines": [
+            { "x": "It's still back there, isn't it?" },
+            { "x": "Look at it. It doesn't like being looked at." },
+            { "x": "Keep walking. It only comes when we stop." },
+            [ { "x": "Do you see it?" }, { "y": "Yeah." }, { "x": "Good. I didn't want to be the only one." } ]
+        ]
+    },
+    "x_reaper_close": {
+        "lines": [
+            { "x": "{y}. It's close. It touched my hand." },
+            { "x": "Cold. So cold. Don't stop again." },
+            { "x": "It was right there. Keep moving." }
+        ]
+    },
     "hide": {
         "lines": [
             [ { "x": "Don't breathe." }, { "y": "I'm not." } ],

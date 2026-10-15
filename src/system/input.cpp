@@ -16,6 +16,10 @@ namespace hollow
             static constexpr int advance[] = {KEY_E, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER};
             static constexpr int inventory[] = {KEY_TAB, KEY_I};
             static constexpr int pause[] = {KEY_ESCAPE};
+            static constexpr int attack[] = {KEY_F};
+            static constexpr int shoot[] = {KEY_R};
+            static constexpr int dodge[] = {KEY_Q};
+            static constexpr int grab[] = {KEY_G};
             static constexpr int fullscreen[] = {KEY_F11};
 
             switch (action)
@@ -29,6 +33,10 @@ namespace hollow
             case Action::Confirm: return advance;
             case Action::Inventory: return inventory;
             case Action::Pause: return pause;
+            case Action::Attack: return attack;
+            case Action::Shoot: return shoot;
+            case Action::Dodge: return dodge;
+            case Action::Grab: return grab;
             case Action::Fullscreen: return fullscreen;
             }
             return {};

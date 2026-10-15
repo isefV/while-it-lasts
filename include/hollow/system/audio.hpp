@@ -30,9 +30,11 @@ namespace hollow
         void init();
         void shutdown();
 
-        void play(const std::string& id, float volume = 1.0f);
+        /// @p pitch 1 = as recorded; a little above or below varies repeated sounds.
+        void play(const std::string& id, float volume = 1.0f, float pitch = 1.0f);
 
         /// The loops that should be playing; others fade out, new ones fade in.
+        /// "fire@0.4" plays that loop at 40 % of its volume.
         void setAmbient(const std::vector<std::string>& ids);
 
         /// Music track; empty stops it.

@@ -10,6 +10,8 @@
  *     Choose        Up / Down (W / S) or 1 to 4; E or Enter to pick
  *     Inventory     Tab or I
  *     Pause         Esc
+ *     Fighting      F swing, R shoot, Q dodge
+ *     Grab          G: take hold of X lying on the ground, or let go
  */
 
 #include <raylib.h>
@@ -27,6 +29,10 @@ namespace hollow
         Inventory,
         Pause,
         Confirm,
+        Attack,
+        Shoot,
+        Dodge,
+        Grab,
         Fullscreen,
     };
 

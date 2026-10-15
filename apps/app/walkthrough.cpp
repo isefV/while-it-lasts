@@ -38,7 +38,8 @@ bool Walkthrough::load(const std::string& path, std::string& error)
         command.rest = std::string(trim(std::string_view(text).substr(text.find(words[0]) + words[0].size())));
         command.line = line;
 
-        static const std::vector<std::string> verbs = {"use", "talk", "walk", "choose", "wait", "expect", "room", "inventory", "shot", "ended"};
+        static const std::vector<std::string> verbs = {"use",  "talk",  "walk",  "choose", "wait",   "expect", "room",
+                                                       "inventory", "item", "grab", "fight", "revive", "shot", "ended"};
         if (std::find(verbs.begin(), verbs.end(), command.verb) == verbs.end())
         {
             error = path + ":" + std::to_string(line) + ": unknown command \"" + command.verb + "\"";
@@ -58,6 +59,7 @@ void Walkthrough::next()
     lastX_ = -1.0f;
     cycles_ = 0;
     started_ = false;
+    sawScene_ = false;
 }
 
 bool Walkthrough::fail(const std::string& why)
@@ -194,6 +196,130 @@ bool Walkthrough::step(Game& game, float dt)
         takeChoose();
         return true;
     }
+
+    // Checks: also while a fight or a revive scene is on, but not halfway
+    // through a room change.
+    const bool settled = ended || (game.pendingRoom_.empty() && !game.inventoryPanel_.isOpen() && !game.ending_);
+    if (command.verb == "expect" && settled)
+    {
+        if (!started_) std::cout << game.room().id << ": expect " << command.rest << '\n';
+        std::string error;
+        const auto condition = Condition::parse(command.rest, error);
+        if (!condition) return fail(error);
+        if (!condition->evaluate(game.state())) return fail("is false");
+        next();
+        return true;
+    }
+    if (command.verb == "room" && settled)
+    {
+        if (!started_) std::cout << game.room().id << ": room " << command.rest << '\n';
+        if (game.room().id != command.rest) return fail("the player is in " + game.room().id);
+        next();
+        return true;
+    }
+
+    // A fight or revive that is over ends its command (the next scene may
+    // follow at once). A walk or use that ran into one hands over to the
+    // "fight", "revive" or "wait" after it.
+    if ((command.verb == "fight" && sawScene_ && !game.fight_.active()) ||
+        (command.verb == "revive" && sawScene_ && !game.revive_.active()))
+    {
+        next();
+        return true;
+    }
+    if (game.fight_.active() || game.revive_.active())
+    {
+        std::size_t after = index_ + 1;
+        while (after < commands_.size() && commands_[after].verb == "done") ++after;
+        const char* scene = game.fight_.active() ? "fight" : "revive";
+        const bool interrupted = command.verb == "walk" || command.verb == "use" || command.verb == "talk" || command.verb == "grab";
+        if (command.verb != scene && interrupted && after < commands_.size() &&
+            (commands_[after].verb == scene || commands_[after].verb == "wait"))
+        {
+            std::cout << "  (" << scene << " began)\n";
+            index_ = after - 1;
+            next();
+            return true;
+        }
+    }
+
+    // The near-death scene: E on the beat (or nothing, "revive slow").
+    if (!ended && game.revive_.active() && command.verb != "wait")
+    {
+        if (command.verb != "revive") return fail("the revive scene is on; the next command must be \"revive\"");
+        if (!sawScene_) std::cout << game.room().id << ": revive " << command.rest << '\n';
+        sawScene_ = true;
+        if (command.rest != "slow" && game.revive_.pressNow()) input.pressVirtual(Action::Advance);
+        return true;
+    }
+    if (command.verb == "revive")
+    {
+        if (sawScene_) next();
+        return true; // waiting for it to begin
+    }
+
+    // A fight: the autopilot, or standing still ("fight lose").
+    if (!ended && game.fight_.active() && command.verb != "wait")
+    {
+        if (command.verb != "fight") return fail("a fight is on; the next command must be \"fight\"");
+        if (!sawScene_) std::cout << game.room().id << ": fight " << command.rest << '\n';
+        sawScene_ = true;
+        if (command.rest == "lose") return true;
+
+        Actor& player = game.player();
+        if (game.companionMode() == CompanionMode::Drag)
+        {
+            if (frame_ % 10 == 0) input.pressVirtual(Action::Grab); // hands free first
+            return true;
+        }
+        const auto threat = game.fight_.nearest(player.x);
+        if (!threat) return true;
+        const float d = threat->x - player.x;
+        const int side = d >= 0.0f ? 1 : -1;
+        if (side != player.facing)
+        {
+            input.setVirtualDown(side > 0 ? Action::Right : Action::Left, true); // turn to it
+            return true;
+        }
+        if (std::fabs(d) <= 30.0f)
+        {
+            if (game.fight_.canSwing()) input.pressVirtual(Action::Attack);
+        }
+        else if (std::fabs(d) > 34.0f)
+        {
+            input.setVirtualDown(side > 0 ? Action::Right : Action::Left, true);
+        }
+        return true;
+    }
+    if (command.verb == "fight")
+    {
+        if (sawScene_) next();
+        return true; // waiting for it to begin
+    }
+
+    // Using an item from the inventory.
+    if (command.verb == "item" && !ended)
+    {
+        const std::string& id = command.args.empty() ? std::string() : command.args[0];
+        if (!game.inventoryPanel_.isOpen())
+        {
+            if (game.busy()) return true;
+            std::cout << game.room().id << ": item " << id << '\n';
+            input.pressVirtual(Action::Inventory);
+            return true;
+        }
+        const auto entries = game.inventory();
+        for (std::size_t i = 0; i < entries.size(); ++i)
+        {
+            if (entries[i].item->id != id) continue;
+            if (entries[i].item->use.empty()) return fail("\"" + id + "\" cannot be used from the inventory");
+            game.inventoryPanel_.select(static_cast<int>(i));
+            input.pressVirtual(Action::Confirm);
+            next();
+            return true;
+        }
+        return fail("\"" + id + "\" is not in the inventory");
+    }
     if (!ended && game.inventoryPanel_.isOpen())
     {
         if (frame_ % 20 == 0) input.pressVirtual(Action::Inventory); // close it again
@@ -267,24 +393,15 @@ bool Walkthrough::step(Game& game, float dt)
         if (time_ >= std::strtof(command.rest.c_str(), nullptr)) next();
         return true;
     }
-    if (command.verb == "expect")
-    {
-        std::string error;
-        const auto condition = Condition::parse(command.rest, error);
-        if (!condition) return fail(error);
-        if (!condition->evaluate(game.state())) return fail("is false");
-        next();
-        return true;
-    }
-    if (command.verb == "room")
-    {
-        if (game.room().id != command.rest) return fail("the player is in " + game.room().id);
-        next();
-        return true;
-    }
     if (command.verb == "inventory")
     {
         input.pressVirtual(Action::Inventory);
+        next();
+        return true;
+    }
+    if (command.verb == "grab")
+    {
+        input.pressVirtual(Action::Grab);
         next();
         return true;
     }

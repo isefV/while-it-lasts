@@ -1,6 +1,10 @@
 // STAGE 02: THE PERIMETER. Lines are the script's; "_added" marks new ones.
 // The checkpoint is a stealth room (apps/app/scripts/checkpoint.cpp); its
-// script starts "checkpoint.spotted" and "checkpoint.chase".
+// script starts "checkpoint.spotted" and "checkpoint.chase". A thrown bottle
+// or bolt is the other way past (data/dialogue/items.json, "use.throw").
+// The barricade: the slab's noise brings waves of crawlers (a fight), then
+// X collapses and Y keeps him breathing (the "revive" scene, the first near
+// death); he cannot walk after it, so Y drags him (G) through the gap.
 {
     "checkpoint.arrive": [
         { "x": "Please tell me you're not thinking about fighting that." },
@@ -9,12 +13,27 @@
         { "y": "You can barely drag yourself." },
         { "x": "So I'm saving my energy. It's called strategy." },
         { "narration": "The creature stops. Its head turns slowly toward them." },
+        { "narration": "Far past it, down the road, something tall stands very still. Then it isn't there.", "do": ["reaper glimpse 312 34"], "_added": "the Reaper, a little closer each stage" },
         { "x": "Do you think it can see us?" },
         { "y": "Let's find out." },
         { "x": "That's the worst plan I've heard today." },
         { "y": "It's the only plan we have." },
         { "narration": "Move while it looks away. Hide behind cover when it watches. Keep still when it listens.", "_added": "how the stealth works" },
+        { "narration": "Or give it something else to look at: throw a bottle into the trees (Tab, then E on the bottles).", "_added": "stealth is optional: the throw" },
         { "do": ["event stealth_start"] }
+    ],
+
+    "checkpoint.sign": [
+        { "y": "\"QUARANTINE LINE. TURN BACK.\" Somebody added \"PLEASE\" in marker.", "_added": "new thing to look at" }
+    ],
+    "checkpoint.bottles": [
+        { "y": "Bottles. Somebody's last party.", "_added": "more bottles to throw" },
+        { "narration": "Got: two empty bottles.", "do": ["bottles += 2", "checkpoint_bottles_taken = true"] }
+    ],
+    "checkpoint.boots": [
+        { "y": "A pair of boots. Laced. Nobody in them.", "_added": "new thing to look at" },
+        { "x": "Don't." },
+        { "y": "I wasn't going to." }
     ],
 
     "checkpoint.spotted": [
@@ -50,6 +69,21 @@
         { "narration": "A fallen metal gate blocks the road." },
         { "y": "Okay. Gate. Heavy. Annoying." }
     ],
+    "barricade.x": [
+        { "if": "x_down",
+          "then": [ { "x": "Give me a minute. Or carry me. Either's fine.", "_added": "talking to X while he is down" } ],
+          "else": [ { "x": "Gate. Heavy. Annoying. I heard you the first time.", "_added": "talking to X at the barricade" } ] }
+    ],
+    "barricade.car": [
+        { "y": "Keys still in it. Battery's dead. Of course it is.", "_added": "new thing to look at" }
+    ],
+    "barricade.car_again": [
+        { "thought": "Still dead. Everything here is, a little.", "_added": "second look" }
+    ],
+    "barricade.posters": [
+        { "y": "MISSING. MISSING. MISSING. Somebody ran out of tape.", "_added": "new thing to look at" },
+        { "thought": "Somebody ran out of people to look for." }
+    ],
     "barricade.gate": [
         { "thought": "Too heavy to lift. Something's pinning it.", "_added": "hint" }
     ],
@@ -72,20 +106,77 @@
     "barricade.lever": [
         { "narration": "{y} jams the rod under the slab and leans on it. Concrete grinds. A gap opens.", "do": ["take rod", "gap_open = true", "sound grind"] },
         { "y": "Got it. Easy. Come on." },
+        { "narration": "The grinding carries a long way. Something answers it. Then something else.", "do": ["sound crawler"], "_added": "the noise brings the waves" },
+        { "x": "{y}. Tell me that was a deer." },
+        { "y": "Sit down. Stay behind me.", "do": ["companion stay", "pose x sit"] },
+        { "narration": "F swings the bat, R shoots, Q dodges back. The ones that come from {x}'s side go for him.", "_added": "how the waves work" },
+        { "do": ["barricade_fought = true", "fight"] }
+    ],
+    "barricade.waves_won": [
+        { "y": "...That's all of them. I think.", "_added": "after the waves" },
+        { "if": "y_health <= 2", "then": [
+            { "x": "You're bleeding." },
+            { "y": "It's mostly theirs." },
+            { "x": "That's not how that works." }
+        ] },
         { "x": "One minute. Let me look at this charming scenery first." },
         { "y": "{x}." },
         { "x": "I'm coming!" },
-        { "narration": "{y} helps {x} through the gap and follows. Far off, the creature stands completely still.", "do": ["place y 282", "place x 268"] },
+        { "goto": "barricade.collapse" }
+    ],
+    "barricade.waves_lost": [
+        { "narration": "{y} goes down under them. Then {x} is there, swinging the rod like a madman, yelling until they scatter.", "do": ["x_condition -= 1"], "_added": "losing the waves: X saves Y, and it costs him" },
+        { "x": "Get. Up." },
+        { "y": "...Up. I'm up." },
+        { "x": "Good. Because I'm not dragging you back." },
+        { "goto": "barricade.collapse" }
+    ],
+    "barricade.collapse": [
+        { "narration": "{x} takes two steps toward the gap, and folds.", "do": ["sound thud", "pose x lying", "ambient wind@0.4"], "_added": "the first near-death scene" },
+        { "y": "{x}?" },
+        { "narration": "He isn't breathing." },
+        { "do": ["revive barricade.revived 7 15"] }
+    ],
+    "barricade.revived": [
+        { "if": "reaper_touched >= 1",
+          "then": [ { "narration": "{x} drags in a breath like it hurts. It got close enough to touch him, and it did.", "_added": "" } ],
+          "else": [ { "narration": "{x} gasps. Coughs. Breathes.", "_added": "" } ] },
+        { "x": "...Did I just..." },
+        { "y": "You stopped. For a second." },
+        { "x": "I saw someone. Tall. Standing right over me." },
+        { "y": "I saw it too." },
+        { "pause": 1.0 },
+        { "x": "Not here, okay? Not next to a gate on a road nobody's heard of." },
+        { "y": "Not here." },
+        { "x": "Up there. Like we said." },
+        { "y": "Like we said." },
+        { "do": ["x_down = true", "pose y idle", "ambient wind"] },
+        { "narration": "{x} can't stand. Next to him, G takes hold of him; G again lets go.", "_added": "how grabbing works" }
+    ],
+    "barricade.through": [
+        { "narration": "{y} hauls {x} through the gap. Far off, the creature stands completely still." },
         { "x": "We could've taken a nicer road." },
         { "y": "I'll bring it up with the apocalypse." },
         { "x": "Please do. Leave a review." }
     ],
 
     "shelter.arrive": [
-        { "narration": "{y} sits {x} down beside a ruined wall." }
+        { "narration": "{y} sits {x} down beside a ruined wall." },
+        { "narration": "Back down the road, at the edge of what they can see, something tall stands and waits.", "do": ["reaper show 26 46 3"], "_added": "the Reaper waits for them" },
+        { "x": "It's still there, isn't it?" },
+        { "y": "...Yeah." },
+        { "x": "Let it wait." }
     ],
     "shelter.not_yet": [
         { "thought": "He needs a minute. So do I.", "_added": "the mountain path before the cigarette scene" }
+    ],
+    "shelter.graffiti": [
+        { "y": "\"WE WERE HERE.\" Somebody wrote the date under it, then crossed it out.", "_added": "new thing to look at" },
+        { "x": "We should write that somewhere." },
+        { "y": "We will. Up top." }
+    ],
+    "shelter.ring": [
+        { "y": "Somebody camped here. Ash, a can, one sock. Why is it always one sock.", "_added": "new thing to look at" }
     ],
     "shelter.pack": [
         { "narration": "A crushed pack. One cigarette inside.", "do": ["cig_count += 1", "wall_pack_found = true"] },
@@ -130,6 +221,6 @@
     "shelter.go": [
         { "x": "Let's go home." },
         { "y": "...Yeah." },
-        { "do": ["stage02_done = true", "pose x idle", "companion follow"] }
+        { "do": ["stage02_done = true", "x_down = false", "pose x idle", "companion follow", "reaper hide 2"] }
     ]
 }

@@ -17,6 +17,7 @@
         "items": "data/items.json",
         "barks": "data/barks.json",
         "dialogue": [
+            "data/dialogue/items.json",
             "data/dialogue/stage00.json",
             "data/dialogue/stage01.json",
             "data/dialogue/stage02.json",
@@ -37,6 +38,8 @@
     "variables": {
         "_story": "From the script's state table",
         "x_condition":    { "value": 3, "min": 0, "max": 3 },
+        "y_health":       { "value": 5, "min": 0, "max": 5 },
+        "reaper_touched": { "value": 0, "min": 0, "max": 3 },
         "has_antibiotics": false,
         "cig_count":      { "value": 0, "min": 0, "max": 4 },
         "smoked_with_x":  { "value": 0, "min": 0, "max": 3 },
@@ -44,8 +47,20 @@
         "spotted_count":  { "value": 0, "min": 0, "max": 3 },
         "notes_read":     { "value": 0, "min": 0, "max": 2 },
 
-        "_game": "Set by the game itself",
+        "_items": "Supplies that are counted (items.json \"count\")",
+        "bandages":       { "value": 0, "min": 0, "max": 9 },
+        "painkillers":    { "value": 0, "min": 0, "max": 4 },
+        "bottles":        { "value": 0, "min": 0, "max": 6 },
+        "antibiotics_given": false,
+
+        "_game": "Set by the game itself: X is dragged, X is in the room, a fight is on, the checkpoint creature can be distracted",
         "dragging": false,
+        "x_here": false,
+        "fighting": false,
+        "stealth_active": false,
+
+        "_x_down": "X cannot walk: G takes hold of him and lets go (set by the story)",
+        "x_down": false,
 
         "_stage00": "The campsite",
         "kit_taken": false,
@@ -53,6 +68,7 @@
         "x_woken": false,
         "wound_dressed": false,
         "fire_out": false,
+        "water_taken": false,
 
         "_stage01": "The factory",
         "ammo":           { "value": 0, "min": 0, "max": 9 },
@@ -67,12 +83,18 @@
         "bolt_taken": false,
         "backpack_looted": false,
         "dressed_at_factory": false,
+        "booth_searched": false,
+        "locker_open": false,
+        "pretzels": false,
+        "floor_bottles_taken": false,
         "stage01_done": false,
 
         "_stage02": "The perimeter",
         "gap_open": false,
         "rod_taken": false,
         "wall_pack_found": false,
+        "checkpoint_bottles_taken": false,
+        "barricade_fought": false,
         "stage02_done": false,
 
         "_stage03": "The mountain steps",
@@ -80,6 +102,8 @@
         "creature_cleared": false,
         "beam_moved": false,
         "rests":          { "value": 0, "min": 0, "max": 4 },
+        "stairs_left_x": false,
+        "stairs_back": false,
 
         "_stage04": "The summit",
         "cig_lit": false,
@@ -88,7 +112,7 @@
         "ember_out": false
     },
 
-    // Dark and cold, with one warm accent (fire, ember, sunset).
+    // Dark and cold, with one warm accent (fire, ember, sunrise).
     "ui": {
         "text_speed": 45,
         "font": "",
@@ -103,9 +127,12 @@
         "accent": "#e0873a"
     },
 
-    // Up to 3 bars, top left. None in the prototype. Example:
-    //   { "label": "X", "var": "x_condition", "max": 3, "color": "#8fa4b8" }
-    "bars": [],
+    // Up to 3 bars, top left: Y's health (fights cost it; bandages,
+    // antiseptic and painkillers give it back) and X's condition.
+    "bars": [
+        { "label": "Y", "var": "y_health",    "max": 5, "color": "#8fa4b8" },
+        { "label": "X", "var": "x_condition", "max": 3, "color": "#9aab8c" }
+    ],
 
     "end_card": [
         "Some places are worth returning to.",

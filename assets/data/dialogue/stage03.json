@@ -1,6 +1,8 @@
 // STAGE 03: THE MOUNTAIN STEPS. Lines are the script's; "_added" marks new
 // ones, including variants of X's lines for a low X_CONDITION (appendix B:
-// quiet, breaks off mid-sentence).
+// quiet, breaks off mid-sentence). The Collapse holds the second near-death
+// scene (harder than the barricade's); from there X is dragged, and G lets go
+// of him and takes hold again.
 {
     "foot.arrive": [
         { "x": "You've got to be kidding me." },
@@ -12,6 +14,35 @@
         { "x": "Fine. But if I die, I'm blaming the stairs." },
         { "y": "Noted." },
         { "thought": "I wish he'd stop saying that." }
+    ],
+
+    "foot.lantern": [
+        { "y": "Somebody left a coin in this one. For luck.", "_added": "new thing to look at" },
+        { "x": "Or for the toll." },
+        { "y": "Don't." }
+    ],
+    "foot.lantern_broken": [
+        { "y": "This one's broken clean through. We didn't do that, right?", "_added": "new thing to look at" },
+        { "x": "You did that. Summer we were twelve." },
+        { "y": "...Oh. Yeah." }
+    ],
+    "foot.stream": [
+        { "narration": "{y} cups water for {x}. He drinks like he's never seen it before.", "_added": "new thing to look at" },
+        { "x": "I'm hydrating. It's called self-care." }
+    ],
+    "foot.stream_again": [
+        { "thought": "Cold enough to hurt your teeth. Same as always.", "_added": "second look" }
+    ],
+    "foot.shrine": [
+        { "y": "Fresh flowers. Somebody still comes up here.", "_added": "new thing to look at" },
+        { "x": "Or something does." },
+        { "narration": "Neither of them looks back down the path." }
+    ],
+
+    "landing.footprints": [
+        { "y": "Footprints behind us. Ours.", "_added": "new thing to look at: the Reaper follows" },
+        { "y": "And longer ones. That stop when ours stop." },
+        { "x": "Keep walking." }
     ],
 
     "landing.lantern": [
@@ -47,6 +78,18 @@
         { "x": "I'm fine." },
         { "y": "You're not." },
         { "x": "Then stop asking stupid questions." },
+        { "narration": "His eyes slide past {y}, to something behind him. Then they roll back, and he goes limp.", "do": ["pose x lying", "music stop", "ambient wind@0.5"], "_added": "the second near-death scene, worse than the barricade" },
+        { "do": ["revive collapse.revived 10 12"] }
+    ],
+    "collapse.revived": [
+        { "if": "reaper_touched >= 1",
+          "then": [ { "narration": "{x} comes back slower this time, like he had to be talked into it.", "_added": "" } ],
+          "else": [ { "narration": "{x} jerks back into his body with a ragged breath.", "_added": "" } ] },
+        { "x": "...It was closer. This time.", "_added": "" },
+        { "y": "I know. I saw." },
+        { "x": "Get me up there, {y}. That's all I want. That was the deal." },
+        { "y": "That's still the deal." },
+        { "do": ["music music_mountain", "ambient wind footsteps leaves", "reaper follow 100", "pose x sit"] },
         { "narration": "{y} tries to stand him up. {x} cries out." },
         { "y": "We have to keep going." },
         { "x": "No." },
@@ -61,8 +104,12 @@
         { "narration": "{x} gives a weak, disbelieving laugh." },
         { "x": "You're such an idiot." },
         { "y": "You've mentioned it." },
-        { "narration": "Walk to pull {x} along. Rest where you can.", "_added": "how dragging works" },
-        { "do": ["companion drag"] }
+        { "narration": "Walk to pull {x} along. Rest where you can. G lets go of him, and takes hold again.", "_added": "how dragging works" },
+        { "do": ["x_down = true", "companion drag"] }
+    ],
+    "collapse.edge": [
+        { "y": "Long way down. Longer than I remember.", "_added": "new thing to look at" },
+        { "if": "x_here", "then": [ { "x": "Everything's longer than you remember. You have a bad memory." } ] }
     ],
 
     "collapse.narrow": [
@@ -97,61 +144,83 @@
             { "x": "You always say that." },
             { "y": "And I'm always right." }
         ] },
-        { "do": ["rests += 1"] }
+        { "do": ["rests += 1", "y_health += 1"] }
     ],
     "mountain.not_without": [
         { "thought": "Not without him.", "_added": "" }
     ],
 
-    "stairs.leave_x": [
+    "stairs.safe_hint": [
         { "narration": "A creature blocks the collapsed stairs ahead." },
-        { "y": "Stay here. Behind the wall." },
-        { "do": ["companion stay 100", "pose x sit"] },
-        { "x": "Wasn't planning on going anywhere." },
-        { "y": "I mean it. Don't move." },
-        { "x": "You say that like I've got a choice." }
+        { "thought": "Behind that wall, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" }
+    ],
+    "stairs.release": [
+        { "if": "!stairs_left_x && !creature_cleared", "then": [
+            { "y": "Stay here.", "do": ["stairs_left_x = true"] },
+            { "x": "Wasn't planning on going anywhere." },
+            { "y": "I mean it. Don't move." },
+            { "x": "You say that like I've got a choice." }
+        ] },
+        { "if": "!creature_cleared", "do": ["reaper show 50 80 5"], "_added": "left alone, X has company" }
+    ],
+    "stairs.grab": [
+        { "do": ["reaper hide 1"] },
+        { "if": "beam_moved && !stairs_back", "then": [ { "goto": "stairs.back" } ] }
     ],
     "stairs.cant_drag": [
-        { "thought": "Not with him on my back. Not past that.", "_added": "" }
+        { "thought": "Not with him on my back. Not past that. (G lets go of him.)", "_added": "" }
+    ],
+    "stairs.claws": [
+        { "y": "Scratches in the stone. Over and over, in the same place.", "_added": "new thing to look at" },
+        { "thought": "Like it's been waiting here a long time." }
     ],
     "stairs.creature": [
         { "narration": "It turns its head toward {y}.", "_added": "the mountain creature (the script has no lines for it)" },
         { "choice": [
             { "text": "Throw a rock down the slope.", "next": "stairs.distract" },
-            { "text": "Swing the bat.", "if": "item.bat", "next": "stairs.fight" },
-            { "text": "Shoot.", "if": "item.pistol && ammo >= 1", "next": "stairs.shoot" },
-            { "timeout": true, "next": "stairs.hurt" }
+            { "text": "Fight it.", "if": "item.bat || (item.pistol && ammo >= 1)", "next": "stairs.fight" },
+            { "timeout": true, "next": "stairs.charge" }
         ], "timer": 6 }
     ],
     "stairs.distract": [
         { "narration": "The rock clatters down the slope. The creature follows the sound into the dark.", "do": ["sound clatter", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
     ],
     "stairs.fight": [
-        { "narration": "{y} swings hard. It reels, and slinks off down the mountain.", "do": ["sound thud", "shake 0.4 3", "y_hurt = true", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
+        { "narration": "{y} grips the bat. Behind him, down the path, something small skitters on the stones.", "_added": "the fight: a wave first, then the creature" },
+        { "do": ["fight"] }
     ],
-    "stairs.shoot": [
-        { "narration": "The shot echoes off the whole mountain. It flees.", "do": ["ammo -= 1", "sound shot", "shake 0.3 2", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
+    "stairs.charge": [
+        { "narration": "It comes at {y}. And behind him, down the path, something small skitters on the stones.", "do": ["sound roar", "shake 0.4 2"], "_added": "too slow: the fight anyway" },
+        { "do": ["fight"] }
     ],
-    "stairs.hurt": [
-        { "narration": "It lunges. {y} dives aside, and it lumbers past and away down the slope.", "do": ["shake 0.5 3", "y_hurt = true", "creature_cleared = true", "event creature_leave -60"], "_added": "" },
+    "stairs.fight_won": [
+        { "narration": "It reels, and slinks off down the mountain.", "do": ["creature_cleared = true"], "_added": "" },
         { "y": "Okay. Still here." }
+    ],
+    "stairs.fight_lost": [
+        { "narration": "{y} goes down hard. It stands over him, sniffs, and loses interest. It lumbers off down the slope.", "do": ["creature_cleared = true", "event creature_leave -60"], "_added": "losing: it leaves anyway, never game over" },
+        { "y": "Okay. Still... here." }
     ],
     "stairs.beam": [
         { "if": "!creature_cleared",
           "then": [ { "thought": "Not with that thing watching.", "_added": "" } ],
           "else": [ { "narration": "{y} braces against the beam and shoves. It scrapes aside.", "do": ["beam_moved = true", "sound scrape"] } ] }
     ],
+    "stairs.back": [
+        { "narration": "{x} is barely awake.", "do": ["stairs_back = true", "reaper hide 1"] },
+        { "y": "Hey. I'm back." },
+        { "x": "Took you long enough." },
+        { "y": "Did you miss me?" },
+        { "x": "Like a hole in the head." },
+        { "y": "Wow. Even now." },
+        { "x": "Especially now." },
+        { "narration": "{y} helps him up and starts dragging again.", "do": ["companion drag"] }
+    ],
     "stairs.x": [
         { "if": "beam_moved",
           "then": [
-            { "narration": "{x} is barely awake." },
-            { "y": "Hey. I'm back." },
-            { "x": "Took you long enough." },
-            { "y": "Did you miss me?" },
-            { "x": "Like a hole in the head." },
-            { "y": "Wow. Even now." },
-            { "x": "Especially now." },
-            { "narration": "{y} helps him up and starts dragging again.", "do": ["companion drag"] }
+            { "if": "!stairs_back", "then": [ { "goto": "stairs.back" } ] },
+            { "do": ["reaper hide 1", "companion drag"] }
           ],
           "else": [
             { "if": "creature_cleared",
@@ -163,6 +232,13 @@
                 { "x": "Go. I'm not going anywhere.", "_added": "" }
               ] }
           ] }
+    ],
+
+    "ascent.sky": [
+        { "y": "The sky's going grey at the edges. Then gold.", "_added": "new thing to look at: sunrise" },
+        { "x": "Told you. Sunrise. I planned this." },
+        { "y": "You did not plan this." },
+        { "x": "...I planned some of it." }
     ],
 
     "ascent.talk": [

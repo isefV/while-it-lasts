@@ -43,6 +43,6 @@ namespace hollow
         Color box{10, 13, 18, 255};
         Color frame{58, 70, 84, 255};
         Color highlight{226, 232, 238, 255};
-        Color accent{224, 135, 58, 255}; ///< the one warm colour: fire, ember, sunset
+        Color accent{224, 135, 58, 255}; ///< the one warm colour: fire, ember, sunrise
     };
 } // namespace hollow

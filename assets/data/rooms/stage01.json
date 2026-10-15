@@ -9,7 +9,7 @@
         "ambient": ["wind", "metal", "sheet"],
         "music": "music_factory",
         "player_x": 40,
-        "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak"],
+        "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak", "y_hurt"],
         "enter": [
             { "dialogue": "factory.arrive" },
             { "if": "factory_cleared && !stage01_done", "dialogue": "factory.return" }
@@ -17,8 +17,12 @@
         "companion": { "x": 84, "mode": "stay", "pose": "sit", "dialogue": "factory.x" },
         "objects": [
             { "id": "loose_sheet", "x": 120, "y": 62, "w": 34, "h": 22, "color": "#353d46", "interactive": false },
+            { "id": "vending", "name": "Vending machine", "x": 150, "w": 16, "h": 36, "color": "#2e3a44",
+              "dialogue": "entrance.vending", "again": "entrance.vending_again" },
             { "id": "door", "name": "Factory door", "x": 200, "w": 24, "h": 48, "color": "#14191f",
               "exit": "factory_office", "spawn_x": 24 },
+            { "id": "booth", "name": "Security booth", "x": 236, "w": 26, "h": 40, "color": "#262e36",
+              "dialogue": "entrance.booth" },
             { "id": "road", "name": "Road", "x": 300, "y": 80, "w": 20, "h": 70, "color": "#0e1217",
               "exit": "checkpoint", "exit_if": "stage01_done", "locked": "factory.road_locked" }
         ]
@@ -40,11 +44,15 @@
             { "id": "window", "name": "Window", "x": 72, "y": 40, "w": 36, "h": 30, "color": "#2b3747",
               "dialogue": "office.window", "again": "office.window_again" },
             { "id": "figure", "x": 86, "y": 44, "w": 8, "h": 26, "color": "#07080b", "if": "window_figure", "interactive": false },
+            { "id": "locker", "name": "Staff locker", "x": 82, "w": 18, "h": 44, "color": "#3a4450",
+              "dialogue": "office.locker", "again": "office.locker_again" },
 
             { "id": "desk", "name": "Desk drawer", "x": 16, "w": 48, "h": 32, "color": "#3b342c",
               "sprite": "props/desk.png", "dialogue": "office.drawer", "again": "office.drawer_again" },
             { "id": "radio", "name": "Radio", "x": 18, "y": 108, "w": 14, "h": 10, "color": "#4a4c48",
               "sprite": "props/radio.png", "dialogue": "office.radio" },
+            { "id": "mug", "name": "Coffee mug", "x": 34, "y": 110, "w": 6, "h": 8, "color": "#8a8478",
+              "dialogue": "office.mug" },
             { "id": "clock", "name": "Desk clock", "x": 48, "y": 106, "w": 12, "h": 12, "color": "#5a5448",
               "sprite": "props/clock.png", "dialogue": "office.clock", "again": "office.clock_again" },
             { "id": "filing_cabinet", "name": "Filing cabinet", "x": 114, "w": 32, "h": 48, "color": "#3d4650",
@@ -56,6 +64,8 @@
 
             { "id": "partition", "x": 190, "y": 40, "w": 4, "h": 110, "color": "#151a20", "interactive": false },
 
+            { "id": "poster", "name": "Safety poster", "x": 212, "y": 64, "w": 18, "h": 22, "color": "#5a6258",
+              "dialogue": "office.poster" },
             { "id": "first_aid_cabinet", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#4f5a5c",
               "sprite": "props/first_aid_cabinet.png", "if": "!cabinet_open", "dialogue": "office.cabinet" },
             { "id": "first_aid_cabinet_open", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#36403f",
@@ -88,6 +98,8 @@
             "if": "!factory_won", "x": 220, "y": 150, "w": 34, "h": 54, "speed": 26,
             "color": "#0b0d11", "sprite": "sprites/creature.json", "patrol": [150, 270]
         },
+        // "Fight it" or being seen: the creature itself, in real time.
+        "fight": { "brute": true, "hp": 4, "win": "floor.fight_won", "lose": "floor.fight_lost" },
         "objects": [
             { "id": "exit_office", "name": "Office", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217",
               "exit": "factory_office", "spawn_x": 296 },
@@ -98,6 +110,10 @@
 
             { "id": "bolt", "name": "Loose bolt", "x": 38, "y": 146, "w": 6, "h": 4, "color": "#7c848c",
               "if": "!bolt_taken", "dialogue": "floor.bolt" },
+            { "id": "bottles", "name": "Empty bottles", "x": 50, "y": 144, "w": 8, "h": 6, "color": "#5c7a6c",
+              "if": "!floor_bottles_taken", "dialogue": "floor.bottles" },
+            { "id": "claw_marks", "name": "Claw marks", "x": 76, "y": 104, "w": 12, "h": 14, "color": "#14181d",
+              "dialogue": "floor.claws" },
 
             { "id": "encounter", "x": 104, "w": 10, "h": 60, "trigger": true, "if": "!factory_cleared",
               "dialogue": "floor.encounter" },
@@ -105,6 +121,8 @@
             { "id": "guard_block", "x": 246, "w": 4, "h": 60, "hidden": true, "block": "factory_lost",
               "blocked": "floor.guarded" },
 
+            { "id": "lunchbox", "name": "Lunchbox", "x": 196, "y": 144, "w": 8, "h": 6, "color": "#6a5a40",
+              "if": "factory_cleared", "dialogue": "floor.lunchbox" },
             { "id": "lost_backpack", "name": "Discarded backpack", "x": 282, "w": 16, "h": 14, "color": "#4c4a3c",
               "sprite": "props/lost_backpack.png", "if": "factory_won && !backpack_looted", "dialogue": "floor.backpack" }
         ]

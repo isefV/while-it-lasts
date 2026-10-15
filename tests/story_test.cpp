@@ -95,7 +95,8 @@ namespace
 TEST(Story, DataLoadsAndChecks)
 {
     const std::set<std::string, std::less<>> commands = {"goto", "sound", "ambient", "music", "pose", "companion", "place",
-                                                         "step", "face", "shake", "tint", "event", "end", "bark"};
+                                                         "step", "face", "shake", "tint", "event", "end", "bark",
+                                                         "fight", "revive", "reaper"};
     hollow::Diagnostics diag;
     hollow::checkGameData(data(), commands, diag);
     for (const auto& e : diag.errors)
@@ -147,11 +148,89 @@ TEST(Story, NoisyCabinetMakesTheSneakFail)
     s.play("office.cabinet", {"Force it"});
     EXPECT_EQ(s.state.get("noisy_entry"), 1);
     EXPECT_EQ(s.state.get("cig_count"), 1);
+    EXPECT_EQ(s.state.get("bandages"), 2);
 
+    // Seen: it charges, and the fight decides.
     s.play("floor.encounter", {"Sneak"});
-    EXPECT_EQ(s.state.get("factory_lost"), 1);
+    EXPECT_TRUE(s.ran("fight"));
     EXPECT_EQ(s.state.get("factory_won"), 0);
+
+    s.play("floor.fight_lost");
+    EXPECT_EQ(s.state.get("factory_lost"), 1);
     EXPECT_TRUE(s.ran("event creature_guard 262"));
+}
+
+TEST(Story, BandagesHealEitherOfThem)
+{
+    Story s;
+    s.state.set("bandages", 2);
+    s.state.set("y_health", 2);
+    s.state.set("x_here", 1);
+    s.state.set("x_condition", 1);
+    s.play("use.bandages", {"Bind"});
+    EXPECT_EQ(s.state.get("y_health"), 4);
+    s.play("use.bandages", {"Change"});
+    EXPECT_EQ(s.state.get("x_condition"), 2);
+    EXPECT_EQ(s.state.get("bandages"), 0);
+
+    // X not here and Y unhurt: nothing to do, nothing used.
+    s.state.set("bandages", 1);
+    s.state.set("y_health", 5);
+    s.state.set("x_here", 0);
+    s.play("use.bandages");
+    EXPECT_EQ(s.state.get("bandages"), 1);
+}
+
+TEST(Story, BottlesDistractOnlyAtTheCheckpoint)
+{
+    Story s;
+    s.state.set("bottles", 2);
+    s.play("use.bottle");
+    EXPECT_EQ(s.state.get("bottles"), 2);
+    EXPECT_FALSE(s.ran("event distract"));
+
+    s.state.set("stealth_active", 1);
+    s.play("use.bottle", {"Throw"});
+    EXPECT_EQ(s.state.get("bottles"), 1);
+    EXPECT_TRUE(s.ran("event distract"));
+}
+
+TEST(Story, BarricadeWavesEndInTheFirstNearDeath)
+{
+    Story s;
+    s.play("barricade.lever");
+    EXPECT_TRUE(s.ran("fight"));
+    s.play("barricade.waves_won");
+    EXPECT_TRUE(s.ran("revive barricade.revived 7 15"));
+    s.play("barricade.revived");
+    EXPECT_TRUE(s.saw("Up there. Like we said."));
+    EXPECT_EQ(s.state.get("x_down"), 1);
+}
+
+TEST(Story, CollapseIsTheWorseNearDeath)
+{
+    Story s;
+    s.play("collapse.fall");
+    EXPECT_TRUE(s.ran("revive collapse.revived 10 12"));
+    s.play("collapse.revived");
+    EXPECT_TRUE(s.saw("That was the deal."));
+    EXPECT_TRUE(s.ran("companion drag"));
+    EXPECT_EQ(s.state.get("x_down"), 1);
+}
+
+TEST(Story, AtTheEndYDoesNotLie)
+{
+    Story s;
+    s.state.set("cig_count", 1);
+    s.state.set("smoked_with_x", 2);
+    s.play("summit.cigarette_scene");
+    s.play("summit.reaper");
+    EXPECT_FALSE(s.saw("We still can."));
+    EXPECT_FALSE(s.saw("Wake up"));
+    EXPECT_FALSE(s.saw("Don't do this"));
+    EXPECT_TRUE(s.saw("You didn't even try to lie."));
+    EXPECT_TRUE(s.saw("It's a little bit goodbye."));
+    EXPECT_TRUE(s.saw("The sun comes up over the town"));
 }
 
 TEST(Story, CheckpointSecondSpottingCostsCondition)

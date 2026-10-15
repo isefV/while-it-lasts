@@ -1,6 +1,8 @@
 # The whole game on a careless route: the cigarette left behind, too slow to
-# leave the campsite, the noisy cabinet, seen in the factory, spotted three
-# times, every timed choice run out, no cigarette left for the summit.
+# leave the campsite, the noisy cabinet, seen in the factory and the fight
+# lost, spotted three times, the waves lost, X not kept breathing (the Reaper
+# reaches him, twice), every timed choice run out, no cigarette left for the
+# summit.
 #   hollow_app --walkthrough tests/walkthrough/careless.txt
 # The game must still reach its end, with the choices visible in it.
 
@@ -27,18 +29,22 @@ use door
 room factory_office
 use first_aid_cabinet
 choose Force it
-expect noisy_entry && cabinet_open && cig_count == 1
+expect noisy_entry && cabinet_open && cig_count == 1 && bandages == 2
 use floor_door
 room factory_floor
 walk 110
-choose Sneak                  # it heard the cabinet: seen
-expect factory_lost && !factory_won
+choose Sneak                  # it heard the cabinet: seen, and it charges
+fight lose                    # Y goes down; it guards the backpack
+expect factory_lost && !factory_won && y_health == 1 && y_hurt
 use exit_office
 room factory_office
 use exit_entrance
 choose Share
 room factory_entrance
-expect !has_antibiotics && x_condition == 2 && cig_count == 0 && smoked_with_x == 1
+expect !has_antibiotics && x_condition == 2 && cig_count == 0 && smoked_with_x == 1 && bandages == 1
+item bandages                 # Y binds his own cuts
+choose Bind
+expect y_health == 3 && bandages == 0
 use road
 
 # --- Stage 02 ---------------------------------------------------------------
@@ -52,6 +58,10 @@ expect spotted_count == 3 && x_condition == 0
 use rod
 use slab
 choose Lever
+fight lose                    # the crawlers get Y; X drives them off
+revive slow                   # and nobody keeps him breathing: the Reaper reaches him
+expect reaper_touched == 1 && x_condition == 0 && y_health == 1
+grab
 use exit_road
 room sheltered_wall
 use crushed_pack
@@ -66,12 +76,16 @@ room landing
 use lantern                   # X's line for a low condition
 use steps
 room collapse
+revive slow
+expect reaper_touched == 2 && dragging
 walk 200
 use steps
 room broken_stairs
 walk 105
+grab
 use creature
-choose timeout                # it lunges; Y gets hurt but it is gone
+choose timeout                # it charges
+fight lose                    # it loses interest and leaves anyway
 expect creature_cleared && y_hurt
 use fallen_beam
 talk

@@ -7,6 +7,10 @@
 //   second time, in its lines), then "event stealth_reset" puts both back at
 //   the last hiding spot. The third time is "checkpoint.chase", which ends in
 //   the next room: never game over.
+//
+// Sneaking is not the only way: a thrown bottle or bolt ("event distract",
+// from the item's "use" conversation) sends it off into the trees for a
+// while, and the road is open. STEALTH_ACTIVE is 1 while a throw would work.
 
 #include "creature.hpp"
 #include "room_script.hpp"
@@ -21,6 +25,8 @@ namespace
 {
     constexpr float Grace = 0.4f;       // seconds of being in the open before it notices
     constexpr float WarnBefore = 0.9f;  // its "!" blinks this long before a dangerous phase
+    constexpr float AwayFor = 12.0f;    // seconds a throw keeps it busy in the trees
+    constexpr float AwayX = 345.0f;     // where it goes: off the road, into the dark
 
     bool dangerous(const PatrolPhase* phase)
     {
@@ -41,7 +47,26 @@ namespace
         void update(Game& game, float dt) override
         {
             creature_.update(dt);
+            game.state().set("stealth_active", active_ && away_ < 0.0f ? 1 : 0);
             if (!active_ || game.busy()) return;
+
+            // Gone after the noise; then back to its round from the start.
+            if (away_ >= 0.0f)
+            {
+                away_ += dt;
+                if (away_ >= AwayFor)
+                {
+                    away_ = -1.0f;
+                    creature_.reset(game, game.room().creature);
+                    creature_.x = AwayX;
+                    creature_.walkTo(game.room().creature.x);
+                    loop_.reset(game.room().creature.phases);
+                    creature_.look = "turned";
+                    suspicion_ = 0.0f;
+                }
+                game.player().pose = "idle";
+                return;
+            }
 
             if (loop_.update(dt))
             {
@@ -71,6 +96,7 @@ namespace
             creature_.draw(game);
             if (!active_ || creature_.gone()) return;
 
+            if (away_ >= 0.0f) return;
             const Rectangle r = creature_.bounds();
             const Vector2 mark{r.x + r.width / 2.0f - 1, r.y - 12};
             const float t = static_cast<float>(GetTime());
@@ -116,12 +142,24 @@ namespace
                 loop_.reset(game.room().creature.phases);
                 creature_.look = loop_.current() ? loop_.current()->state : "turned";
                 suspicion_ = 0.0f;
+                away_ = -1.0f;
                 active_ = true;
                 return true;
             }
             if (name == "stealth_stop")
             {
                 active_ = false;
+                return true;
+            }
+            if (name == "distract")
+            {
+                if (!active_ || away_ >= 0.0f) return true;
+                // It lurches off after the sound, into the trees past the road.
+                away_ = 0.0f;
+                suspicion_ = 0.0f;
+                creature_.look = "turned";
+                creature_.leave(AwayX);
+                game.sound("glass");
                 return true;
             }
             return false;
@@ -146,6 +184,7 @@ namespace
         bool wasHidden_ = false;
         float suspicion_ = 0.0f;
         float lastCover_ = 0.0f;
+        float away_ = -1.0f; // seconds since a throw sent it off; -1: it is here
     };
 } // namespace
 

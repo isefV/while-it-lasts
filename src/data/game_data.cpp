@@ -299,7 +299,7 @@ namespace hollow
             if (!requireObject(obj, where, diag)) return room;
             detail::checkKeys(obj,
                               {"name", "background", "color", "tint", "ambient", "music", "player_x", "walk",
-                               "companion", "creature", "enter", "objects", "idle_barks", "script"},
+                               "companion", "creature", "fight", "enter", "objects", "idle_barks", "script"},
                               where, diag);
 
             room.name = detail::readString(obj, "name", where, diag, id);
@@ -319,7 +319,7 @@ namespace hollow
                 const std::string at = child(where, "companion");
                 if (requireObject(c, at, diag))
                 {
-                    detail::checkKeys(c, {"x", "mode", "pose", "dialogue", "again", "bark"}, at, diag);
+                    detail::checkKeys(c, {"x", "mode", "pose", "dialogue", "again", "bark", "release", "grab"}, at, diag);
                     room.companion.present = true;
                     room.companion.x = detail::readNumber(c, "x", at, diag, room.playerX - 20.0f);
                     room.companion.mode = detail::readString(c, "mode", at, diag, "stay");
@@ -327,6 +327,8 @@ namespace hollow
                     room.companion.dialogue = detail::readString(c, "dialogue", at, diag);
                     room.companion.again = detail::readString(c, "again", at, diag);
                     room.companion.bark = detail::readString(c, "bark", at, diag);
+                    room.companion.release = detail::readString(c, "release", at, diag);
+                    room.companion.grab = detail::readString(c, "grab", at, diag);
                     const auto& mode = room.companion.mode;
                     if (mode != "stay" && mode != "follow" && mode != "drag")
                         diag.error(child(at, "mode") + ": \"" + mode + "\" is not stay, follow or drag");
@@ -373,6 +375,44 @@ namespace hollow
                             creature.phases.push_back(std::move(phase));
                         }
                     }
+                }
+            }
+
+            if (obj.contains("fight"))
+            {
+                const Json& f = obj["fight"];
+                const std::string at = child(where, "fight");
+                if (requireObject(f, at, diag))
+                {
+                    detail::checkKeys(f, {"brute", "hp", "waves", "win", "lose"}, at, diag);
+                    FightDef& fight = room.fight;
+                    fight.present = true;
+                    fight.brute = detail::readBool(f, "brute", at, diag);
+                    fight.hp = std::max(1, detail::readInt(f, "hp", at, diag, fight.hp));
+                    fight.win = detail::readString(f, "win", at, diag);
+                    fight.lose = detail::readString(f, "lose", at, diag);
+                    if (fight.brute && !room.creature.present)
+                        diag.error(child(at, "brute") + ": the room has no \"creature\" to fight");
+                    if (f.contains("waves"))
+                    {
+                        const Json& waves = f["waves"];
+                        const std::string wat = child(at, "waves");
+                        if (!waves.is_array()) diag.error(wat + ": expected a list of waves");
+                        for (std::size_t i = 0; waves.is_array() && i < waves.size(); ++i)
+                        {
+                            const std::string w = child(wat, i);
+                            if (!requireObject(waves[i], w, diag)) continue;
+                            detail::checkKeys(waves[i], {"crawlers", "from"}, w, diag);
+                            WaveDef wave;
+                            wave.crawlers = std::max(1, detail::readInt(waves[i], "crawlers", w, diag, wave.crawlers));
+                            wave.from = detail::readString(waves[i], "from", w, diag, wave.from);
+                            if (wave.from != "right" && wave.from != "left" && wave.from != "both")
+                                diag.error(child(w, "from") + ": \"" + wave.from + "\" is not right, left or both");
+                            fight.waves.push_back(std::move(wave));
+                        }
+                    }
+                    if (!fight.brute && fight.waves.empty())
+                        diag.error(at + ": a fight needs \"brute\": true or at least one wave");
                 }
             }
 
@@ -426,7 +466,7 @@ namespace hollow
                 if (!id.empty() && id[0] == '_') continue;
                 const std::string where = file + ": " + id;
                 if (!requireObject(obj, where, diag)) continue;
-                detail::checkKeys(obj, {"name", "description", "icon", "color", "count"}, where, diag);
+                detail::checkKeys(obj, {"name", "description", "icon", "color", "count", "use"}, where, diag);
 
                 ItemDef item;
                 item.id = id;
@@ -435,6 +475,7 @@ namespace hollow
                 item.icon = detail::readString(obj, "icon", where, diag);
                 item.color = detail::readColor(obj, "color", where, diag, item.color);
                 item.countVar = detail::readString(obj, "count", where, diag);
+                item.use = detail::readString(obj, "use", where, diag);
                 data.itemOrder.push_back(id);
                 data.items[id] = std::move(item);
             }
@@ -634,6 +675,11 @@ namespace hollow
                     item(id, "data/game.json: start_items");
                 for (std::size_t i = 0; i < data_.bars.size(); ++i)
                     variable(data_.bars[i].var, "data/game.json: bars[" + std::to_string(i) + "].var");
+                for (const auto& [id, item] : data_.items)
+                {
+                    if (!item.countVar.empty()) variable(item.countVar, "data/items.json: " + id + ".count");
+                    conversation(item.use, "data/items.json: " + id + ".use");
+                }
 
                 for (const auto& [id, conversation] : data_.conversations)
                     entries(conversation.entries);
@@ -724,7 +770,7 @@ namespace hollow
                             room(effect.args[0], at);
                         else if (effect.name == "bark" && !effect.args.empty())
                             bark(effect.args[0], at);
-                        else if (effect.name == "start" && !effect.args.empty())
+                        else if ((effect.name == "start" || effect.name == "revive") && !effect.args.empty())
                             conversation(effect.args[0], at);
                         break;
                     }
@@ -793,8 +839,15 @@ namespace hollow
                     conversation(def.companion.dialogue, where + ".companion.dialogue");
                     conversation(def.companion.again, where + ".companion.again");
                     bark(def.companion.bark, where + ".companion.bark");
+                    conversation(def.companion.release, where + ".companion.release");
+                    conversation(def.companion.grab, where + ".companion.grab");
                 }
                 if (def.creature.present) names(def.creature.condition, where + ".creature.if");
+                if (def.fight.present)
+                {
+                    conversation(def.fight.win, where + ".fight.win");
+                    conversation(def.fight.lose, where + ".fight.lose");
+                }
                 for (const auto& id : def.idleBarks)
                     bark(id, where + ".idle_barks");
                 for (const auto& object : def.objects)

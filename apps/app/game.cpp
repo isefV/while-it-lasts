@@ -18,6 +18,7 @@ namespace
     constexpr float FollowGap = 16.0f;     // X walks this far behind the player
     constexpr float DragGap = 15.0f;
     constexpr float DragSpeed = 0.45f;     // the player's speed while dragging X
+    constexpr float BarFlash = 0.8f;       // seconds a bar flashes after it changes
 
     // Music outside the rooms (assets/sounds/<id>.qoa); rooms name theirs in "music".
     constexpr const char* TitleMusic = "music_title";
@@ -60,7 +61,7 @@ const std::set<std::string, std::less<>>& Game::commands()
 {
     static const std::set<std::string, std::less<>> verbs = {
         "goto", "sound", "ambient", "music", "pose", "companion", "place",
-        "step", "face", "shake", "tint", "event", "end", "bark",
+        "step", "face", "shake", "tint", "event", "end", "bark", "fight", "revive", "reaper",
     };
     return verbs;
 }
@@ -93,6 +94,14 @@ bool Game::load(Diagnostics& diag)
 
     for (const auto& v : data_.variables)
         state_.define(v.name, v.value, v.min, v.max);
+    for (auto& [id, item] : data_.items)
+    {
+        item.name = replaceTokens(item.name, data_.tokens());
+        item.description = replaceTokens(item.description, data_.tokens());
+    }
+    for (auto& [id, room] : data_.rooms)
+        for (auto& object : room.objects)
+            object.name = replaceTokens(object.name, data_.tokens());
     runner_ = std::make_unique<DialogueRunner>(data_.conversations, state_, [this](const Effect& e) { onCommand(e); });
     runner_->setTokens(data_.tokens());
 
@@ -154,6 +163,11 @@ void Game::newGame(const std::string& room)
     barks_.stop();
     pendingRoom_.clear();
     ending_ = false;
+    for (std::size_t i = 0; i < data_.bars.size() && i < barValue_.size(); ++i)
+    {
+        barValue_[i] = state_.get(data_.bars[i].var);
+        barFlash_[i] = 0.0f;
+    }
 
     screen_ = Screen::Playing;
     fade_.set(1.0f);
@@ -182,6 +196,7 @@ bool Game::saveCanvas(const std::string& path) const
 {
     Image image = LoadImageFromTexture(canvas_.texture());
     ImageFlipVertical(&image);
+    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8); // as on screen: over black, no see-through pixels
     const bool saved = ExportImage(image, path.c_str());
     UnloadImage(image);
     return saved;
@@ -201,6 +216,10 @@ void Game::enterRoom(const std::string& id, float spawnX)
     insideTriggers_.clear();
     picked_ = {};
     blockedPush_ = 0.0f;
+    fight_.stop();
+    revive_.stop();
+    reaper_.reset();
+    state_.set("fighting", 0);
 
     player_.x = spawnX >= 0.0f ? spawnX : room_->playerX;
     player_.ground = layout::GroundY;
@@ -268,6 +287,7 @@ void Game::setCompanionMode(CompanionMode mode, float x)
     const CompanionMode before = companionMode_;
     companionMode_ = mode;
     state_.set("dragging", mode == CompanionMode::Drag ? 1 : 0);
+    state_.set("x_here", mode == CompanionMode::Absent ? 0 : 1);
     companion_.visible = mode != CompanionMode::Absent;
     companion_.stop();
 
@@ -357,7 +377,7 @@ bool Game::dialogueActive() const
 
 bool Game::busy() const
 {
-    return dialogueActive() || !pendingRoom_.empty() || inventoryPanel_.isOpen() || ending_;
+    return dialogueActive() || !pendingRoom_.empty() || inventoryPanel_.isOpen() || ending_ || revive_.active();
 }
 
 bool Game::startDialogue(const std::string& id)
@@ -459,6 +479,19 @@ void Game::onCommand(const Effect& effect)
     else if (verb == "bark")
     {
         bark(arg(0));
+    }
+    else if (verb == "fight")
+    {
+        if (room_->fight.present) fight_.start(*this);
+        else TraceLog(LOG_WARNING, "Hollow: fight: the room \"%s\" has no \"fight\"", room_->id.c_str());
+    }
+    else if (verb == "revive")
+    {
+        revive_.start(*this, arg(0), static_cast<int>(number(args, 1, 8.0f)), number(args, 2, 14.0f));
+    }
+    else if (verb == "reaper")
+    {
+        reaper_.command(*this, args);
     }
 }
 
@@ -570,9 +603,16 @@ void Game::updatePlaying(float dt)
         return;
     }
 
+    // Y slows down when hurt; more when dragging X.
+    {
+        const int health = state_.get("y_health");
+        const float pace = health <= 1 ? 0.75f : health <= 2 ? 0.88f : 1.0f;
+        player_.speedScale = (companionMode_ == CompanionMode::Drag ? DragSpeed : 1.0f) * pace;
+    }
+
     if (inventoryPanel_.isOpen())
     {
-        inventoryPanel_.update(inventory(), input_);
+        if (const ItemDef* item = inventoryPanel_.update(inventory(), input_)) startDialogue(item->use);
     }
     else if (dialogueActive())
     {
@@ -588,12 +628,29 @@ void Game::updatePlaying(float dt)
         else if (result.choice >= 0) runner_->choose(result.choice);
         runner_->update(dt);
     }
+    else if (revive_.active())
+    {
+        revive_.update(*this, dt);
+    }
     else if (pendingRoom_.empty() && !ending_)
     {
-        updateExploring(dt);
+        if (fight_.active()) fight_.update(*this, dt);
+        if (!dialogueActive() && !fight_.down()) updateExploring(dt);
     }
 
     updateCompanion(dt);
+    reaper_.update(*this, dt);
+
+    // A bar that changed flashes for a moment.
+    for (std::size_t i = 0; i < data_.bars.size() && i < barValue_.size(); ++i)
+    {
+        barFlash_[i] = std::max(0.0f, barFlash_[i] - dt);
+        const int value = state_.get(data_.bars[i].var);
+        if (value == barValue_[i]) continue;
+        barDown_[i] = value < barValue_[i];
+        barValue_[i] = value;
+        barFlash_[i] = BarFlash;
+    }
     player_.update(dt);
     companion_.update(dt);
     barks_.update(dt);
@@ -628,7 +685,7 @@ void Game::updatePlaying(float dt)
 
 void Game::updateExploring(float dt)
 {
-    if (input_.pressed(Action::Inventory))
+    if (input_.pressed(Action::Inventory) && !fight_.active())
     {
         inventoryPanel_.open();
         input_.consume();
@@ -696,6 +753,13 @@ void Game::updateExploring(float dt)
         picked_ = {};
     }
     player_.step(nx - player_.x);
+
+    if (input_.pressed(Action::Grab))
+    {
+        grabOrRelease();
+        if (busy()) return;
+    }
+    if (fight_.active()) return; // no using things in the middle of a fight
 
     // Using things: E for the one the player stands next to; W/S pick
     // another when several are in reach.
@@ -817,6 +881,33 @@ void Game::talkToCompanion()
         startDialogue(conversation);
     else if (!c.bark.empty())
         bark(c.bark);
+}
+
+bool Game::canGrab() const
+{
+    return companionMode_ == CompanionMode::Stay && companion_.visible && state_.get("x_down") != 0 &&
+           inReach(companion_.bounds());
+}
+
+void Game::grabOrRelease()
+{
+    // G lets go of X where he is, or takes hold of him again. Only while he
+    // cannot walk ("x_down").
+    const CompanionDef& c = room_->companion;
+    if (companionMode_ == CompanionMode::Drag)
+    {
+        setCompanionMode(CompanionMode::Stay, companion_.x);
+        companion_.pose = "lying";
+        state_.set("x_down", 1);
+        audio_.play("dirt", 0.5f);
+        if (!c.release.empty()) startDialogue(c.release);
+    }
+    else if (canGrab())
+    {
+        player_.facing = companion_.x >= player_.x ? 1 : -1;
+        setCompanionMode(CompanionMode::Drag);
+        if (!c.grab.empty()) startDialogue(c.grab);
+    }
 }
 
 std::vector<InventoryEntry> Game::inventory() const
@@ -941,11 +1032,12 @@ void Game::drawScene()
     }
 
     if (script_) script_->drawBack(*this);
+    reaper_.draw(*this);
 
     // Only what the player stands next to is marked, and only that can be used.
     Target highlight;
     std::size_t inReach = 0;
-    if (!busy())
+    if (!busy() && !fight_.active())
     {
         highlight = selectedTarget();
         inReach = targetsInReach().size();
@@ -955,6 +1047,7 @@ void Game::drawScene()
         if (!object.front && !object.hidden && present(object))
             drawObject(object, highlight.object == &object);
 
+    fight_.drawBack(*this);
     companion_.draw(tint_);
     if (highlight.companion) DrawRectangleLinesEx(grow(companion_.bounds(), 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
     player_.draw(tint_);
@@ -966,8 +1059,10 @@ void Game::drawScene()
     for (const auto& object : room_->objects)
         if (!object.effect.empty()) drawEffect(object);
     particles_.draw();
+    fight_.drawFront(*this);
 
     if (script_) script_->drawFront(*this);
+    revive_.drawScene(*this);
 
     if (const BarkLine* line = barks_.current())
     {
@@ -1044,8 +1139,16 @@ void Game::drawHud()
 {
     for (std::size_t i = 0; i < data_.bars.size() && i < 3; ++i)
     {
+        // "Y [=====   ]": the label, then the bar; it flashes when it changes.
         const BarDef& bar = data_.bars[i];
-        drawBar(assets_, layout::BarSlots[i], state_.get(bar.var), bar.max, bar.color, data_.ui);
+        const Rectangle slot = layout::BarSlots[i];
+        const float labelW = bar.label.empty() ? 0.0f : 10.0f;
+        Color color = bar.color;
+        if (barFlash_[i] > 0.0f && std::fmod(barFlash_[i], 0.2f) < 0.1f)
+            color = barDown_[i] ? Color{170, 60, 60, 255} : data_.ui.highlight;
+        if (!bar.label.empty()) text_.draw(bar.label, Vector2{slot.x, slot.y - 1}, data_.ui.dim);
+        drawBar(assets_, Rectangle{slot.x + labelW, slot.y, slot.width - labelW, slot.height}, state_.get(bar.var), bar.max,
+                color, data_.ui);
     }
 
     if (inventoryPanel_.isOpen())
@@ -1059,14 +1162,27 @@ void Game::drawHud()
         return;
     }
 
-    // Between conversations: where we are, and the keys.
     const Rectangle box = layout::DialogueBox;
     drawPanel(assets_, box, data_.ui);
+    if (revive_.active())
+    {
+        revive_.drawHud(*this);
+        return;
+    }
+    if (fight_.active())
+    {
+        fight_.drawHud(*this);
+        return;
+    }
+
+    // Between conversations: where we are, and the keys.
     text_.draw(room_->name, Vector2{box.x + layout::Padding, box.y + layout::Padding}, data_.ui.dim);
-    const bool several = !busy() && targetsInReach().size() > 1;
-    text_.draw(several ? "A/D walk   E use   W/S next thing   Tab items   Esc pause"
-                       : "A/D walk   E use   Tab items   Esc pause",
-               Vector2{box.x + layout::Padding, box.y + box.height - layout::Padding - layout::LineHeight}, data_.ui.dim);
+    std::string keys = "A/D walk   E use";
+    if (!busy() && targetsInReach().size() > 1) keys += "   W/S next";
+    if (companionMode_ == CompanionMode::Drag) keys += "   G let go";
+    else if (!busy() && canGrab()) keys += "   G take hold";
+    keys += "   Tab items   Esc pause";
+    text_.draw(keys, Vector2{box.x + layout::Padding, box.y + box.height - layout::Padding - layout::LineHeight}, data_.ui.dim);
 }
 
 void Game::drawTitle()

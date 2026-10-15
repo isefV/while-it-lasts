@@ -65,6 +65,8 @@ namespace hollow
         std::string dialogue;        ///< conversation when the player talks to X
         std::string again;
         std::string bark;            ///< or a bark pool, which does not stop the game
+        std::string release;         ///< conversation when the player lets go of X here (G)
+        std::string grab;            ///< conversation when the player takes hold of him again
     };
 
     /// A conversation (and effects) that starts when the player enters the room.
@@ -101,6 +103,24 @@ namespace hollow
         std::vector<PatrolPhase> phases;
     };
 
+    /// One wave of small creatures ("crawlers") in a fight.
+    struct WaveDef
+    {
+        int crawlers = 2;
+        std::string from = "right"; ///< right, left or both
+    };
+
+    /// A real-time fight, started by the command "fight" (apps/app/fight.cpp).
+    struct FightDef
+    {
+        bool present = false;
+        bool brute = false;          ///< the room's creature takes part, after the waves
+        int hp = 4;                  ///< the brute's strength
+        std::vector<WaveDef> waves;
+        std::string win;             ///< conversation when every creature is beaten or gone
+        std::string lose;            ///< conversation when Y goes down (never game over)
+    };
+
     struct RoomDef
     {
         std::string id;
@@ -108,7 +128,7 @@ namespace hollow
         std::string file;            ///< relative to assets/
         std::string background;      ///< 320 x 180, relative to assets/; a flat colour until it exists
         Color color{20, 26, 36, 255};
-        Color tint{255, 255, 255, 255}; ///< night, sunset: multiplies the background
+        Color tint{255, 255, 255, 255}; ///< night, dawn: multiplies the background
         std::vector<std::string> ambient; ///< sound loops, assets/sounds/<id>.ogg, .wav, .mp3 or .qoa
         std::string music;
         float playerX = 40.0f;
@@ -116,6 +136,7 @@ namespace hollow
         float walkMax = 312.0f;
         CompanionDef companion;
         CreatureDef creature;
+        FightDef fight;
         std::vector<EnterRule> onEnter;
         std::vector<ObjectDef> objects;
         std::vector<std::string> idleBarks; ///< bark pools for when the player stands still

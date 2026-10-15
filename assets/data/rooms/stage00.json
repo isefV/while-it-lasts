@@ -7,8 +7,9 @@
         "background": "backgrounds/campsite.png",
         "color": "#18202c",
         "tint": "#c4c8dc",
-        "ambient": ["fire", "crickets", "wind"],
-        "music": "music_campsite",
+        // Midnight: no music, only the night (insects, frogs, a far owl) and
+        // the fire, low. "fire@0.45" plays that loop at 45 %.
+        "ambient": ["jungle_night", "fire@0.45"],
         "script": "campsite",
         "player_x": 118,
         "walk": [8, 312],
@@ -21,18 +22,28 @@
             { "id": "tree_left",  "x": 0,   "y": 20, "w": 12, "h": 130, "color": "#0f141c", "interactive": false },
             { "id": "tree_left2", "x": 22,  "y": 40, "w": 8,  "h": 110, "color": "#121823", "interactive": false },
             { "id": "tree_right", "x": 288, "y": 24, "w": 10, "h": 126, "color": "#0f141c", "interactive": false },
+            { "id": "moon", "name": "The moon", "x": 236, "y": 16, "w": 8, "h": 8, "color": "#b8bece",
+              "dialogue": "campsite.moon", "again": "campsite.moon_again" },
 
+            { "id": "jacket", "name": "{x}'s jacket", "x": 14, "y": 96, "w": 10, "h": 16, "color": "#3c4636",
+              "dialogue": "campsite.jacket", "again": "campsite.jacket_again" },
             { "id": "car", "name": "Broken car", "x": 30, "w": 64, "h": 32, "color": "#2c333d",
               "sprite": "props/car.png", "dialogue": "campsite.car", "again": "campsite.car_again" },
+            { "id": "map", "name": "Trail map", "x": 70, "y": 112, "w": 12, "h": 6, "color": "#8a8470",
+              "dialogue": "campsite.map", "again": "campsite.map_again" },
             { "id": "backpack", "name": "Backpack", "x": 100, "w": 16, "h": 16, "color": "#4a4f45",
               "sprite": "props/backpack.png", "dialogue": "campsite.backpack" },
             { "id": "magazines", "name": "Magazines", "x": 124, "y": 142, "w": 16, "h": 8, "color": "#6b6250",
               "sprite": "props/magazines.png", "dialogue": "campsite.magazines", "again": "campsite.magazines_again" },
+            { "id": "water_bottle", "name": "Water bottle", "x": 142, "y": 143, "w": 4, "h": 7, "color": "#5c7a6c",
+              "if": "!water_taken", "dialogue": "campsite.bottle" },
 
             { "id": "fire", "name": "Fire", "x": 150, "y": 142, "w": 32, "h": 8, "color": "#3a2a20",
               "effect": "fire", "if": "!fire_out", "dialogue": "campsite.fire" },
             { "id": "ashes", "name": "Ashes", "x": 150, "y": 144, "w": 32, "h": 6, "color": "#2a2a2c",
               "if": "fire_out", "dialogue": "campsite.ashes" },
+            { "id": "pot", "name": "Cooking pot", "x": 184, "y": 143, "w": 10, "h": 7, "color": "#3a3e44",
+              "dialogue": "campsite.pot" },
 
             { "id": "medical_kit", "name": "Medical kit", "x": 196, "w": 16, "h": 12, "color": "#6a4c4c",
               "sprite": "props/medical_kit.png", "dialogue": "campsite.kit", "again": "campsite.kit_again" },
@@ -40,6 +51,8 @@
               "sprite": "props/cigarette_pack.png", "if": "!cig_pack_taken", "dialogue": "campsite.cigarettes" },
             { "id": "blanket", "name": "Blanket", "x": 246, "y": 144, "w": 32, "h": 6, "color": "#3e4a5c",
               "sprite": "props/blanket.png", "if": "wound_dressed", "dialogue": "campsite.blanket" },
+            { "id": "tracks", "name": "Tracks", "x": 288, "y": 147, "w": 10, "h": 3, "color": "#22262c",
+              "dialogue": "campsite.tracks", "again": "campsite.tracks_again" },
 
             { "id": "forest_exit", "name": "Forest path", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#0b0f15",
               "exit": "factory_entrance", "exit_if": "fire_out", "locked": "campsite.exit_locked" }

@@ -31,22 +31,30 @@ namespace hollow
                          CellW - 4, CellH - 2};
     }
 
-    void InventoryPanel::update(const std::vector<InventoryEntry>& entries, const Input& input)
+    const ItemDef* InventoryPanel::update(const std::vector<InventoryEntry>& entries, const Input& input)
     {
-        if (!open_) return;
+        if (!open_) return nullptr;
         if (input.pressed(Action::Inventory) || input.pressed(Action::Pause))
         {
             open_ = false;
-            return;
+            return nullptr;
         }
 
         const int count = static_cast<int>(entries.size());
-        if (count == 0) return;
+        if (count == 0) return nullptr;
         if (input.pressed(Action::Left)) selected_ = std::max(0, selected_ - 1);
         if (input.pressed(Action::Right)) selected_ = std::min(count - 1, selected_ + 1);
         if (input.pressed(Action::Up)) selected_ = std::max(0, selected_ - Columns);
         if (input.pressed(Action::Down)) selected_ = std::min(count - 1, selected_ + Columns);
         selected_ = std::clamp(selected_, 0, count - 1);
+
+        const ItemDef* item = entries[static_cast<std::size_t>(selected_)].item;
+        if (input.pressed(Action::Confirm) && !item->use.empty())
+        {
+            open_ = false;
+            return item;
+        }
+        return nullptr;
     }
 
     void InventoryPanel::draw(const std::vector<InventoryEntry>& entries, const TextRenderer& text,
@@ -57,7 +65,10 @@ namespace hollow
         DrawRectangleRec(layout::SceneBox, ColorAlpha(BLACK, 0.55f));
         drawPanel(assets, Panel, ui);
         text.draw("Carrying", Vector2{Panel.x + 8, Panel.y + 6}, ui.dim);
-        text.draw("Tab: close", Vector2{Panel.x + Panel.width - 8 - text.measure("Tab: close"), Panel.y + 6}, ui.dim);
+        const bool usable = !entries.empty() &&
+                            !entries[static_cast<std::size_t>(std::clamp(selected_, 0, static_cast<int>(entries.size()) - 1))].item->use.empty();
+        const char* keys = usable ? "E: use   Tab: close" : "Tab: close";
+        text.draw(keys, Vector2{Panel.x + Panel.width - 8 - text.measure(keys), Panel.y + 6}, ui.dim);
 
         if (entries.empty())
             text.draw("Nothing but lint.", Vector2{Panel.x + 8, Panel.y + 24}, ui.narration);
@@ -78,6 +89,8 @@ namespace hollow
             std::string label = entry.item->name;
             if (entry.count > 1) label += " x" + std::to_string(entry.count);
             text.draw(label, Vector2{cell.x + 21, cell.y + 5}, active ? ui.highlight : ui.text);
+            if (!entry.item->use.empty()) // a small mark: this one can be used
+                DrawRectangleRec(Rectangle{cell.x + cell.width - 4, cell.y + 7, 2, 2}, ColorAlpha(ui.thought, active ? 1.0f : 0.5f));
         }
 
         // The description, in the dialogue box.

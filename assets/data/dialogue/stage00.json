@@ -2,6 +2,7 @@
 // are new (hints, second looks, variants) and can be rewritten freely.
 {
     "campsite.start": [
+        { "narration": "Midnight.", "_added": "the night starts here and ends at sunrise on the summit" },
         { "narration": "{y} and {x} grew up in the same small town. Now they are walking back to the hideaway on the mountain where they spent their summers.", "_added": "opening text that introduces the two friends (step 4)" },
         { "narration": "{x} has a wound that is getting worse. Supplies are low. Something is following them." },
         { "thought": "He's been asleep a while. Probably a good sign. Probably." }
@@ -12,6 +13,48 @@
         { "y": "You must have read this a hundred times." },
         { "thought": "I read it a hundred and one. Not telling him that." }
     ],
+    "campsite.moon": [
+        { "y": "Midnight, give or take. If he can walk, we're up top by sunrise.", "_added": "new thing to look at" },
+        { "thought": "If." }
+    ],
+    "campsite.moon_again": [
+        { "thought": "It hasn't moved. Neither have we.", "_added": "second look" }
+    ],
+
+    "campsite.jacket": [
+        { "narration": "A photo in the inside pocket. The two of them on the summit, fourteen and sunburnt.", "_added": "new thing to look at" },
+        { "y": "He's carried this the whole way." },
+        { "thought": "Of course he has." }
+    ],
+    "campsite.jacket_again": [
+        { "thought": "Fourteen. Not a scratch on either of us.", "_added": "second look" }
+    ],
+
+    "campsite.map": [
+        { "y": "The old trail map. Somebody circled the summit in pen. Twice.", "_added": "new thing to look at; sets up the plan" },
+        { "thought": "He did. The night he stopped pretending the wound was getting better." }
+    ],
+    "campsite.map_again": [
+        { "thought": "Two circles. In case I missed the first one.", "_added": "second look" }
+    ],
+
+    "campsite.bottle": [
+        { "y": "Empty water bottle. Might be good for something.", "_added": "new item: an empty bottle can be thrown to make noise (stage 02)" },
+        { "narration": "Got: an empty bottle.", "do": ["bottles += 1", "water_taken = true"] }
+    ],
+
+    "campsite.pot": [
+        { "y": "Beans, burnt on. Last night's dinner and tomorrow's breakfast.", "_added": "new thing to look at" }
+    ],
+
+    "campsite.tracks": [
+        { "y": "Tracks in the mud. Too big for a dog. Too many toes for a bear.", "_added": "new thing to look at" },
+        { "y": "I'm going to stop looking at these now." }
+    ],
+    "campsite.tracks_again": [
+        { "thought": "Still there. Still too many toes.", "_added": "second look" }
+    ],
+
     "campsite.magazines_again": [
         { "thought": "The bridge one. Still a hundred and one.", "_added": "second look" }
     ],
@@ -105,8 +148,8 @@
         { "x": "Breathing. Look at me, I'm a professional." },
         { "narration": "The dressing is done. The kit is empty now.", "do": ["take last_bandage", "wound_dressed = true"] },
         { "thought": "That was the last clean one. We need antibiotics, more bandages, anything." },
-        { "pause": 1.2, "do": ["sound low_call", "ambient fire wind", "music stop", "event reaper_hint"] },
-        { "narration": "A low, long sound from the trees. The crickets stop. The fire flickers slower." },
+        { "pause": 1.2, "do": ["sound low_call", "ambient fire@0.45 wind@0.6", "event reaper_hint"] },
+        { "narration": "A low, long sound from the trees. The insects stop. The fire flickers slower." },
         { "x": "...Please tell me you heard that." },
         { "y": "Yeah." },
         { "x": "Maybe it's a deer." },

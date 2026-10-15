@@ -8,6 +8,7 @@ assets/data/
 ├── game.json             names, story variables, colours, the list of files below
 ├── items.json            inventory items
 ├── barks.json            short lines over a character's head
+├── dialogue/items.json   what using an item from the inventory does
 ├── dialogue/stage00.json … stage04.json   conversations
 └── rooms/stage00.json … stage04.json      rooms and what is in them
 ```
@@ -140,7 +141,7 @@ gives 0.
 |---|---|
 | `goto <room> [x]` | changes room (with a fade); put it last |
 | `sound <id>` | plays `assets/sounds/<id>.ogg` (or .wav, .mp3, .qoa) if it exists |
-| `ambient <id> <id> …` | the sound loops that play now (none: silence) |
+| `ambient <id> <id> …` | the sound loops that play now (none: silence); `fire@0.4` plays a loop at 40 % |
 | `music <id>` / `music stop` | music track |
 | `pose <x\|y> <pose>` | idle, sit, lying, kneel |
 | `companion follow\|stay [x]\|drag\|absent` | what X does |
@@ -148,9 +149,14 @@ gives 0.
 | `step <x\|y> <dx>` | walks that far (negative: left) |
 | `face <x\|y> left\|right` | turns a character |
 | `shake <seconds> [strength]` | shakes the scene |
-| `tint <#rrggbb> [seconds]` | colours the scene (night, sunset) |
+| `tint <#rrggbb> [seconds]` | colours the scene (night, sunrise) |
 | `bark <pool>` | a short line over a head |
 | `event <name> …` | something for the room's script (see the room files) |
+| `fight` | starts the room's `fight` (see Rooms); put it last |
+| `revive <conversation> [presses] [seconds]` | X stops breathing: the near-death scene (E on the beat, the Reaper walks in). `presses` good presses needed (8), `seconds` until the Reaper reaches him (14). Then the conversation plays; if the Reaper got there first, `reaper_touched += 1` and `x_condition = 0` |
+| `reaper show <x> [height] [seconds]` | the Reaper stands at x; height 80 is near, 40 far away |
+| `reaper hide [seconds]` / `reaper glimpse <x> [height]` | gone / there for a moment, with a sting |
+| `reaper follow <distance>` / `reaper stop` | it walks behind them, that far back: it creeps up while they stand still, fades while they look back at it, walks to X when he is left lying alone, and costs `x_condition` once a room if it reaches him |
 | `end` | fades out to the end card |
 
 ---
@@ -185,10 +191,37 @@ gives 0.
 | `player_x` | where the player appears (an exit's `spawn_x` wins) |
 | `walk` | `[from, to]`, how far the player can walk |
 | `enter` | list of `{ "if", "dialogue", "do", "once" }`: on entering, every rule whose `if` is true applies its `do`; the first with a `dialogue` starts it. `once` (default true): only the first time |
-| `companion` | X here: `x`, `mode` (stay, follow, drag), `pose`, `dialogue` / `again` when talked to, or `bark` |
+| `companion` | X here: `x`, `mode` (stay, follow, drag), `pose`, `dialogue` / `again` when talked to, or `bark`; `release` / `grab`: conversations when the player lets go of him (G) or takes hold again |
 | `creature` | the creature: `x`, `y`, `w`, `h`, `speed`, `color`, `sprite`, `patrol: [from, to]`, `phases`, `if` |
+| `fight` | a real-time fight, started by the command `fight` (below) |
 | `idle_barks` | bark pools for when the player stands still |
-| `script` | code for this room (`campsite`, `creature`, `checkpoint`, `sunset`, `summit`) |
+| `script` | code for this room (`campsite`, `creature`, `checkpoint`, `sunrise`, `summit`) |
+
+### Fights
+
+```json
+"fight": {
+    "brute": true, "hp": 5,
+    "waves": [ { "crawlers": 2, "from": "left" }, { "crawlers": 3, "from": "both" } ],
+    "win": "stairs.fight_won",
+    "lose": "stairs.fight_lost"
+}
+```
+
+The waves of small creatures ("crawlers") come one after the other from the
+sides (`right`, `left`, `both`); then, with `"brute": true`, the room's
+`creature` itself, with `hp` strength. The player fights in real time: **F**
+swings the bat, **R** shoots (a round a shot, needs the pistol), **Q** dodges
+back, A/D move. A creature shows a "!" just before it lunges. A lunge that
+reaches Y costs `y_health` (1, the brute 2); crawlers coming from X's side go
+for him, and one that reaches him costs `x_condition` (once a wave) unless he
+is dragged or lies behind a `cover` object. Y cannot fight while dragging X:
+G lets go of him first.
+
+When every creature is beaten or gone, `win` plays. When `y_health` reaches
+0, Y goes down, the creatures scatter and `lose` plays (Y is left with 1):
+never game over. A brute still standing goes back to the room's script, so
+`lose` can say what it does next (`event creature_guard 262`).
 
 ### Objects
 
@@ -212,7 +245,7 @@ when it can be used is `<sprite>_hover.png`, or a light outline.
 | `exit_if`, `locked` | the exit works only while true; otherwise `locked` plays |
 | `trigger`, `repeat` | fires when the player walks into it (not on E); `repeat`: every time |
 | `block`, `blocked` | the player cannot walk through while the condition is true; `blocked` plays when they try |
-| `cover` | a hiding spot (checkpoint) |
+| `cover` | a hiding spot (checkpoint); in a fight, crawlers leave X alone behind one |
 | `rest` | a rest spot while dragging X |
 | `effect` | `fire`, `ember` or `glow`: light drawn by the game, fading when `if` turns false |
 | `event` | sent to the room's script when used |
@@ -221,6 +254,11 @@ A player uses things with **E** while standing next to them: the nearest
 usable thing within reach gets the "E" prompt and an outline, and only that
 one can be used; when several are within reach, W/S (or ↑/↓) moves the
 prompt between them. The game has no mouse input.
+
+**X on the ground.** While `x_down` is true (set by the story: after a
+near-death scene, and on the mountain), **G** next to him takes hold of him
+(the companion mode `drag`) and G again lets go of him where he is. Exits
+that need him (`"exit_if": "dragging"`) stay closed until he is held.
 
 ---
 
@@ -234,7 +272,10 @@ prompt between them. The game has no mouse input.
 ```
 
 `count` makes the item follow a variable (shown while above 0, with the
-number) instead of `give` / `take`.
+number) instead of `give` / `take`. `use` names a conversation that **E**
+plays when the item is selected in the inventory (`dialogue/items.json`): a
+bandage on X or on Y, the antibiotics, a bottle thrown at the checkpoint.
+`{x}` and `{y}` work in names and descriptions.
 
 `barks.json`: pools of short lines, never the same twice in a row. An entry is
 one line or a short exchange:
@@ -254,7 +295,8 @@ one line or a short exchange:
 see visual-asset-config.txt section 5).
 
 `game.json` → `bars`: up to three bars top left, each
-`{ "label", "var", "max", "color" }`. None in the prototype.
+`{ "label", "var", "max", "color" }`. Two: Y's health (`y_health`, 0 to 5)
+and X's condition (`x_condition`, 0 to 3). A bar flashes when it changes.
 
 ---
 
@@ -267,6 +309,7 @@ hollow_app --walkthrough tests/walkthrough/full.txt
 
 `--room` starts a new game in any room, `--set` presets variables. A
 walkthrough plays the whole game by itself from a list of commands
-(`use <object>`, `talk`, `choose <text>`, `expect <condition>`, …; see
+(`use <object>`, `talk`, `choose <text>`, `item <id>`, `grab`, `fight`,
+`revive`, `expect <condition>`, …; see
 `apps/app/walkthrough.hpp`) and fails if the player gets stuck. Two are in
 `tests/walkthrough/`: a careful route and a careless one; both run in CTest.

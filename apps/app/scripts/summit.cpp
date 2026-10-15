@@ -1,6 +1,7 @@
-// Stage 04, the summit, and the sunset climb before it.
+// Stage 04, the summit, and the climb before it, at the end of the night.
 //
-// "sunset": the sky warms as the player climbs (left to right).
+// "sunrise": the sky lightens and warms as the player climbs (left to right).
+// They left the campsite at midnight; the sun comes up over the town.
 //
 // "summit": after the last cigarette the player may look at the horizon, X
 // or the cigarette. After two of those (summit_moments) or half a minute,
@@ -11,7 +12,7 @@
 //   event spirit_rise       a faint light rises from X
 //   event spirit_to_reaper  it drifts to the Reaper and fades
 //   event reaper_vanish     the Reaper turns into the dark
-//   event final_image       the sky darkens, the ember fades
+//   event final_image       the sun comes up, the ember fades
 
 #include "room_script.hpp"
 
@@ -22,10 +23,22 @@ using namespace hollow;
 namespace
 {
     constexpr float ReaperAfter = 30.0f;  // seconds of quiet after the cigarette
-    const Color Sunset{255, 196, 150, 255};
-    const Color Dusk{70, 70, 96, 255};
+    constexpr float SunTime = 7.0f;       // the sun clearing the hills, in the final image
+    const Color Dawn{248, 206, 176, 255};
+    const Color Morning{255, 240, 222, 255};
 
-    class SunsetScript final : public RoomScript
+    /// Light low in the sky: the warm accent, strongest at the horizon. The
+    /// tint alone cannot brighten the placeholder colours, so the dawn is
+    /// drawn as well.
+    void drawSkyGlow(const Game& game, float horizon, float strength)
+    {
+        if (strength <= 0.0f) return;
+        const Color warm = game.ui().accent;
+        DrawRectangleGradientV(0, 0, static_cast<int>(layout::SceneBox.width), static_cast<int>(horizon),
+                               ColorAlpha(warm, 0.0f), ColorAlpha(warm, strength));
+    }
+
+    class SunriseScript final : public RoomScript
     {
     public:
         void enter(Game& game) override { start_ = game.room().tint; }
@@ -33,12 +46,15 @@ namespace
         void update(Game& game, float) override
         {
             const RoomDef& room = game.room();
-            const float t = (game.player().x - room.walkMin) / std::max(1.0f, room.walkMax - room.walkMin);
-            game.setTint(mix(start_, Sunset, smoothstep(t)), 0.0f);
+            t_ = smoothstep((game.player().x - room.walkMin) / std::max(1.0f, room.walkMax - room.walkMin));
+            game.setTint(mix(start_, Dawn, t_), 0.0f);
         }
+
+        void drawBack(Game& game) override { drawSkyGlow(game, 130.0f, 0.06f + 0.22f * t_); }
 
     private:
         Color start_{};
+        float t_ = 0.0f;
     };
 
     class SummitScript final : public RoomScript
@@ -57,6 +73,7 @@ namespace
         {
             reaper_.update(dt);
             spirit_.update(dt);
+            if (sunrise_ >= 0.0f) sunrise_ += dt;
 
             if (started_ || game.busy() || game.state().get("cig_scene_done") == 0) return;
             quiet_ += dt;
@@ -65,6 +82,18 @@ namespace
                 started_ = true;
                 game.startDialogue("summit.reaper");
             }
+        }
+
+        void drawBack(Game& game) override
+        {
+            // First light behind the town; in the final image the sun comes up.
+            const float t = sunrise_ < 0.0f ? 0.0f : smoothstep(std::min(1.0f, sunrise_ / SunTime));
+            drawSkyGlow(game, 112.0f, 0.3f + 0.35f * t);
+            if (t <= 0.0f) return;
+            const Color warm = game.ui().accent;
+            const Vector2 sun{262.0f, std::round(106.0f - 16.0f * t)};
+            drawGlow(sun, 26.0f + 18.0f * t, warm, 0.6f * t);
+            DrawCircleV(sun, 6.0f, ColorAlpha(mix(warm, game.ui().highlight, 0.55f), t));
         }
 
         void drawFront(Game&) override
@@ -106,8 +135,9 @@ namespace
             }
             if (name == "final_image")
             {
-                game.setTint(Dusk, 7.0f);
+                game.setTint(Morning, SunTime);
                 game.state().set("ember_out", 1);
+                sunrise_ = 0.0f;
                 return true;
             }
             return false;
@@ -118,12 +148,13 @@ namespace
         Apparition spirit_;
         float quiet_ = 0.0f;
         bool started_ = false;
+        float sunrise_ = -1.0f; // seconds since the final image began
     };
 } // namespace
 
-std::unique_ptr<RoomScript> makeSunsetScript()
+std::unique_ptr<RoomScript> makeSunriseScript()
 {
-    return std::make_unique<SunsetScript>();
+    return std::make_unique<SunriseScript>();
 }
 
 std::unique_ptr<RoomScript> makeSummitScript()

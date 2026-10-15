@@ -22,5 +22,9 @@ namespace hollow
         /// When set, the item is shown while this variable is above 0, with the
         /// value as its count ("Cigarettes x2"), instead of by give/take.
         std::string countVar;
+
+        /// Conversation played when the player uses the item from the
+        /// inventory (E); empty: the item cannot be used there.
+        std::string use;
     };
 } // namespace hollow

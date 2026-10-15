@@ -5,6 +5,9 @@ add_executable(
     hollow_app
     main.cpp
     game.cpp
+    fight.cpp
+    reaper.cpp
+    revive.cpp
     scripts/campsite.cpp
     scripts/checkpoint.cpp
     scripts/creature.cpp

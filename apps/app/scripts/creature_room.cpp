@@ -3,8 +3,11 @@
 // (it blocks the path). The choices send events back here:
 //
 //   event creature_alert       it heard the cabinet: faster, eyes on us
-//   event creature_guard <x>   it plants itself at x (the player was seen)
+//   event creature_guard <x>   it plants itself at x (Y lost the fight)
 //   event creature_leave [x]   it walks off and is gone
+//
+// "fight" (apps/app/fight.cpp) takes the creature over while it lasts and
+// gives it back if it is still standing at the end.
 
 #include "creature.hpp"
 #include "room_script.hpp"
@@ -42,7 +45,28 @@ namespace
 
         void drawBack(Game& game) override
         {
-            creature_.draw(game);
+            if (!taken_) creature_.draw(game);
+        }
+
+        [[nodiscard]] std::optional<CreatureState> creature() const override
+        {
+            if (taken_ || creature_.gone()) return std::nullopt;
+            return CreatureState{creature_.x, creature_.speedScale};
+        }
+
+        void creatureTaken() override
+        {
+            taken_ = true;
+            patrolling_ = false;
+        }
+
+        void creatureReturned(Game&, float x) override
+        {
+            taken_ = false;
+            creature_.x = x;
+            creature_.visible = true;
+            creature_.alpha = 1.0f;
+            creature_.look = "watch";
         }
 
         bool event(Game& game, std::string_view name, const std::vector<std::string>& args) override
@@ -59,6 +83,7 @@ namespace
             if (name == "creature_guard")
             {
                 patrolling_ = false;
+                taken_ = false;
                 creature_.visible = true;
                 creature_.alpha = 1.0f;
                 creature_.look = "watch";
@@ -78,6 +103,7 @@ namespace
     private:
         Creature creature_;
         bool patrolling_ = false;
+        bool taken_ = false; // the fight has it
     };
 } // namespace
 

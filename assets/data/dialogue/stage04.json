@@ -1,10 +1,15 @@
-// STAGE 04: THE SUMMIT. Lines are the script's; "_added" marks new ones.
-// Branches: a saved cigarette or none (CIG_COUNT), two or more shared
-// (SMOKED_WITH_X), both factory notes read (notes_read >= 2, the script's
-// READ_ALL_NOTES). The room's script starts "summit.reaper".
+// STAGE 04: THE SUMMIT. Lines are the script's, except where "_added" or
+// "_changed" says otherwise. Branches: a saved cigarette or none (CIG_COUNT),
+// two or more shared (SMOKED_WITH_X), both factory notes read (notes_read >=
+// 2, the script's READ_ALL_NOTES). The room's script starts "summit.reaper".
+//
+// Playtest note (15 October): at the end Y knows. They planned this at the
+// barricade and the Collapse ("Up there. Like we said."). X knows he is
+// dying, and Y does not lie to him to make him feel better: no "We still
+// can", no "Wake up". The lines marked "_changed" replace those.
 {
     "summit.arrive": [
-        { "narration": "{y} lowers {x} onto a flat rock. Below them lies their town.", "do": ["pose x sit"] },
+        { "narration": "{y} lowers {x} onto a flat rock. Below them lies their town. Behind it, the sky is turning pale.", "do": ["pose x sit", "x_down = false"], "_changed": "sunrise, not sunset" },
         { "y": "There. Made it." },
         { "narration": "{y} catches his breath." },
         { "y": "Told you we would." },
@@ -46,7 +51,7 @@
         { "if": "!cig_scene_done",
           "then": [ { "goto": "summit.cigarette_scene" } ],
           "else": [
-            { "y": "Hey. You can sleep when we get home." },
+            { "y": "Sleep if you want. I'll keep watch.", "_changed": "was \"You can sleep when we get home\"" },
             { "narration": "{x} doesn't respond.", "do": ["summit_moments += 1"] }
           ] }
     ],
@@ -83,24 +88,27 @@
         { "x": "Remember when we said we'd leave together?" },
         { "y": "...Yeah." },
         { "x": "See the whole world." },
-        { "y": "We still can." },
+        { "y": "I'll see it. For both of us. That was the deal.", "_changed": "was \"We still can.\": Y does not lie to him" },
         { "narration": "{x} opens his eyes." },
-        { "x": "You're a terrible liar." },
-        { "y": "Shut up." },
-        { "x": "Always have been." },
-        { "narration": "{y} laughs, but the sound breaks halfway." },
-        { "y": "Come on, man. Don't do this." },
+        { "x": "You didn't even try to lie.", "_changed": "was \"You're a terrible liar.\"" },
+        { "y": "You'd have caught me." },
+        { "x": "Always have." },
+        { "narration": "{y} laughs. It only breaks a little.", "_changed": "" },
+        { "x": "You remember the rest of the deal?", "_changed": "was \"Come on, man. Don't do this.\"" },
+        { "y": "No speeches. No crying where you can see it. I take the long way home." },
+        { "x": "And?" },
+        { "y": "And I stay until the sun's all the way up." },
+        { "x": "Good. That's good." },
         { "narration": "{x} leans against his shoulder." },
         { "x": "I'm tired." },
-        { "y": "I know." },
+        { "y": "I know. It's okay." },
         { "x": "Just for a minute." },
-        { "y": "Okay. Just rest." },
+        { "y": "Take as long as you want. I'm right here.", "_changed": "was \"Okay. Just rest.\"" },
         { "if": "smoked_with_x >= 2", "then": [
             { "x": "Hey. Thanks for all the cigarettes." },
-            { "y": "Don't say it like that." },
-            { "x": "Like what?" },
-            { "y": "Like it's goodbye." },
-            { "x": "...It's just a thank-you." }
+            { "y": "That sounds like goodbye.", "_changed": "Y says it plainly instead of asking him not to" },
+            { "x": "It's a little bit goodbye." },
+            { "y": "...Then you're welcome. For all of them." }
         ] },
         { "do": ["cig_scene_done = true"] }
     ],
@@ -117,34 +125,36 @@
         { "narration": "The wind stops. The grass and the trees go still." },
         { "pause": 2.0, "do": ["event reaper_appear"] },
         { "narration": "At the edge of the clearing, a tall figure appears. It does not move toward them." },
-        { "y": "Remember the place behind the house? Where we used to hide?" },
+        { "narration": "{y} sees it. This time he doesn't look away.", "_changed": "Y knows what it is" },
+        { "y": "It's here." },
         { "pause": 1.5 },
-        { "narration": "No reply." },
+        { "narration": "No reply. {x}'s breathing is very slow now." },
+        { "y": "Remember the place behind the house? Where we used to hide?" },
         { "y": "You always said nobody would find us there." },
         { "narration": "A small, broken laugh." },
         { "y": "You were wrong about that too." },
         { "y": "{x}?" },
         { "narration": "{x}'s head slips gently against his shoulder. {y} catches him.", "do": ["pose x lying"] },
-        { "y": "Hey." },
-        { "narration": "{y} touches {x}'s face." },
-        { "y": "Come on. Wake up." },
-        { "y": "{x}?" },
-        { "narration": "{y} shakes him once. Twice.", "do": ["shake 0.2 1"] },
-        { "y": "No. No, no. Come on." },
-        { "narration": "{y} presses a hand against the wound, as if there were still something to do." },
-        { "y": "I got you here. You wanted to come back. We made it." },
-        { "narration": "{y}'s voice breaks." },
-        { "y": "You said we made it." },
-        { "narration": "{y} pulls {x} close and rests his forehead against his." },
+        { "y": "Hey. It's okay. I've got you.", "_changed": "was \"Come on. Wake up.\"" },
+        { "narration": "{y} doesn't shake him. He doesn't ask him to wake up.", "_changed": "" },
+        { "y": "You don't have to hold on for me. We said." },
+        { "pause": 1.5 },
+        { "y": "I'll take the long way home. Like we planned." },
+        { "narration": "His voice breaks, once." },
+        { "y": "Go on. I'll be okay." },
+        { "y": "...Mostly." },
+        { "narration": "{y} rests his forehead against {x}'s." },
         { "pause": 2.0, "do": ["event spirit_rise"] },
         { "narration": "A faint light rises from {x}. It takes a familiar shape. {y} reaches for it, and his hand passes through." },
         { "pause": 1.5, "do": ["event spirit_to_reaper"] },
         { "narration": "It looks down at him for a last moment, then drifts toward the tall figure." },
+        { "y": "Be gentle with him. He bruises easy.", "_changed": "Y speaks to the Reaper" },
         { "pause": 4.0, "do": ["event reaper_vanish"] },
-        { "narration": "The figure turns and vanishes into the dark." },
+        { "narration": "The figure turns and is gone." },
         { "narration": "{y} does not move. The cigarette burns down between his fingers." },
         { "pause": 2.0, "do": ["event final_image"] },
-        { "pause": 7.0 },
+        { "narration": "The sun comes up over the town, the way {x} wanted to see it.", "_changed": "sunrise: the final image" },
+        { "pause": 5.0 },
         { "do": ["end"] }
     ]
 }

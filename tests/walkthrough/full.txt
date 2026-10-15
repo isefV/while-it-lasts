@@ -1,18 +1,27 @@
-# The whole game on a careful route: every item, the key, the antibiotics,
-# no spotting, one shared cigarette, two saved for the summit, both notes.
+# The whole game on a careful route: every item and thing to look at, the
+# key, the antibiotics, the bottle thrown at the checkpoint, both fights won,
+# X kept breathing both times, one shared cigarette, two saved for the
+# summit, both notes.
 #   hollow_app --walkthrough tests/walkthrough/full.txt
 # The commands are explained in apps/app/walkthrough.hpp.
 
 # --- Stage 00: the campsite -------------------------------------------------
 room campsite
+use jacket
+use car
+use map
 use magazines
 use magazines                 # a second look plays another line
-use car
+use water_bottle
+expect bottles == 1
+use pot
 use medical_kit
 expect item.last_bandage
 use cigarette_pack
 choose Take
 expect cig_count == 1
+use moon
+use tracks
 use fire
 use backpack
 use forest_exit               # locked until the fire is out
@@ -28,77 +37,111 @@ use forest_exit
 room factory_entrance
 use road                      # locked until the floor is done
 talk
+use vending
+choose Shake
+expect pretzels
+use booth
+expect bandages == 1
 use door
 room factory_office
 use desk
 use radio
+use mug
 use clock
 expect item.key
+use locker
+expect painkillers == 2
 use filing_cabinet
 use calendar
 use notice
 expect notes_read == 2
 use window
 use window
+use poster
 use first_aid_cabinet
 choose Use the key
-expect cabinet_open && !noisy_entry && cig_count == 2
+expect cabinet_open && !noisy_entry && cig_count == 2 && bandages == 3
 use sink                      # nothing yet: the shelf has the hint
 expect !has_antibiotics
 use shelves
 use sink
-expect has_antibiotics
+expect has_antibiotics && item.antibiotics
 use floor_door
 room factory_floor
 use bolt
+use bottles
+expect bottles == 3
+use claw_marks
 walk 110                      # walks into the creature
 choose Throw the bolt
 expect factory_won && !item.bolt
+use lunchbox
 use lost_backpack
-expect backpack_looted && cig_count == 3
+expect backpack_looted && cig_count == 3 && bandages == 4
 use exit_office
 room factory_office
 use exit_entrance
 choose Share                  # back at the entrance: the dressing, then the cigarette
 room factory_entrance
-expect stage01_done && x_condition == 3 && smoked_with_x == 1 && cig_count == 2
+expect stage01_done && x_condition == 3 && antibiotics_given && smoked_with_x == 1 && cig_count == 2 && bandages == 3
+item painkillers              # nobody hurts yet: kept
+expect painkillers == 2
 use road
 
 # --- Stage 02: the perimeter ------------------------------------------------
 room checkpoint
-# The creature's loop starts when the talk ends: turned 2.5 s, walk 1.5,
-# listen 1.5 (keep still), watch 2.5 (stay hidden), then again.
-walk 80                       # behind the barrier
-wait 6.8                      # through listen and watch
-walk 228                      # past the sandbags to the vehicle, while it looks away
-wait 4.9
-use exit_road
+use sign
+use bottles
+expect bottles == 5
+item bottle                   # thrown into the trees: the creature goes after it
+choose Throw
+expect bottles == 4
+use exit_road                 # straight across while it is gone
 room barricade
 expect spotted_count == 0
+use car
+use posters
 use slab                      # no rod yet
 choose Push
 use rod
 use slab
-choose Lever
-expect gap_open
-use exit_road
+choose Lever                  # the noise brings two waves of crawlers
+fight                         # then X collapses at once...
+revive                        # ...and E on the beat keeps him breathing
+expect gap_open && barricade_fought && reaper_touched == 0 && x_down && !dragging
+grab                          # take hold of him
+expect dragging
+use exit_road                 # pulled through the gap
 room sheltered_wall
+use graffiti
+use fire_ring
 use mountain_path             # locked until the cigarette scene
 use crushed_pack
 choose Save
-expect stage02_done && cig_count == 3
+expect stage02_done && cig_count == 3 && !x_down
 use mountain_path
 
 # --- Stage 03: the mountain steps -------------------------------------------
 room foot
+use lantern_1
+use stream
+use lantern_2
+use shrine
 use steps
 room landing
 use lantern
 use ribbon
 use stone_marker
 use broken_sign
+use footprints
 use steps
 room collapse
+revive                        # the second time, harder
+expect reaper_touched == 0 && dragging && x_down
+use edge
+grab                          # let go of him...
+expect !dragging
+grab                          # ...and take hold again
 expect dragging
 use rest_rock
 walk 200                      # the narrow gap asks to turn him first
@@ -106,20 +149,24 @@ expect turned_x
 use rest_stump
 use steps
 room broken_stairs
-walk 105                      # behind the wall: X stays here
-expect !dragging
+walk 105                      # the wall: a hint to leave him here
+grab                          # let go of him behind it
+expect !dragging && stairs_left_x
+use claws
 use creature
-choose Throw a rock
+choose Fight
+fight                         # two crawlers up the path, then the creature
 expect creature_cleared
 use fallen_beam
 expect beam_moved
 talk
-expect dragging
+expect dragging && stairs_back
 use rest_step
 use steps
 room final_ascent
 use rest_bench
 expect rests == 4
+use sky
 walk 160                      # the last talk on the way
 use summit_path
 

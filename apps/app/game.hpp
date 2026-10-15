@@ -3,8 +3,13 @@
 // The game: screens (title, playing, pause, end card), the current room, the
 // player and X, and everything the room scripts in scripts/ can ask for.
 
+#include "fight.hpp"
+#include "reaper.hpp"
+#include "revive.hpp"
+
 #include <hollow/hollow.hpp>
 
+#include <array>
 #include <map>
 #include <memory>
 #include <set>
@@ -63,6 +68,11 @@ public:
     [[nodiscard]] const hollow::GameData& data() const { return data_; }
     [[nodiscard]] const hollow::RoomDef& room() const { return *room_; }
     hollow::Assets& assets() { return assets_; }
+    [[nodiscard]] const hollow::Input& input() const { return input_; }
+    [[nodiscard]] const hollow::TextRenderer& text() const { return text_; }
+    [[nodiscard]] RoomScript* script() { return script_.get(); }
+    [[nodiscard]] Color tint() const { return tint_; }
+    [[nodiscard]] const Fight& fight() const { return fight_; }
     hollow::Random& random() { return random_; }
     hollow::Particles& particles() { return particles_; }
     [[nodiscard]] const hollow::UiConfig& ui() const { return data_.ui; }
@@ -78,7 +88,7 @@ public:
 
     bool startDialogue(const std::string& id);
     void bark(const std::string& pool);
-    void sound(const std::string& id) { audio_.play(id); }
+    void sound(const std::string& id, float volume = 1.0f, float pitch = 1.0f) { audio_.play(id, volume, pitch); }
     void setAmbient(const std::vector<std::string>& ids) { audio_.setAmbient(ids); }
     void shake(float seconds, float strength) { shake_.start(seconds, strength); }
     void setTint(Color tint, float seconds);
@@ -115,6 +125,8 @@ private:
     void updateTriggers();
     void interact(const hollow::ObjectDef* object);
     void talkToCompanion();
+    void grabOrRelease();
+    [[nodiscard]] bool canGrab() const;
     [[nodiscard]] std::vector<hollow::InventoryEntry> inventory() const;
 
     // What the player can use: the things in reach. E uses the nearest one,
@@ -187,6 +199,15 @@ private:
     float pendingX_ = -1.0f;
     bool ending_ = false;
     float endCardTime_ = 0.0f;
+
+    Fight fight_;
+    Revive revive_;
+    Reaper reaper_;
+
+    // The bars: the value last shown, and a flash when it changes.
+    std::array<int, 3> barValue_{};
+    std::array<float, 3> barFlash_{};
+    std::array<bool, 3> barDown_{};
 
     hollow::Shake shake_;
     hollow::Particles particles_;
