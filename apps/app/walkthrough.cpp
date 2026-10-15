@@ -56,6 +56,7 @@ void Walkthrough::next()
     time_ = 0.0f;
     stuck_ = 0.0f;
     lastX_ = -1.0f;
+    cycles_ = 0;
     started_ = false;
 }
 
@@ -216,9 +217,20 @@ bool Walkthrough::step(Game& game, float dt)
         std::cout << game.room().id << ": " << command.verb << " " << command.rest << '\n';
     }
 
-    const auto click = [&](Rectangle rect) {
-        input.clickVirtual(Vector2{layout::SceneBox.x + rect.x + rect.width / 2.0f,
-                                   layout::SceneBox.y + rect.y + rect.height / 2.0f});
+    // Walks next to the thing, presses S until it is the selected one (when
+    // several things are in reach), then E: what a player does.
+    const auto useWhenSelected = [&](Rectangle rect, bool companion, const ObjectDef* object, const std::string& what) {
+        if (!walkTowards(game, rect.x - ReachMargin, rect.x + rect.width + ReachMargin, what, dt)) return false;
+        if (game.selectedTarget() == Game::Target{object, companion})
+        {
+            input.pressVirtual(Action::Interact);
+            return true;
+        }
+        if (++cycles_ > static_cast<int>(game.targetsInReach().size()))
+            fail(what + " is in reach but S never selects it");
+        else
+            input.pressVirtual(Action::Down);
+        return false;
     };
 
     if (command.verb == "use")
@@ -231,22 +243,13 @@ bool Walkthrough::step(Game& game, float dt)
         if (!game.present(*object)) return fail("\"" + id + "\" is not there now (its \"if\" is false)");
         if (!game.usable(*object)) return fail("\"" + id + "\" cannot be used now");
 
-        if (walkTowards(game, object->rect.x - ReachMargin, object->rect.x + object->rect.width + ReachMargin, id, dt))
-        {
-            click(object->rect);
-            next();
-        }
+        if (useWhenSelected(object->rect, false, object, id)) next();
         return !failed_;
     }
     if (command.verb == "talk")
     {
         if (!game.companionUsable()) return fail("cannot talk to X now");
-        const Rectangle body = game.companion().bounds();
-        if (walkTowards(game, body.x - ReachMargin, body.x + body.width + ReachMargin, "X", dt))
-        {
-            click(body);
-            next();
-        }
+        if (useWhenSelected(game.companion().bounds(), true, nullptr, "X")) next();
         return !failed_;
     }
     if (command.verb == "walk")

@@ -8,6 +8,7 @@
         "color": "#182027",
         "tint": "#9fa8bc",
         "ambient": ["wind", "footsteps", "leaves", "insects", "stream"],
+        "music": "music_mountain",
         "player_x": 24,
         "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak"],
         "enter": [
@@ -28,6 +29,7 @@
         "color": "#1a2128",
         "tint": "#9ca4b8",
         "ambient": ["wind", "footsteps", "leaves", "insects"],
+        "music": "music_mountain",
         "player_x": 24,
         "idle_barks": ["x_idle_good", "x_idle_weak"],
         "companion": { "mode": "follow", "bark": "x_idle_good" },
@@ -51,6 +53,7 @@
         "color": "#1b1f27",
         "tint": "#9a9fb4",
         "ambient": ["wind", "footsteps", "leaves"],
+        "music": "music_mountain",
         "player_x": 40,
         "idle_barks": ["x_idle_weak"],
         "enter": [
@@ -77,6 +80,7 @@
         "color": "#1c1e26",
         "tint": "#9a9aae",
         "ambient": ["wind", "footsteps", "groan"],
+        "music": "music_mountain",
         "script": "creature",
         "player_x": 36,
         "idle_barks": ["x_idle_weak"],

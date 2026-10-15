@@ -72,7 +72,7 @@ Any entry can also have:
 - `"if": "<condition>"`: the entry is skipped while the condition is false.
 - `"do": [ "<effect>", … ]`: applied when the entry is reached.
 
-Text appears letter by letter. The first press (E, Space, Enter or a click)
+Text appears letter by letter. The first press (E, Space or Enter)
 shows the whole line; the next goes on. A line too long for the box (about
 4 lines of 50 letters) is split into pages by itself.
 
@@ -139,7 +139,7 @@ gives 0.
 | Command | Does |
 |---|---|
 | `goto <room> [x]` | changes room (with a fade); put it last |
-| `sound <id>` | plays `assets/sounds/<id>.ogg` (or .wav, .mp3) if it exists |
+| `sound <id>` | plays `assets/sounds/<id>.ogg` (or .wav, .mp3, .qoa) if it exists |
 | `ambient <id> <id> …` | the sound loops that play now (none: silence) |
 | `music <id>` / `music stop` | music track |
 | `pose <x\|y> <pose>` | idle, sit, lying, kneel |
@@ -217,8 +217,10 @@ when it can be used is `<sprite>_hover.png`, or a light outline.
 | `effect` | `fire`, `ember` or `glow`: light drawn by the game, fading when `if` turns false |
 | `event` | sent to the room's script when used |
 
-A player uses things with **E** (the nearest thing in reach) or a **click**
-while standing next to it.
+A player uses things with **E** while standing next to them: the nearest
+usable thing within reach gets the "E" prompt and an outline, and only that
+one can be used; when several are within reach, W/S (or ↑/↓) moves the
+prompt between them. The game has no mouse input.
 
 ---
 

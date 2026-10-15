@@ -31,7 +31,7 @@ namespace hollow
         void close() { open_ = false; }
         [[nodiscard]] bool isOpen() const { return open_; }
 
-        /// Keys and mouse while open; closes on Tab, I or Esc.
+        /// Arrow keys (or WASD) while open; closes on Tab, I or Esc.
         void update(const std::vector<InventoryEntry>& entries, const Input& input);
         void draw(const std::vector<InventoryEntry>& entries, const TextRenderer& text, const UiConfig& ui,
                   Assets& assets) const;

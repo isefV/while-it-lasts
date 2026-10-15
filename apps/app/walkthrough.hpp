@@ -1,11 +1,11 @@
 #pragma once
 
-// Plays the game from a script of commands, with virtual keys and mouse, so
+// Plays the game from a script of commands, with virtual keys, so
 // a whole playthrough can be checked without a person ("--walkthrough").
 // The commands, one per line (# starts a comment):
 //
-//   use <object>         walk to it (A/D) and click it
-//   talk                 walk to X and click him
+//   use <object>         walk next to it (A/D), S until it is selected, E
+//   talk                 the same for X
 //   walk <x>             walk until the player stands at x
 //   choose <text>        at the next choice, pick the option starting with
 //                        <text>; "choose timeout" lets a timed choice run out
@@ -55,6 +55,7 @@ private:
     std::size_t index_ = 0;
     float time_ = 0.0f;       // in the current command
     float stuck_ = 0.0f;
+    int cycles_ = 0; // S presses to select the thing to use
     float lastX_ = -1.0f;
     int frame_ = 0;
     unsigned lastSerial_ = ~0u;

@@ -75,7 +75,7 @@ namespace hollow
             const std::size_t length = pageLength();
             revealed_ = std::min(static_cast<float>(length), revealed_ + ui.textSpeed * dt);
 
-            if (input.pressed(Action::Advance) || input.clicked())
+            if (input.pressed(Action::Advance))
             {
                 const std::size_t pages =
                     (lines_.size() + static_cast<std::size_t>(linesPerPage()) - 1) / static_cast<std::size_t>(linesPerPage());
@@ -96,14 +96,6 @@ namespace hollow
             if (input.pressed(Action::Up)) selected_ = (selected_ + count - 1) % count;
             if (input.pressed(Action::Down)) selected_ = (selected_ + 1) % count;
 
-            for (int i = 0; i < count; ++i)
-            {
-                if (CheckCollisionPointRec(input.mouse(), optionRect(i)))
-                {
-                    if (input.mouseMoved()) selected_ = i;
-                    if (input.clicked()) result.choice = i;
-                }
-            }
             if (input.number() >= 1 && input.number() <= count) result.choice = input.number() - 1;
             if (input.pressed(Action::Confirm)) result.choice = selected_;
         }

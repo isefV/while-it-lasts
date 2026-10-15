@@ -20,10 +20,11 @@ told through dialogue, a few simple actions and choices that come back later.
 | Key | |
 |---|---|
 | A / D, ← / → | walk |
-| E, or a click while standing next to it | use the nearest thing, talk to X |
-| E, Space, Enter, click | next line (the first press shows the whole line) |
-| ↑ / ↓, 1–4, mouse | choose an option |
-| Tab, I | inventory |
+| E, standing next to it | use the thing marked with the E prompt, talk to X |
+| W / S, ↑ / ↓ | pick another thing when several are within reach |
+| E, Space, Enter | next line (the first press shows the whole line) |
+| ↑ / ↓, 1–4, then E or Enter | choose an option |
+| Tab, I | inventory (arrows to look through it) |
 | Esc | pause |
 | F11, Alt+Enter | fullscreen / window |
 

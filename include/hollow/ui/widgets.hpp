@@ -26,10 +26,11 @@ namespace hollow
     /// One bar: a frame and a fill for @p value of @p max.
     void drawBar(Assets& assets, Rectangle rect, int value, int max, Color color, const UiConfig& ui);
 
-    /// "[E] Magazines" above a point of the scene, kept inside the scene box.
-    /// @p reachable false shows it dimmed (the mouse is over something far away).
-    void drawPrompt(const TextRenderer& text, std::string_view label, Vector2 anchor, bool reachable,
-                    const UiConfig& ui, bool showKey = true);
+    /// "[E] Magazines" above a point of the scene, kept inside the scene box;
+    /// shown over the thing the player stands next to. @p note is drawn dimmed
+    /// after the label ("1/2" when several things are in reach).
+    void drawPrompt(const TextRenderer& text, std::string_view label, Vector2 anchor, const UiConfig& ui,
+                    std::string_view note = {}, bool showKey = true);
 
     /// A small triangle pointing right (selected option) or down (more text).
     void drawArrow(Vector2 position, bool down, Color color);
@@ -41,8 +42,8 @@ namespace hollow
         std::vector<std::string> items;
         int selected = 0;
 
-        /// Keys and mouse; returns the chosen index, or -1.
-        int update(const Input& input, const TextRenderer& text, Vector2 center);
+        /// Up / Down and E or Enter; returns the chosen index, or -1.
+        int update(const Input& input);
         void draw(const TextRenderer& text, const UiConfig& ui, Vector2 center) const;
 
     private:

@@ -467,7 +467,7 @@ svg.canvasmap .small { font-size: 8px; }
 <tr><td><code>Canvas</code></td><td>canvas.hpp</td><td>The 480×270 layer plus the whole-number scaling to the screen, centred, black around it. <code>toCanvas()</code> converts the mouse.</td></tr>
 <tr><td><code>Action</code>, <code>Input</code></td><td>input.hpp</td><td>Keys grouped into actions (Left, Interact, Advance, Inventory …). <code>pressed()</code>, <code>down()</code>, <code>mouse()</code>, <code>clicked()</code>, <code>number()</code>. <code>consume()</code> stops a press from being used twice in one frame. Virtual input (<code>pressVirtual</code>, <code>clickVirtual</code> …) lets the walkthrough play.</td></tr>
 <tr><td><code>Assets</code></td><td>assets.hpp</td><td>Paths in <code>assets/</code> and a texture cache. A missing image returns <code>nullptr</code> (remembered), and the caller draws a rectangle.</td></tr>
-<tr><td><code>Audio</code></td><td>audio.hpp</td><td>Sound effects (<code>play</code>), ambient loops that fade in and out (<code>setAmbient</code>), music. Looks for <code>sounds/&lt;id&gt;.ogg|.wav|.mp3</code>; missing files are silently skipped.</td></tr>
+<tr><td><code>Audio</code></td><td>audio.hpp</td><td>Sound effects (<code>play</code>), ambient loops that fade in and out (<code>setAmbient</code>), music. Looks for <code>sounds/&lt;id&gt;.ogg|.wav|.mp3|.qoa</code>; missing files are silently skipped.</td></tr>
 </table></div>
 
 <h3><span class="tag lib">data/</span> loading and checking</h3>

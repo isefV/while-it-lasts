@@ -42,7 +42,7 @@ namespace hollow
         void update(float dt);
         void draw(Color tint = WHITE) const;
 
-        /// Where the placeholder is drawn; also what the mouse can click.
+        /// Where the placeholder is drawn; also what the player must stand next to.
         [[nodiscard]] Rectangle bounds() const;
         [[nodiscard]] float speed() const;
         [[nodiscard]] bool moved() const { return moved_; }

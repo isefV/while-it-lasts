@@ -109,7 +109,7 @@ namespace hollow
         std::string background;      ///< 320 x 180, relative to assets/; a flat colour until it exists
         Color color{20, 26, 36, 255};
         Color tint{255, 255, 255, 255}; ///< night, sunset: multiplies the background
-        std::vector<std::string> ambient; ///< sound loops, assets/sounds/<id>.ogg or .wav
+        std::vector<std::string> ambient; ///< sound loops, assets/sounds/<id>.ogg, .wav, .mp3 or .qoa
         std::string music;
         float playerX = 40.0f;
         float walkMin = 8.0f;

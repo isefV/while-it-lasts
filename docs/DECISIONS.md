@@ -8,7 +8,7 @@ prototype does with each answer. Change this file when a decision changes.
 | 1 | Language | English | All text is English; raylib's pixel font until `assets/fonts/` has one |
 | 2 | Scope | All five stages. Stages 02 and 03 may grow after the prototype | Stage 02: checkpoint stealth room, barricade, sheltered wall. Stage 03: five mountain screens with dragging |
 | 3 | Bars | None for now; maybe later | `game.json` → `bars` is empty; adding one is one line there |
-| 4 | Movement and input | Y walks with the keyboard; use things with E or the mouse; no walking during dialogue | A/D or arrows walk; E uses the nearest thing; a click works only when standing next to it |
+| 4 | Movement and input | Keyboard only (changed 15 October: no mouse); use a thing by standing next to it; no walking during dialogue | A/D or arrows walk; the nearest thing in reach shows an "E" prompt and E uses it; menus, options and the inventory use the arrow keys, E and Enter; the cursor is hidden |
 | 5 | Names of X and Y | Later | Written once in `game.json` → `characters`; `{x}` / `{y}` in every line |
 | 6 | A dialogue entry | Simply text; thoughts in another colour | Text, plus an optional `if` and `do` where the story needs them (docs/DATA-FORMAT.md) |
 | 7 | Text speed, skipping | Letter by letter; a press goes on | First press shows the whole line, second goes to the next |
@@ -47,10 +47,12 @@ and rewrite them.
 
 - Names of X and Y.
 - Bars: which, if any.
-- Font, sounds and music (the game plays them as soon as files with the
-  right names are in `assets/sounds/`: fire, crickets, wind, low_call,
-  branches, dirt, metal, sheet, static, sting, click, crack, heavy_steps,
-  machines, clang, thud, shot, roar, groan, alert, grind, lighter, leaves,
-  insects, stream, footsteps, clatter, scrape, breath, inhale, ember).
+- Font.
+- Sounds and music are in (15 October): every sound the data names is in
+  `assets/sounds/`, with a music track per stage, on the title screen and on
+  the end card; the final ascent and the summit have no music (the script's
+  "near silence"), and the campsite music stops at the low call. Sources and
+  licences: `assets/sounds/CREDITS.md`. The music (Kevin MacLeod) and a few
+  recordings are CC BY, so the game's credits must name them.
 - `cig_count` goes up to 4, not 3 as in the script's table: four cigarettes
   can be found, and a saved one should never disappear.

@@ -46,9 +46,6 @@ namespace hollow
         if (input.pressed(Action::Right)) selected_ = std::min(count - 1, selected_ + 1);
         if (input.pressed(Action::Up)) selected_ = std::max(0, selected_ - Columns);
         if (input.pressed(Action::Down)) selected_ = std::min(count - 1, selected_ + Columns);
-        for (int i = 0; i < count; ++i)
-            if (CheckCollisionPointRec(input.mouse(), cellRect(i)) && (input.mouseMoved() || input.clicked()))
-                selected_ = i;
         selected_ = std::clamp(selected_, 0, count - 1);
     }
 

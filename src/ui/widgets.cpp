@@ -50,12 +50,13 @@ namespace hollow
             DrawTriangle(Vector2{p.x, p.y}, Vector2{p.x, p.y + 6}, Vector2{p.x + 4, p.y + 3}, color);
     }
 
-    void drawPrompt(const TextRenderer& text, std::string_view label, Vector2 anchor, bool reachable,
-                    const UiConfig& ui, bool showKey)
+    void drawPrompt(const TextRenderer& text, std::string_view label, Vector2 anchor, const UiConfig& ui,
+                    std::string_view note, bool showKey)
     {
         const float keyW = showKey ? 10.0f : 0.0f;
         const float labelW = text.measure(label);
-        const float w = std::round(keyW + labelW + 6.0f);
+        const float noteW = note.empty() ? 0.0f : text.measure(note) + 4.0f;
+        const float w = std::round(keyW + labelW + noteW + 6.0f);
         const float h = 12.0f;
         const float sceneW = layout::SceneBox.width;
 
@@ -63,15 +64,15 @@ namespace hollow
         x = std::clamp(x, 1.0f, sceneW - w - 1.0f);
         const float y = std::max(1.0f, std::round(anchor.y - h - 3.0f));
 
-        const Color textColor = reachable ? ui.highlight : ui.dim;
         DrawRectangleRec(Rectangle{x, y, w, h}, ColorAlpha(ui.box, 0.85f));
-        DrawRectangleLinesEx(Rectangle{x, y, w, h}, 1.0f, reachable ? ui.frame : ColorAlpha(ui.frame, 0.5f));
+        DrawRectangleLinesEx(Rectangle{x, y, w, h}, 1.0f, ui.frame);
         if (showKey)
         {
-            DrawRectangleRec(Rectangle{x + 2, y + 2, 8, 8}, reachable ? ui.highlight : ui.dim);
+            DrawRectangleRec(Rectangle{x + 2, y + 2, 8, 8}, ui.highlight);
             text.draw("E", Vector2{x + 3, y + 1}, ui.box);
         }
-        text.draw(label, Vector2{x + 3 + keyW, y + 1}, textColor);
+        text.draw(label, Vector2{x + 3 + keyW, y + 1}, ui.highlight);
+        if (!note.empty()) text.draw(note, Vector2{x + 7 + keyW + labelW, y + 1}, ui.dim);
     }
 
     Rectangle Menu::itemRect(const TextRenderer& text, Vector2 center, int index) const
@@ -81,21 +82,13 @@ namespace hollow
         return Rectangle{std::round(center.x - w / 2.0f), std::round(y), std::round(w), 12.0f};
     }
 
-    int Menu::update(const Input& input, const TextRenderer& text, Vector2 center)
+    int Menu::update(const Input& input)
     {
         const int count = static_cast<int>(items.size());
         if (count == 0) return -1;
         if (input.pressed(Action::Up)) selected = (selected + count - 1) % count;
         if (input.pressed(Action::Down)) selected = (selected + 1) % count;
 
-        for (int i = 0; i < count; ++i)
-        {
-            if (CheckCollisionPointRec(input.mouse(), itemRect(text, center, i)))
-            {
-                if (input.mouseMoved()) selected = i;
-                if (input.clicked()) return i;
-            }
-        }
         if (input.pressed(Action::Confirm)) return selected;
         return -1;
     }

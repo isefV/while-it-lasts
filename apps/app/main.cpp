@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
     SetTraceLogLevel(LOG_WARNING);
     InitWindow(1280, 720, "The Last Light");
     SetExitKey(KEY_NULL); // Esc pauses; quitting is in the menus
+    HideCursor();         // the game is played with the keyboard only
     if (!windowed && !scripted) ToggleBorderlessWindowed();
     SetTargetFPS(scripted ? 0 : 60); // scripted runs go as fast as they can
 

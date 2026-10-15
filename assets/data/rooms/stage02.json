@@ -8,6 +8,7 @@
         "color": "#1b2027",
         "tint": "#a9b3c4",
         "ambient": ["groan", "wind"],
+        "music": "music_perimeter",
         "script": "checkpoint",
         "player_x": 20,
         "enter": [
@@ -51,6 +52,7 @@
         "color": "#1d2229",
         "tint": "#a9b3c4",
         "ambient": ["wind"],
+        "music": "music_perimeter",
         "player_x": 24,
         "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak"],
         "enter": [
@@ -79,6 +81,7 @@
         "color": "#1a1f26",
         "tint": "#a7b0c2",
         "ambient": ["wind"],
+        "music": "music_perimeter",
         "player_x": 120,
         "idle_barks": ["x_idle_good", "x_idle_weak"],
         "enter": [

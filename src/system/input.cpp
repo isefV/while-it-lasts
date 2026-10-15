@@ -1,7 +1,5 @@
-#include <hollow/system/canvas.hpp>
 #include <hollow/system/input.hpp>
 
-#include <cmath>
 #include <span>
 
 namespace hollow
@@ -37,14 +35,9 @@ namespace hollow
         }
     } // namespace
 
-    void Input::update(const Canvas& canvas)
+    void Input::update()
     {
         consumed_ = false;
-        const Vector2 mouse = hasVirtualMouse_ ? virtualMouse_ : canvas.toCanvas(GetMousePosition());
-        mouseMoved_ = std::fabs(mouse.x - mouse_.x) > 0.01f || std::fabs(mouse.y - mouse_.y) > 0.01f;
-        mouse_ = mouse;
-        clicked_ = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || virtualClick_;
-
         number_ = virtualNumber_;
         for (int n = 1; n <= 4; ++n)
             if (IsKeyPressed(KEY_ONE + n - 1) || IsKeyPressed(KEY_KP_1 + n - 1)) number_ = n;
@@ -60,18 +53,10 @@ namespace hollow
         virtualPressed_[static_cast<int>(action)] = true;
     }
 
-    void Input::clickVirtual(Vector2 canvasPosition)
-    {
-        virtualMouse_ = canvasPosition;
-        hasVirtualMouse_ = true;
-        virtualClick_ = true;
-    }
-
     void Input::clearVirtual()
     {
         for (int i = 0; i < ActionCount; ++i)
             virtualDown_[i] = virtualPressed_[i] = false;
-        virtualClick_ = false;
         virtualNumber_ = 0;
     }
 

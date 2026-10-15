@@ -8,6 +8,7 @@
         "color": "#18202c",
         "tint": "#c4c8dc",
         "ambient": ["fire", "crickets", "wind"],
+        "music": "music_campsite",
         "script": "campsite",
         "player_x": 118,
         "walk": [8, 312],

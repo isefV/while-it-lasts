@@ -108,6 +108,7 @@ private:
     hollow::Actor* actor(const std::string& id);
 
     void update(float dt);
+    void toTitle();
     void updatePlaying(float dt);
     void updateExploring(float dt);
     void updateCompanion(float dt);
@@ -116,20 +117,21 @@ private:
     void talkToCompanion();
     [[nodiscard]] std::vector<hollow::InventoryEntry> inventory() const;
 
-    // What the player can use: the nearest thing in reach, and what the mouse is over.
+    // What the player can use: the things in reach. E uses the nearest one,
+    // or the one picked with W/S when several are in reach.
     struct Target
     {
         const hollow::ObjectDef* object = nullptr; // nullptr + companion = X
         bool companion = false;
-        bool reachable = false;
         [[nodiscard]] bool valid() const { return object || companion; }
+        bool operator==(const Target&) const = default;
     };
     [[nodiscard]] bool usable(const hollow::ObjectDef& object) const;
     [[nodiscard]] bool companionUsable() const;
     [[nodiscard]] Rectangle targetRect(const Target& target) const;
     [[nodiscard]] bool inReach(Rectangle rect) const;
-    [[nodiscard]] Target nearestTarget() const;
-    [[nodiscard]] Target hoveredTarget() const;
+    [[nodiscard]] std::vector<Target> targetsInReach() const; ///< nearest first
+    [[nodiscard]] Target selectedTarget() const;
 
     void draw();
     void drawScene();
@@ -199,6 +201,7 @@ private:
     float timeInRoom_ = 0.0f;
     float idleTime_ = 0.0f;
     float nextIdleBark_ = 24.0f;
+    Target picked_; // chosen with W/S; forgotten when the player walks
     float blockedPush_ = 0.0f;
     float blockedCooldown_ = 0.0f;
     float emberTimer_ = 0.0f;

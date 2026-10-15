@@ -11,7 +11,8 @@ namespace hollow
 {
     namespace
     {
-        constexpr float FadeSpeed = 0.8f; // volume per second
+        constexpr float FadeSpeed = 0.8f;   // volume per second
+        constexpr float MusicVolume = 0.45f; // under the ambience and the dialogue
 
         struct Loop
         {
@@ -36,7 +37,7 @@ namespace hollow
 
         std::string find(const std::string& id) const
         {
-            for (const char* ext : {".ogg", ".wav", ".mp3"})
+            for (const char* ext : {".ogg", ".wav", ".mp3", ".qoa"})
             {
                 const std::string relative = "sounds/" + id + ext;
                 if (assets.exists(relative)) return assets.path(relative);
@@ -131,7 +132,7 @@ namespace hollow
         if (!d_->ready || id == d_->music) return;
         if (!d_->music.empty()) d_->loop(d_->music)->target = 0.0f;
         d_->music = id;
-        if (!id.empty()) d_->loop(id)->target = 0.6f;
+        if (!id.empty()) d_->loop(id)->target = MusicVolume;
     }
 
     void Audio::update(float dt)

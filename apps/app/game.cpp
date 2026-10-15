@@ -19,6 +19,10 @@ namespace
     constexpr float DragGap = 15.0f;
     constexpr float DragSpeed = 0.45f;     // the player's speed while dragging X
 
+    // Music outside the rooms (assets/sounds/<id>.qoa); rooms name theirs in "music".
+    constexpr const char* TitleMusic = "music_title";
+    constexpr const char* EndMusic = "music_end";
+
     float number(const std::vector<std::string>& args, std::size_t index, float fallback)
     {
         if (index >= args.size()) return fallback;
@@ -117,6 +121,7 @@ void Game::initGraphics()
     };
     player_.sheet = sheet(data_.player);
     companion_.sheet = sheet(data_.companion);
+    if (screen_ == Screen::Title) audio_.setMusic(TitleMusic);
     graphics_ = true;
 }
 
@@ -194,6 +199,7 @@ void Game::enterRoom(const std::string& id, float spawnX)
     glow_.clear();
     barks_.stop();
     insideTriggers_.clear();
+    picked_ = {};
     blockedPush_ = 0.0f;
 
     player_.x = spawnX >= 0.0f ? spawnX : room_->playerX;
@@ -469,7 +475,7 @@ void Game::frame(float dt)
 
 void Game::update(float dt)
 {
-    input_.update(canvas_);
+    input_.update();
     if (input_.pressed(Action::Fullscreen) || (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_ENTER)))
     {
         ToggleBorderlessWindowed();
@@ -481,7 +487,7 @@ void Game::update(float dt)
     {
     case Screen::Title:
     {
-        const int choice = titleMenu_.update(input_, text_, Vector2{240, 190});
+        const int choice = titleMenu_.update(input_);
         if (choice == 0) newGame();
         else if (choice == 1 || input_.pressed(Action::Pause)) quit_ = true;
         break;
@@ -493,7 +499,7 @@ void Game::update(float dt)
             screen_ = Screen::Playing;
             break;
         }
-        const int choice = pauseMenu_.update(input_, text_, Vector2{240, 140});
+        const int choice = pauseMenu_.update(input_);
         if (choice == 0)
         {
             screen_ = Screen::Playing;
@@ -503,9 +509,7 @@ void Game::update(float dt)
             runner_->stop();
             script_.reset();
             audio_.setAmbient({});
-            audio_.setMusic("");
-            screen_ = Screen::Title;
-            titleMenu_.selected = 0;
+            toTitle();
         }
         else if (choice == 2)
         {
@@ -516,13 +520,16 @@ void Game::update(float dt)
     case Screen::Playing: updatePlaying(dt); break;
     case Screen::EndCard:
         endCardTime_ += dt;
-        if (endCardTime_ > 4.0f && (input_.pressed(Action::Confirm) || input_.clicked()))
-        {
-            screen_ = Screen::Title;
-            titleMenu_.selected = 0;
-        }
+        if (endCardTime_ > 4.0f && input_.pressed(Action::Confirm)) toTitle();
         break;
     }
+}
+
+void Game::toTitle()
+{
+    screen_ = Screen::Title;
+    titleMenu_.selected = 0;
+    audio_.setMusic(TitleMusic);
 }
 
 void Game::updatePlaying(float dt)
@@ -548,7 +555,7 @@ void Game::updatePlaying(float dt)
         runner_->stop();
         script_.reset();
         audio_.setAmbient({});
-        audio_.setMusic("");
+        audio_.setMusic(EndMusic);
         screen_ = Screen::EndCard;
         endCardTime_ = 0.0f;
         return;
@@ -686,20 +693,28 @@ void Game::updateExploring(float dt)
     {
         player_.facing = dir > 0.0f ? 1 : -1;
         idleTime_ = 0.0f;
+        picked_ = {};
     }
     player_.step(nx - player_.x);
 
-    // Using things: E for the nearest one in reach, or a click on one in reach.
-    const Target nearest = nearestTarget();
-    const Target hovered = hoveredTarget();
-    const Target* use = nullptr;
-    if (input_.pressed(Action::Interact) && nearest.valid()) use = &nearest;
-    else if (input_.clicked() && hovered.valid() && hovered.reachable) use = &hovered;
-    if (use)
+    // Using things: E for the one the player stands next to; W/S pick
+    // another when several are in reach.
+    const std::vector<Target> inReach = targetsInReach();
+    const bool next = input_.pressed(Action::Down);
+    if (inReach.size() > 1 && (next || input_.pressed(Action::Up)))
     {
-        if (use->companion) talkToCompanion();
-        else interact(use->object);
-        return;
+        const int count = static_cast<int>(inReach.size());
+        const int index = static_cast<int>(std::find(inReach.begin(), inReach.end(), selectedTarget()) - inReach.begin());
+        picked_ = inReach[static_cast<std::size_t>((index + (next ? 1 : count - 1)) % count)];
+    }
+    if (input_.pressed(Action::Interact))
+    {
+        if (const Target target = selectedTarget(); target.valid())
+        {
+            if (target.companion) talkToCompanion();
+            else interact(target.object);
+            return;
+        }
     }
 
     updateTriggers();
@@ -849,43 +864,30 @@ bool Game::inReach(Rectangle rect) const
     return player_.x >= rect.x - Reach && player_.x <= rect.x + rect.width + Reach;
 }
 
-Game::Target Game::nearestTarget() const
+std::vector<Game::Target> Game::targetsInReach() const
 {
-    Target best;
-    float bestDistance = 1e9f;
+    std::vector<std::pair<float, Target>> found;
     const auto consider = [&](Target t) {
         const Rectangle r = targetRect(t);
-        if (!inReach(r)) return;
-        const float distance = std::fabs(r.x + r.width / 2.0f - player_.x);
-        if (distance < bestDistance)
-        {
-            bestDistance = distance;
-            t.reachable = true;
-            best = t;
-        }
+        if (inReach(r)) found.emplace_back(std::fabs(r.x + r.width / 2.0f - player_.x), t);
     };
     for (const auto& object : room_->objects)
-        if (usable(object)) consider(Target{&object, false, false});
-    if (companionUsable()) consider(Target{nullptr, true, false});
-    return best;
+        if (usable(object)) consider(Target{&object, false});
+    if (companionUsable()) consider(Target{nullptr, true});
+
+    std::stable_sort(found.begin(), found.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+    std::vector<Target> targets;
+    for (const auto& [distance, t] : found)
+        targets.push_back(t);
+    return targets;
 }
 
-Game::Target Game::hoveredTarget() const
+Game::Target Game::selectedTarget() const
 {
-    const Vector2 mouse{input_.mouse().x - layout::SceneBox.x, input_.mouse().y - layout::SceneBox.y};
-    if (mouse.x < 0 || mouse.y < 0 || mouse.x >= layout::SceneBox.width || mouse.y >= layout::SceneBox.height)
-        return {};
-
-    // Front to back: front props, X, then the rest.
-    for (auto it = room_->objects.rbegin(); it != room_->objects.rend(); ++it)
-        if (it->front && usable(*it) && CheckCollisionPointRec(mouse, it->rect))
-            return Target{&*it, false, inReach(it->rect)};
-    if (companionUsable() && CheckCollisionPointRec(mouse, companion_.bounds()))
-        return Target{nullptr, true, inReach(companion_.bounds())};
-    for (auto it = room_->objects.rbegin(); it != room_->objects.rend(); ++it)
-        if (!it->front && usable(*it) && CheckCollisionPointRec(mouse, it->rect))
-            return Target{&*it, false, inReach(it->rect)};
-    return {};
+    const std::vector<Target> targets = targetsInReach();
+    if (targets.empty()) return {};
+    if (picked_.valid() && std::find(targets.begin(), targets.end(), picked_) != targets.end()) return picked_;
+    return targets.front();
 }
 
 // ---------------------------------------------------------------------------
@@ -940,11 +942,13 @@ void Game::drawScene()
 
     if (script_) script_->drawBack(*this);
 
+    // Only what the player stands next to is marked, and only that can be used.
     Target highlight;
+    std::size_t inReach = 0;
     if (!busy())
     {
-        highlight = hoveredTarget();
-        if (!highlight.valid()) highlight = nearestTarget();
+        highlight = selectedTarget();
+        inReach = targetsInReach().size();
     }
 
     for (const auto& object : room_->objects)
@@ -977,7 +981,14 @@ void Game::drawScene()
     {
         const Rectangle r = targetRect(highlight);
         const std::string& label = highlight.companion ? companion_.def->name : highlight.object->name;
-        drawPrompt(text_, label, Vector2{r.x + r.width / 2.0f, r.y}, highlight.reachable, data_.ui);
+        std::string note;
+        if (inReach > 1)
+        {
+            const std::vector<Target> targets = targetsInReach();
+            const auto index = std::find(targets.begin(), targets.end(), highlight) - targets.begin();
+            note = std::to_string(index + 1) + "/" + std::to_string(targets.size());
+        }
+        drawPrompt(text_, label, Vector2{r.x + r.width / 2.0f, r.y}, data_.ui, note);
     }
 
     scene_.end();
@@ -1052,7 +1063,9 @@ void Game::drawHud()
     const Rectangle box = layout::DialogueBox;
     drawPanel(assets_, box, data_.ui);
     text_.draw(room_->name, Vector2{box.x + layout::Padding, box.y + layout::Padding}, data_.ui.dim);
-    text_.draw("A/D walk   E use   Tab items   Esc pause",
+    const bool several = !busy() && targetsInReach().size() > 1;
+    text_.draw(several ? "A/D walk   E use   W/S next thing   Tab items   Esc pause"
+                       : "A/D walk   E use   Tab items   Esc pause",
                Vector2{box.x + layout::Padding, box.y + box.height - layout::Padding - layout::LineHeight}, data_.ui.dim);
 }
 

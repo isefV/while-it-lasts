@@ -4,9 +4,9 @@
  * @file audio.hpp
  * @brief Sound effects, ambient loops and music from assets/sounds/.
  *
- * A sound id "crack" plays assets/sounds/crack.ogg (or .wav, .mp3). Files
- * that do not exist yet are skipped without a word, so the game runs
- * before any sound is made.
+ * A sound id "crack" plays assets/sounds/crack.ogg (or .wav, .mp3, .qoa).
+ * Files that do not exist yet are skipped without a word, so the game runs
+ * before any sound is made. Credits and licences: assets/sounds/CREDITS.md.
  */
 
 #include <memory>
