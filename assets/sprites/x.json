@@ -1,0 +1,18 @@
+// X's sheet: three rows of 32 x 48 frames, facing right, then a row of
+// 48 x 32 lying frames (head to the right) starting at pixel line 144.
+// No kneeling art yet: it uses the sitting frame.
+{
+    "texture": "sprites/x.png",
+    "frame":  { "w": 32, "h": 48 },
+    "origin": { "x": 16, "y": 47 },
+    "animations": {
+        "idle":  { "row": 0, "frames": 4, "fps": 3, "loop": true },
+        "walk":  { "row": 1, "frames": 4, "fps": 5, "loop": true },
+        "sit":   { "row": 2, "frames": 1 },
+        "kneel": { "row": 2, "frames": 1 },
+
+        // Flat, then with the head raised ("pose x lying_up").
+        "lying":    { "top": 144, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } },
+        "lying_up": { "top": 144, "column": 1, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } }
+    }
+}

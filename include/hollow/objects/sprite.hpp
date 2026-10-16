@@ -12,6 +12,10 @@
  *       "origin": { "x": 16, "y": 48 },
  *       "animations": { "idle": { "row": 0, "frames": 2, "fps": 2, "loop": true }, ... }
  *     }
+ *
+ * An animation may also set its own "frame" and "origin" (a row of wider
+ * frames, such as lying down), "top" (the row's first pixel line, instead of
+ * row x frame height) and "column" (the first frame in the row).
  */
 
 #include <hollow/utility/diagnostics.hpp>
@@ -29,9 +33,16 @@ namespace hollow
     struct Animation
     {
         int row = 0;
+        int column = 0; ///< the first frame
         int frames = 1;
         float fps = 1.0f;
         bool loop = true;
+
+        // The sheet's own unless the animation sets them.
+        int frameWidth = 32;
+        int frameHeight = 48;
+        Vector2 origin{16, 48};
+        int top = 0; ///< first pixel line of the row
     };
 
     struct SpriteSheet

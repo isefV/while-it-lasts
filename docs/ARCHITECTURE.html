@@ -489,7 +489,7 @@ svg.canvasmap .small { font-size: 8px; }
 <tr><td><code>CompanionDef</code>, <code>EnterRule</code></td><td>room.hpp</td><td>X in this room (mode, pose, what talking to him plays); conversations/effects on entering.</td></tr>
 <tr><td><code>PatrolPhase</code>, <code>CreatureDef</code></td><td>room.hpp</td><td>The creature: size, colour, patrol range, and its loop of phases (watch, turned, walk, listen) for the stealth room.</td></tr>
 <tr><td><code>RoomDef</code></td><td>room.hpp</td><td>Background, colour, tint, sounds, start position, walk range, companion, creature, enter rules, objects, idle barks, script name.</td></tr>
-<tr><td><code>Animation</code>, <code>SpriteSheet</code>, <code>loadSpriteSheet()</code></td><td>sprite.hpp</td><td>A sheet config from visual-asset-config.txt section 5 (frame size, origin at the feet, one animation per row). No config → no sheet → rectangle.</td></tr>
+<tr><td><code>Animation</code>, <code>SpriteSheet</code>, <code>loadSpriteSheet()</code></td><td>sprite.hpp</td><td>A sheet config from visual-asset-config.txt section 5 (frame size, origin at the feet, one animation per row; a row may have its own frame size, origin and top). No config → no sheet → rectangle.</td></tr>
 <tr><td><code>Animator</code>, <code>drawSprite()</code></td><td>sprite.hpp</td><td>Which frame of which animation is showing; draws it at the feet, mirrored when facing left.</td></tr>
 <tr><td><code>Actor</code></td><td>actor.hpp</td><td>A character in a room: <code>x</code>, <code>facing</code>, <code>pose</code>, speed. <code>step(dx)</code> (player control), <code>walkTo(x)</code> (on its own), <code>update</code> picks walk/drag/pose animation, <code>bounds()</code> and <code>draw()</code> (a pose-shaped rectangle with a head band and an eye until the sprite exists).</td></tr>
 </table></div>
@@ -593,7 +593,7 @@ svg.canvasmap .small { font-size: 8px; }
 <h2 id="extend">10. Changing and extending</h2>
 <div class="tablewrap"><table>
 <tr><th>To…</th><th>Change</th></tr>
-<tr><td>add or change lines, choices, objects, rooms</td><td><span class="tag data">data</span> only: <code>assets/data/</code>, then <code>hollow_app --check</code>. Format: <code>docs/DATA-FORMAT.md</code>.</td></tr>
+<tr><td>add or change lines, choices, objects, rooms</td><td><span class="tag data">data</span> only: <code>assets/data/</code>, then <code>game --check</code>. Format: <code>docs/DATA-FORMAT.md</code>.</td></tr>
 <tr><td>add a story variable</td><td><span class="tag data">data</span> declare it in <code>game.json</code> → <code>variables</code>; use it in any <code>if</code> / <code>do</code>.</td></tr>
 <tr><td>add a dialogue command</td><td><span class="tag app">app</span> add the verb to <code>Game::commands()</code> and handle it in <code>Game::onCommand()</code>.</td></tr>
 <tr><td>add a room script</td><td><span class="tag app">app</span> a class derived from <code>RoomScript</code> in <code>scripts/</code>, a line in <code>makeRoomScript()</code> and <code>roomScriptNames()</code>, the file in <code>apps/app/CMakeLists.txt</code>; conversations it starts by name go in <code>Game::scriptConversations()</code> so <code>--check</code> verifies them.</td></tr>

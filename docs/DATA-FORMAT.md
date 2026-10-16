@@ -13,7 +13,7 @@ assets/data/
 └── rooms/stage00.json … stage04.json      rooms and what is in them
 ```
 
-**Checking your work.** Run `hollow_app --check` (or the `CMake: ctest` task).
+**Checking your work.** Run `game --check` (or the `CMake: ctest` task).
 It reads every file and prints each mistake with its file and place, for
 example:
 
@@ -294,6 +294,33 @@ one line or a short exchange:
 `text_color` (name in the box), `w`, `h`, `speed`, `sprite` (sheet config,
 see visual-asset-config.txt section 5).
 
+A sheet config, such as `sprites/x.json`:
+
+```json
+{
+    "texture": "sprites/x.png",
+    "frame":  { "w": 32, "h": 48 },
+    "origin": { "x": 16, "y": 47 },
+    "animations": {
+        "idle":  { "row": 0, "frames": 4, "fps": 3, "loop": true },
+        "lying": { "top": 144, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } }
+    }
+}
+```
+
+Frames run left to right along a row; `origin` is the feet, which stand on
+the ground line. An animation is `row`, `frames`, `fps`, `loop`, and may set
+its own `frame` and `origin` (a row of wider frames), `top` (the row's first
+pixel line, when the rows above are another height) and `column` (its first
+frame). The game asks for `idle`, `walk`, `sit`, `lying`, `kneel` and `drag`.
+A pose the sheet lacks is drawn as a rectangle, so point it at the nearest
+row (Y's `kneel` uses the sitting frame). An Aseprite export is not a sheet
+config: rewrite it in this form.
+
+Props need no config: the object's `sprite` is the image, drawn unscaled
+from the object's top-left, so make `w` and `h` the image size and put its
+bottom on the ground line (y = 150 − h).
+
 `game.json` → `bars`: up to three bars top left, each
 `{ "label", "var", "max", "color" }`. Two: Y's health (`y_health`, 0 to 5)
 and X's condition (`x_condition`, 0 to 3). A bar flashes when it changes.
@@ -303,8 +330,8 @@ and X's condition (`x_condition`, 0 to 3). A bar flashes when it changes.
 ## 5. Testing a branch
 
 ```
-hollow_app --room factory_office --set noisy_entry=true --set cig_count=2
-hollow_app --walkthrough tests/walkthrough/full.txt
+game --room factory_office --set noisy_entry=true --set cig_count=2
+game --walkthrough tests/walkthrough/full.txt
 ```
 
 `--room` starts a new game in any room, `--set` presets variables. A

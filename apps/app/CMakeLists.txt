@@ -2,7 +2,7 @@
 # systems it is built from are in the library (hollow::hollow).
 
 add_executable(
-    hollow_app
+    game
     main.cpp
     game.cpp
     fight.cpp
@@ -18,13 +18,13 @@ add_executable(
 )
 
 target_link_libraries(
-    hollow_app
+    game
     PRIVATE
         hollow::hollow
 )
 
 target_compile_options(
-    hollow_app
+    game
     PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive- /utf-8>
         $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Wpedantic>
@@ -33,23 +33,23 @@ target_compile_options(
 # A Windows program without a console window in Release builds (single-config
 # generators such as Ninja; the console stays in Debug for messages).
 if(WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
-    set_target_properties(hollow_app PROPERTIES WIN32_EXECUTABLE ON)
+    set_target_properties(game PROPERTIES WIN32_EXECUTABLE ON)
     if(MSVC)
-        target_link_options(hollow_app PRIVATE /ENTRY:mainCRTStartup)
+        target_link_options(game PRIVATE /ENTRY:mainCRTStartup)
     endif()
 endif()
 
 # The game loads its files from assets/ next to the program, so every build
-# copies the project's assets/ folder there (<build>/bin/assets).
-add_custom_command(
-    TARGET hollow_app
-    POST_BUILD
+# copies the project's assets/ folder there (<build>/bin/assets). It is its own
+# target so that new or changed art is copied even when no code changed.
+add_custom_target(hollow_assets ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_SOURCE_DIR}/assets"
-            "$<TARGET_FILE_DIR:hollow_app>/assets"
-    COMMENT "Copying assets/ next to hollow_app"
+            "$<TARGET_FILE_DIR:game>/assets"
+    COMMENT "Copying assets/ next to the game"
     VERBATIM
 )
+add_dependencies(game hollow_assets)
 
 # A short run in CTest reads and checks every data file in assets/ (--check
 # doesn't open a window, so it also runs where there is no display). A
@@ -57,7 +57,7 @@ add_custom_command(
 if(HOLLOW_BUILD_TESTS)
     add_test(
         NAME hollow.app
-        COMMAND hollow_app --check
+        COMMAND game --check
     )
 
     # Whole playthroughs with virtual input (tests/walkthrough/): the game
@@ -67,7 +67,7 @@ if(HOLLOW_BUILD_TESTS)
     foreach(route IN ITEMS full careless)
         add_test(
             NAME hollow.walkthrough.${route}
-            COMMAND hollow_app --walkthrough "${PROJECT_SOURCE_DIR}/tests/walkthrough/${route}.txt"
+            COMMAND game --walkthrough "${PROJECT_SOURCE_DIR}/tests/walkthrough/${route}.txt"
         )
         set_tests_properties(hollow.walkthrough.${route} PROPERTIES LABELS window TIMEOUT 120)
     endforeach()

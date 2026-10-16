@@ -39,11 +39,33 @@ namespace hollow
             for (const auto& [name, obj] : (*root)["animations"].items())
             {
                 const std::string at = child(child(where, "animations"), name);
+                detail::checkKeys(obj, {"row", "column", "frames", "fps", "loop", "frame", "origin", "top"}, at, diag);
                 Animation animation;
                 animation.row = detail::readInt(obj, "row", at, diag);
+                animation.column = detail::readInt(obj, "column", at, diag, 0);
                 animation.frames = detail::readInt(obj, "frames", at, diag, 1);
                 animation.fps = detail::readNumber(obj, "fps", at, diag, 1.0f);
                 animation.loop = detail::readBool(obj, "loop", at, diag, true);
+
+                animation.frameWidth = sheet.frameWidth;
+                animation.frameHeight = sheet.frameHeight;
+                if (obj.contains("frame"))
+                {
+                    const Json& frame = obj["frame"];
+                    animation.frameWidth = detail::readInt(frame, "w", child(at, "frame"), diag, sheet.frameWidth);
+                    animation.frameHeight = detail::readInt(frame, "h", child(at, "frame"), diag, sheet.frameHeight);
+                }
+                // A row of other-sized frames keeps its feet at the bottom middle unless told otherwise.
+                animation.origin = obj.contains("frame") ? Vector2{static_cast<float>(animation.frameWidth) / 2.0f,
+                                                                   static_cast<float>(animation.frameHeight)}
+                                                         : sheet.origin;
+                if (obj.contains("origin"))
+                {
+                    const Json& origin = obj["origin"];
+                    animation.origin.x = detail::readNumber(origin, "x", child(at, "origin"), diag, animation.origin.x);
+                    animation.origin.y = detail::readNumber(origin, "y", child(at, "origin"), diag, animation.origin.y);
+                }
+                animation.top = detail::readInt(obj, "top", at, diag, animation.row * sheet.frameHeight);
                 sheet.animations[name] = animation;
             }
         }
@@ -79,12 +101,13 @@ namespace hollow
         const auto it = sheet.animations.find(animator.current());
         if (it == sheet.animations.end()) return false;
 
-        const auto w = static_cast<float>(sheet.frameWidth);
-        const auto h = static_cast<float>(sheet.frameHeight);
-        const Rectangle source{static_cast<float>(animator.frame()) * w, static_cast<float>(it->second.row) * h,
-                               flipX ? -w : w, h};
-        const float originX = flipX ? w - sheet.origin.x : sheet.origin.x;
-        const Rectangle dest{std::round(feet.x - originX), std::round(feet.y - sheet.origin.y), w, h};
+        const Animation& animation = it->second;
+        const auto w = static_cast<float>(animation.frameWidth);
+        const auto h = static_cast<float>(animation.frameHeight);
+        const Rectangle source{static_cast<float>(animation.column + animator.frame()) * w,
+                               static_cast<float>(animation.top), flipX ? -w : w, h};
+        const float originX = flipX ? w - animation.origin.x : animation.origin.x;
+        const Rectangle dest{std::round(feet.x - originX), std::round(feet.y - animation.origin.y), w, h};
         DrawTexturePro(*sheet.texture, source, dest, Vector2{0, 0}, 0.0f, tint);
         return true;
     }

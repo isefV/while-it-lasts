@@ -3,7 +3,7 @@
 # lost, spotted three times, the waves lost, X not kept breathing (the Reaper
 # reaches him, twice), every timed choice run out, no cigarette left for the
 # summit.
-#   hollow_app --walkthrough tests/walkthrough/careless.txt
+#   game --walkthrough tests/walkthrough/careless.txt
 # The game must still reach its end, with the choices visible in it.
 
 # --- Stage 00 ---------------------------------------------------------------

@@ -22,7 +22,7 @@ namespace
 
     void printUsage()
     {
-        std::cout << "hollow_app [options]\n"
+        std::cout << "game [options]\n"
                      "  --check              read and check every data file, no window\n"
                      "  --windowed           a 1280 x 720 window instead of fullscreen\n"
                      "For testing:\n"

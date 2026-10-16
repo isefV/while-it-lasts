@@ -148,7 +148,7 @@
         { "x": "Breathing. Look at me, I'm a professional." },
         { "narration": "The dressing is done. The kit is empty now.", "do": ["take last_bandage", "wound_dressed = true"] },
         { "thought": "That was the last clean one. We need antibiotics, more bandages, anything." },
-        { "pause": 1.2, "do": ["sound low_call", "ambient fire@0.45 wind@0.6", "event reaper_hint"] },
+        { "pause": 1.2, "do": ["sound low_call", "ambient campfire@0.45 wind@0.6", "event reaper_hint"] },
         { "narration": "A low, long sound from the trees. The insects stop. The fire flickers slower." },
         { "x": "...Please tell me you heard that." },
         { "y": "Yeah." },

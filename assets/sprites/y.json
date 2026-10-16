@@ -1,0 +1,16 @@
+// Y's sheet: 4 x 4 frames of 32 x 48, facing right (left is the same art,
+// flipped). The feet are at the bottom middle, on the ground line.
+// No kneeling or lying art yet: both use the sitting frame.
+{
+    "texture": "sprites/y.png",
+    "frame":  { "w": 32, "h": 48 },
+    "origin": { "x": 16, "y": 47 },
+    "animations": {
+        "idle":  { "row": 0, "frames": 4, "fps": 3, "loop": true },
+        "walk":  { "row": 1, "frames": 4, "fps": 6, "loop": true },
+        "sit":   { "row": 2, "frames": 1 },
+        "kneel": { "row": 2, "frames": 1 },
+        "lying": { "row": 2, "frames": 1 },
+        "drag":  { "row": 3, "frames": 4, "fps": 4, "loop": true }
+    }
+}

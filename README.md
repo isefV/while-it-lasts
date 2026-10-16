@@ -39,10 +39,10 @@ coloured rectangle until its image exists in `assets/`, so art never blocks a
 playable build (file names: visual-asset-config.txt).
 
 ```
-hollow_app                         fullscreen; --windowed for a 1280 x 720 window
-hollow_app --check                 read and check every data file, no window
-hollow_app --room summit --set cig_count=0      start anywhere, with any state
-hollow_app --walkthrough tests/walkthrough/full.txt   play the game by itself
+game                               fullscreen; --windowed for a 1280 x 720 window
+game --check                       read and check every data file, no window
+game --room summit --set cig_count=0      start anywhere, with any state
+game --walkthrough tests/walkthrough/full.txt   play the game by itself
 ```
 
 Where the code is:
@@ -84,16 +84,16 @@ hollow/
 ## 2. Build, test, install
 
 In VS Code every step is a task: *Terminal › Run Task › CMake: ...*
-(Ctrl+Shift+B = `CMake: build`). Each task asks **Debug | Release** and
-runs plain `cmake` commands. On Windows the
-tasks load the Visual Studio developer environment themselves; choose the
-compiler with `"hollow.toolchain"` (`msvc`, `gcc`, `clang`) in
-`.vscode/settings.json`.
+(Ctrl+Shift+B = `CMake: build`). Each task asks for the compiler
+(**msvc | gcc | clang**), then **Debug | Release**, and runs plain `cmake`
+commands. On Windows the tasks load the Visual Studio developer environment
+themselves; gcc and clang must be on `PATH`.
 
 | Task | Does |
 |---|---|
 | `CMake: configure` | configure `build/<toolchain>-<config>` from scratch (new CMake cache) |
 | `CMake: build` | configure, then build the library |
+| `Build game` | configure, then build the game, `bin/game.exe` (library and assets with it) |
 | `CMake: rebuild` | configure, then clean and build the library |
 | `CMake: clean` | delete the build outputs; the configuration stays |
 | `CMake: install` | build the library and install it to `install/<toolchain>` |
@@ -247,7 +247,7 @@ header-only and private to the library's `.cpp` files, so they need neither.
 ## 6. Assets
 
 Put the game's files (textures, sounds, fonts, ...) in `assets/`. Every build
-of `hollow_app` copies the folder to `<build>/bin/assets`, next to the
+copies the folder to `<build>/bin/assets`, next to the
 program, which loads from there:
 
 ```cpp

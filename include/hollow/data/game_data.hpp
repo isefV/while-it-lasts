@@ -7,7 +7,7 @@
  * assets/data/game.json names the other files. loadGameData() reads them
  * all; checkGameData() then looks for mistakes that span files: a "next"
  * naming a conversation that does not exist, a condition reading a
- * variable nobody declared, an exit to an unknown room. `hollow_app --check`
+ * variable nobody declared, an exit to an unknown room. `game --check`
  * runs both and prints every problem with its file and place.
  */
 

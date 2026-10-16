@@ -2,7 +2,7 @@
 # key, the antibiotics, the bottle thrown at the checkpoint, both fights won,
 # X kept breathing both times, one shared cigarette, two saved for the
 # summit, both notes.
-#   hollow_app --walkthrough tests/walkthrough/full.txt
+#   game --walkthrough tests/walkthrough/full.txt
 # The commands are explained in apps/app/walkthrough.hpp.
 
 # --- Stage 00: the campsite -------------------------------------------------

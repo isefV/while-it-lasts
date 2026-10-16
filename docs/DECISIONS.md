@@ -13,7 +13,7 @@ prototype does with each answer. Change this file when a decision changes.
 | 6 | A dialogue entry | Simply text; thoughts in another colour | Text, plus an optional `if` and `do` where the story needs them (docs/DATA-FORMAT.md) |
 | 7 | Text speed, skipping | Letter by letter; a press goes on | First press shows the whole line, second goes to the next |
 | 8 | Palette | Dark and cold | `game.json` → `ui`; one warm accent (`#e0873a`) for fire, ember and sunrise only |
-| 9 | JSON mistakes | The data is written from the script | `hollow_app --check` (also in CTest) names the file and line or place of every mistake |
+| 9 | JSON mistakes | The data is written from the script | `game --check` (also in CTest) names the file and line or place of every mistake |
 | 10 | Inventory | Opens on a key | Tab or I. Items are used through options at the target ("Use the key.") |
 | 11 | Encounters | Some choices are timed; changed 15 October: fights are real time | Factory creature (7 s, 4 s if it heard the cabinet), checkpoint chase (3 s), mountain creature (6 s). "Fight it", or being too slow, starts a real-time fight (`apps/app/fight.cpp`); waves of crawlers at the barricade and on the broken stairs |
 | 12 | Doing badly | The story changes a little | See "Consequences" below |
