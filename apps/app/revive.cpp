@@ -12,8 +12,10 @@ using namespace hollow;
 namespace
 {
     constexpr float Period = 0.85f;     // seconds per beat
-    constexpr float WindowFrom = 0.40f; // the part of the beat where E counts
-    constexpr float WindowTo = 0.60f;
+    constexpr float WindowWidth = 0.20f; // the part of the beat where E counts
+    constexpr float FirstWindow = 0.40f; // the first beat: in the middle
+    constexpr float EarliestWindow = 0.25f; // later beats: anywhere from here, so there is time to see it
+    constexpr float WindowMove = 0.15f;  // and at least this far from the last place
     constexpr float PushBack = 6.0f;    // a good press holds the Reaper off a little
     constexpr float MissStep = 8.0f;    // a press off the beat lets it closer
     constexpr float ReachGap = 12.0f;   // it touches him at this distance
@@ -29,6 +31,7 @@ void Revive::start(Game& game, std::string then, int presses, float seconds)
     needed_ = std::max(1, presses);
     good_ = 0;
     phase_ = 0.0f;
+    windowFrom_ = FirstWindow;
     pressedThisBeat_ = false;
     pulse_ = miss_ = 0.0f;
     done_ = -1.0f;
@@ -58,7 +61,8 @@ void Revive::start(Game& game, std::string then, int presses, float seconds)
 
 bool Revive::pressNow() const
 {
-    return active_ && done_ < 0.0f && !pressedThisBeat_ && phase_ >= WindowFrom + 0.02f && phase_ <= WindowTo - 0.02f;
+    return active_ && done_ < 0.0f && !pressedThisBeat_ && phase_ >= windowFrom_ + 0.02f &&
+           phase_ <= windowFrom_ + WindowWidth - 0.02f;
 }
 
 void Revive::update(Game& game, float dt)
@@ -90,11 +94,16 @@ void Revive::update(Game& game, float dt)
     {
         phase_ -= 1.0f;
         pressedThisBeat_ = false;
+
+        // Each beat the place to press moves somewhere else on the bar.
+        const float before = windowFrom_;
+        for (int i = 0; i < 8 && std::fabs(windowFrom_ - before) < WindowMove; ++i)
+            windowFrom_ = game.random().uniform(EarliestWindow, 1.0f - WindowWidth);
     }
     const Input& input = game.input();
     if (input.pressed(Action::Advance) || input.pressed(Action::Interact))
     {
-        const bool onBeat = phase_ >= WindowFrom && phase_ <= WindowTo && !pressedThisBeat_;
+        const bool onBeat = phase_ >= windowFrom_ && phase_ <= windowFrom_ + WindowWidth && !pressedThisBeat_;
         pressedThisBeat_ = true;
         if (onBeat)
         {
@@ -190,10 +199,10 @@ void Revive::drawHud(Game& game) const
                                             : "He's not breathing. Press E on the beat.";
     text.draw(title, Vector2{box.x + layout::Padding, box.y + layout::Padding}, done_ >= 0.0f ? ui.text : ui.highlight);
 
-    // The bar: the window in the middle, the beat crossing it.
+    // The bar: the window (a new place each beat), the beat crossing it.
     const Rectangle bar{box.x + layout::Padding, box.y + 26, 200, 10};
     DrawRectangleLinesEx(bar, 1.0f, ui.frame);
-    const Rectangle window{bar.x + bar.width * WindowFrom, bar.y + 1, bar.width * (WindowTo - WindowFrom), bar.height - 2};
+    const Rectangle window{std::round(bar.x + bar.width * windowFrom_), bar.y + 1, std::round(bar.width * WindowWidth), bar.height - 2};
     DrawRectangleRec(window, ColorAlpha(ui.frame, 0.6f + 0.4f * pulse_));
     if (done_ < 0.0f)
     {

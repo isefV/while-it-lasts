@@ -1,5 +1,5 @@
-// Y's sheet: 4 x 4 frames of 32 x 48, facing right (left is the same art,
-// flipped). The feet are at the bottom middle, on the ground line.
+// Y's sheet (128 x 192): 4 x 4 frames of 32 x 48, facing right (left is the
+// same art, flipped). The feet are at the bottom middle, on the ground line.
 // No kneeling or lying art yet: both use the sitting frame.
 {
     "texture": "sprites/y.png",

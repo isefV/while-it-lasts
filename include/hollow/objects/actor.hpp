@@ -27,7 +27,7 @@ namespace hollow
         float x = 0.0f;               ///< feet, scene pixels
         float ground = 150.0f;
         int facing = 1;               ///< 1 = right, -1 = left
-        std::string pose = "idle";    ///< animation while not walking: idle, sit, lying, kneel, drag
+        std::string pose = "idle";    ///< animation while not walking: idle, sit, lying, kneel, drag, dragged
         float speedScale = 1.0f;
         bool visible = true;
 

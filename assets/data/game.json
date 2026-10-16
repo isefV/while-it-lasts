@@ -10,7 +10,7 @@
     "companion": "x",
     "characters": {
         "y": { "name": "Y", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
-        "x": { "name": "X", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 44, "sprite": "sprites/x.json" }
+        "x": { "name": "X", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 43, "sprite": "sprites/x.json" }
     },
 
     "files": {

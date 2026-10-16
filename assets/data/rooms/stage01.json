@@ -3,7 +3,7 @@
 {
     "factory_entrance": {
         "name": "Factory Entrance",
-        "background": "backgrounds/factory_entrance.png",
+        "background": "backgrounds/factory-entrance.png",
         "color": "#20262e",
         "tint": "#b8c0cc",
         "ambient": ["wind", "metal", "sheet"],
@@ -16,34 +16,33 @@
         ],
         "companion": { "x": 84, "mode": "stay", "pose": "sit", "dialogue": "factory.x" },
         "objects": [
-            { "id": "loose_sheet", "x": 120, "y": 62, "w": 34, "h": 22, "color": "#353d46", "interactive": false },
-            { "id": "vending", "name": "Vending machine", "x": 150, "w": 16, "h": 36, "color": "#2e3a44",
-              "dialogue": "entrance.vending", "again": "entrance.vending_again" },
-            { "id": "door", "name": "Factory door", "x": 200, "w": 24, "h": 48, "color": "#14191f",
+            // The door and the road are in the background art: zones, not drawn.
+            // The vending machine (entrance.vending) and the security booth
+            // (entrance.booth) are out until they have art.
+            { "id": "door", "name": "Factory door", "x": 162, "y": 52, "w": 70, "h": 98, "color": "#14191f", "hidden": true,
               "exit": "factory_office", "spawn_x": 24 },
-            { "id": "booth", "name": "Security booth", "x": 236, "w": 26, "h": 40, "color": "#262e36",
-              "dialogue": "entrance.booth" },
-            { "id": "road", "name": "Road", "x": 300, "y": 80, "w": 20, "h": 70, "color": "#0e1217",
+            { "id": "road", "name": "Road", "x": 300, "y": 80, "w": 20, "h": 70, "color": "#0e1217", "hidden": true,
               "exit": "checkpoint", "exit_if": "stage01_done", "locked": "factory.road_locked" }
         ]
     },
 
     "factory_office": {
         "name": "The Office",
-        "background": "backgrounds/factory_office.png",
+        "background": "backgrounds/factory-office.png",
         "color": "#1e2329",
         "tint": "#b0b8c6",
         "ambient": ["metal", "wind"],
         "music": "music_factory",
         "player_x": 24,
         "idle_barks": ["y_idle"],
+        // The window, the pillar and both doorways are in the background art.
         "objects": [
-            { "id": "exit_entrance", "name": "Entrance", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217",
+            { "id": "exit_entrance", "name": "Entrance", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217", "hidden": true,
               "exit": "factory_entrance", "spawn_x": 192 },
 
-            { "id": "window", "name": "Window", "x": 72, "y": 40, "w": 36, "h": 30, "color": "#2b3747",
+            { "id": "window", "name": "Window", "x": 58, "y": 35, "w": 83, "h": 46, "color": "#2b3747", "hidden": true,
               "dialogue": "office.window", "again": "office.window_again" },
-            { "id": "figure", "x": 86, "y": 44, "w": 8, "h": 26, "color": "#07080b", "if": "window_figure", "interactive": false },
+            { "id": "figure", "x": 95, "y": 48, "w": 8, "h": 26, "color": "#07080b", "if": "window_figure", "interactive": false },
             { "id": "locker", "name": "Staff locker", "x": 82, "w": 18, "h": 44, "color": "#3a4450",
               "dialogue": "office.locker", "again": "office.locker_again" },
 
@@ -62,8 +61,6 @@
             { "id": "notice", "name": "Evacuation notice", "x": 170, "y": 78, "w": 16, "h": 16, "color": "#7b7466",
               "sprite": "props/notice.png", "dialogue": "office.notice", "again": "office.notice_again" },
 
-            { "id": "partition", "x": 190, "y": 40, "w": 4, "h": 110, "color": "#151a20", "interactive": false },
-
             { "id": "poster", "name": "Safety poster", "x": 212, "y": 64, "w": 18, "h": 22, "color": "#5a6258",
               "dialogue": "office.poster" },
             { "id": "first_aid_cabinet", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#4f5a5c",
@@ -75,14 +72,14 @@
             { "id": "sink", "name": "Box under the sink", "x": 274, "y": 120, "w": 24, "h": 30, "color": "#444c52",
               "dialogue": "office.sink" },
 
-            { "id": "floor_door", "name": "Production floor", "x": 304, "y": 94, "w": 16, "h": 56, "color": "#101419",
+            { "id": "floor_door", "name": "Production floor", "x": 304, "y": 94, "w": 16, "h": 56, "color": "#101419", "hidden": true,
               "exit": "factory_floor", "spawn_x": 22 }
         ]
     },
 
     "factory_floor": {
         "name": "Production Floor",
-        "background": "backgrounds/factory_floor.png",
+        "background": "backgrounds/factory-floor.png",
         "color": "#191d22",
         "tint": "#a8b2c0",
         "ambient": ["machines", "metal", "heavy_steps"],
@@ -100,13 +97,10 @@
         },
         // "Fight it" or being seen: the creature itself, in real time.
         "fight": { "brute": true, "hp": 4, "win": "floor.fight_won", "lose": "floor.fight_lost" },
+        // The machines and the way back are in the background art.
         "objects": [
-            { "id": "exit_office", "name": "Office", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217",
+            { "id": "exit_office", "name": "Office", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217", "hidden": true,
               "exit": "factory_office", "spawn_x": 296 },
-
-            { "id": "machine_1", "x": 60, "w": 40, "h": 52, "color": "#2a3037", "interactive": false },
-            { "id": "machine_2", "x": 140, "w": 50, "h": 62, "color": "#262c33", "interactive": false },
-            { "id": "machine_3", "x": 230, "w": 36, "h": 44, "color": "#2a3037", "interactive": false },
 
             { "id": "bolt", "name": "Loose bolt", "x": 38, "y": 146, "w": 6, "h": 4, "color": "#7c848c",
               "if": "!bolt_taken", "dialogue": "floor.bolt" },

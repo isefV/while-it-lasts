@@ -16,7 +16,8 @@ namespace
     constexpr float RoomFade = 0.45f;      // seconds, each way
     constexpr float LightFade = 1.5f;      // seconds for a fire to die down
     constexpr float FollowGap = 16.0f;     // X walks this far behind the player
-    constexpr float DragGap = 15.0f;
+    constexpr float DragGap = 26.0f;       // X trails this far behind: his head at the player's hands
+    constexpr float DragEnterX = 52.0f;    // entering a room pulling X: at least this far in, so he is on screen
     constexpr float DragSpeed = 0.45f;     // the player's speed while dragging X
     constexpr float BarFlash = 0.8f;       // seconds a bar flashes after it changes
 
@@ -130,6 +131,17 @@ void Game::initGraphics()
     };
     player_.sheet = sheet(data_.player);
     companion_.sheet = sheet(data_.companion);
+
+    // Objects whose sprite is a sheet config (.json) are animated.
+    for (const auto& [id, room] : data_.rooms)
+        for (const auto& object : room.objects)
+        {
+            if (!object.sprite.ends_with(".json") || objectSheets_.contains(object.sprite)) continue;
+            Diagnostics diag;
+            if (auto loaded = loadSpriteSheet(assets_, object.sprite, diag)) objectSheets_[object.sprite] = std::move(*loaded);
+            for (const auto& e : diag.errors)
+                TraceLog(LOG_WARNING, "%s", e.c_str());
+        }
     if (screen_ == Screen::Title) audio_.setMusic(TitleMusic);
     graphics_ = true;
 }
@@ -242,6 +254,8 @@ void Game::enterRoom(const std::string& id, float spawnX)
     }
     else if (c.mode == "drag")
     {
+        // Still pulling him from the last room: he comes in behind, in view.
+        player_.x = std::max(player_.x, std::min(DragEnterX, room_->walkMax));
         setCompanionMode(CompanionMode::Drag);
     }
     else
@@ -295,7 +309,7 @@ void Game::setCompanionMode(CompanionMode mode, float x)
     {
         player_.pose = "idle";
         player_.speedScale = 1.0f;
-        if (companion_.pose == "lying") companion_.pose = "sit";
+        if (companion_.pose == "dragged") companion_.pose = "sit";
     }
 
     switch (mode)
@@ -309,7 +323,7 @@ void Game::setCompanionMode(CompanionMode mode, float x)
     case CompanionMode::Drag:
         player_.pose = "drag";
         player_.speedScale = DragSpeed;
-        companion_.pose = "lying";
+        companion_.pose = "dragged";
         dragSide_ = -player_.facing;
         companion_.x = player_.x + static_cast<float>(dragSide_) * DragGap;
         break;
@@ -653,6 +667,8 @@ void Game::updatePlaying(float dt)
     }
     player_.update(dt);
     companion_.update(dt);
+    for (const auto& object : room_->objects)
+        if (const SpriteSheet* sheet = objectSheet(object)) objectAnimators_[objectKey(object)].update(dt, sheet);
     barks_.update(dt);
     particles_.update(dt);
 
@@ -803,7 +819,8 @@ void Game::updateCompanion(float dt)
         const float target = std::clamp(player_.x - static_cast<float>(player_.facing) * FollowGap, room_->walkMin,
                                         room_->walkMax);
         const int condition = std::clamp(state_.get("x_condition"), 0, 3);
-        companion_.speedScale = 0.55f + 0.15f * static_cast<float>(condition);
+        // A little slower than the player, and a little slower again when he is worse.
+        companion_.speedScale = 0.84f + 0.16f * static_cast<float>(condition) / 3.0f;
         if (std::fabs(companion_.x - target) > 8.0f) companion_.walkTo(target);
         companion_.pose = player_.pose == "kneel" ? "kneel" : "idle";
         break;
@@ -815,7 +832,7 @@ void Game::updateCompanion(float dt)
         const float target = player_.x + static_cast<float>(dragSide_) * DragGap;
         companion_.x = approach(companion_.x, target, 80.0f * dt);
         companion_.facing = -dragSide_;
-        companion_.pose = "lying";
+        companion_.pose = "dragged";
         break;
     }
     default: break;
@@ -1021,6 +1038,8 @@ void Game::drawScene()
 
     if (const Texture2D* background = assets_.texture(room_->background))
     {
+        // See-through parts of the art (a window) show the room's colour.
+        ClearBackground(multiply(room_->color, tint_));
         DrawTexture(*background, 0, 0, tint_);
     }
     else
@@ -1089,8 +1108,26 @@ void Game::drawScene()
     scene_.end();
 }
 
+const SpriteSheet* Game::objectSheet(const ObjectDef& object) const
+{
+    const auto it = objectSheets_.find(object.sprite);
+    return it == objectSheets_.end() ? nullptr : &it->second;
+}
+
 void Game::drawObject(const ObjectDef& object, bool highlighted)
 {
+    // An animated sprite: its "idle" frames, top-left at the object's.
+    if (const SpriteSheet* sheet = objectSheet(object))
+    {
+        const auto animation = sheet->animations.find("idle");
+        if (animation != sheet->animations.end() &&
+            drawSprite(*sheet, objectAnimators_[objectKey(object)],
+                       Vector2{object.rect.x + animation->second.origin.x, object.rect.y + animation->second.origin.y}, false, tint_))
+        {
+            if (highlighted) DrawRectangleLinesEx(grow(object.rect, 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
+            return;
+        }
+    }
     if (const Texture2D* texture = assets_.texture(object.sprite))
     {
         const Texture2D* hover = highlighted ? assets_.texture(hoverSprite(object.sprite)) : nullptr;
@@ -1115,7 +1152,12 @@ void Game::drawEffect(const ObjectDef& object)
     const float cx = object.rect.x + object.rect.width / 2.0f;
     const float bottom = object.rect.y + object.rect.height;
 
-    if (object.effect == "fire")
+    if (object.effect == "fire" && objectSheet(object))
+    {
+        // The flames are in the sprite: only the light.
+        drawGlow(Vector2{cx, bottom - 10}, 70.0f * f, warm, strength);
+    }
+    else if (object.effect == "fire")
     {
         // Three tongues of flame over the logs, then the light.
         const float h = std::round((10.0f + 4.0f * (f - 1.0f) * 10.0f) * strength);

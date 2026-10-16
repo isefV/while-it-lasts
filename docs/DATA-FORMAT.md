@@ -185,7 +185,7 @@ gives 0.
 | Room key | Meaning |
 |---|---|
 | `name` | shown in the box between conversations |
-| `background` | 320 x 180 image; until it exists, `color` fills the scene |
+| `background` | 320 x 180 image; until it exists, `color` fills the scene (and it shows through see-through parts of the image, such as a window) |
 | `tint` | multiplies the whole scene (night, dusk) |
 | `ambient`, `music` | sound loops |
 | `player_x` | where the player appears (an exit's `spawn_x` wins) |
@@ -312,14 +312,18 @@ Frames run left to right along a row; `origin` is the feet, which stand on
 the ground line. An animation is `row`, `frames`, `fps`, `loop`, and may set
 its own `frame` and `origin` (a row of wider frames), `top` (the row's first
 pixel line, when the rows above are another height) and `column` (its first
-frame). The game asks for `idle`, `walk`, `sit`, `lying`, `kneel` and `drag`.
+frame). The game asks for `idle`, `walk`, `sit`, `lying`, `kneel` and `drag`
+(Y dragging X), and `dragged` (X being dragged; without it, `lying`).
 A pose the sheet lacks is drawn as a rectangle, so point it at the nearest
 row (Y's `kneel` uses the sitting frame). An Aseprite export is not a sheet
 config: rewrite it in this form.
 
 Props need no config: the object's `sprite` is the image, drawn unscaled
 from the object's top-left, so make `w` and `h` the image size and put its
-bottom on the ground line (y = 150 − h).
+bottom on the ground line (y = 150 − h). An animated prop's `sprite` is a
+sheet config instead (`sprites/bonfire.json`): it plays the sheet's `idle`
+animation, frame top-left at the object's. A `fire` effect on an object with
+a sprite adds only the light.
 
 `game.json` → `bars`: up to three bars top left, each
 `{ "label", "var", "max", "color" }`. Two: Y's health (`y_health`, 0 to 5)

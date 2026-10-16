@@ -149,6 +149,7 @@ private:
     void drawScene();
     void drawObject(const hollow::ObjectDef& object, bool highlighted);
     void drawEffect(const hollow::ObjectDef& object);
+    [[nodiscard]] const hollow::SpriteSheet* objectSheet(const hollow::ObjectDef& object) const;
     void drawHud();
     void drawTitle();
     void drawPause();
@@ -174,6 +175,7 @@ private:
     hollow::Menu titleMenu_;
     hollow::Menu pauseMenu_;
     std::map<std::string, hollow::SpriteSheet, std::less<>> sheets_;
+    std::map<std::string, hollow::SpriteSheet, std::less<>> objectSheets_; // sheet config path -> sheet
 
     Screen screen_ = Screen::Title;
     bool quit_ = false;
@@ -213,6 +215,7 @@ private:
     hollow::Particles particles_;
     std::map<std::string, float> glow_;     // object key -> strength, for fading lights
     std::map<std::string, hollow::Flicker> flicker_;
+    std::map<std::string, hollow::Animator> objectAnimators_; // object key -> its animated sprite
     Color tint_{255, 255, 255, 255};
     Color tintFrom_{255, 255, 255, 255};
     Color tintTo_{255, 255, 255, 255};

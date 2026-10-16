@@ -47,11 +47,17 @@ namespace hollow
         }
 
         // Dragging keeps its own animation while moving.
+        // A sheet without a frame for being dragged shows him lying.
         if (moved_)
             animator_.play(pose == "drag" ? "drag" : "walk");
+        else if (pose == "dragged" && sheet && !sheet->animations.contains("dragged"))
+            animator_.play("lying");
         else
             animator_.play(pose);
-        animator_.update(dt, sheet);
+
+        // Dragging only moves with the feet: standing still (or in a
+        // conversation) holds the frame it stopped on.
+        if (moved_ || pose != "drag") animator_.update(dt, sheet);
     }
 
     Rectangle Actor::bounds() const
@@ -65,9 +71,9 @@ namespace hollow
             bw = w * 1.3f;
             bh = h * 0.6f;
         }
-        else if (pose == "lying")
+        else if (pose == "lying" || pose == "dragged")
         {
-            bw = h * 0.9f;
+            bw = h * 1.2f; // as long as the lying frames (48 for a 40 high character)
             bh = w * 0.7f;
         }
         else if (pose == "kneel")
@@ -91,7 +97,7 @@ namespace hollow
         const Rectangle r = bounds();
         DrawRectangleRec(r, body);
 
-        const bool lying = pose == "lying";
+        const bool lying = pose == "lying" || pose == "dragged";
         const Color head = mix(body, Color{230, 235, 240, body.a}, 0.25f);
         if (lying)
         {

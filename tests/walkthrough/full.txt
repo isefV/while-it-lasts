@@ -37,12 +37,7 @@ use forest_exit
 room factory_entrance
 use road                      # locked until the floor is done
 talk
-use vending
-choose Shake
-expect pretzels
-use booth
-expect bandages == 1
-use door
+use door                      # the vending machine and the booth are out until they have art
 room factory_office
 use desk
 use radio
@@ -60,7 +55,7 @@ use window
 use poster
 use first_aid_cabinet
 choose Use the key
-expect cabinet_open && !noisy_entry && cig_count == 2 && bandages == 3
+expect cabinet_open && !noisy_entry && cig_count == 2 && bandages == 2
 use sink                      # nothing yet: the shelf has the hint
 expect !has_antibiotics
 use shelves
@@ -77,13 +72,13 @@ choose Throw the bolt
 expect factory_won && !item.bolt
 use lunchbox
 use lost_backpack
-expect backpack_looted && cig_count == 3 && bandages == 4
+expect backpack_looted && cig_count == 3 && bandages == 3
 use exit_office
 room factory_office
 use exit_entrance
 choose Share                  # back at the entrance: the dressing, then the cigarette
 room factory_entrance
-expect stage01_done && x_condition == 3 && antibiotics_given && smoked_with_x == 1 && cig_count == 2 && bandages == 3
+expect stage01_done && x_condition == 3 && antibiotics_given && smoked_with_x == 1 && cig_count == 2 && bandages == 2
 item painkillers              # nobody hurts yet: kept
 expect painkillers == 2
 use road
