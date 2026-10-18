@@ -107,7 +107,7 @@
             "color": "#0b0d11", "sprite": "sprites/creature.json", "patrol": [150, 270]
         },
         // "Fight it" or being seen: the creature itself, in real time.
-        "fight": { "brute": true, "hp": 4, "win": "floor.fight_won", "lose": "floor.fight_lost" },
+        "fight": { "brute": true, "hp": 9, "damage": 3, "win": "floor.fight_won" },
         // The machines and the way back are in the background art.
         "objects": [
             { "id": "exit_office", "name": "Office", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217", "hidden": true,

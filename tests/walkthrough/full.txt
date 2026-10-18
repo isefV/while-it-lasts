@@ -2,7 +2,7 @@
 # key, the antibiotics, the bottle thrown at the checkpoint, both fights won,
 # X kept breathing both times, one shared cigarette, two saved for the
 # summit, both notes.
-#   game --walkthrough tests/walkthrough/full.txt
+#   "The Hollow Dawn" --walkthrough tests/walkthrough/full.txt
 # The commands are explained in apps/app/walkthrough.hpp.
 
 # --- Stage 00: the campsite -------------------------------------------------
@@ -110,8 +110,6 @@ use crushed_pack
 choose Save
 expect stage02_done && cig_count == 3 && !x_down
 use lantern_1
-use steps
-room landing
 use lantern
 use broken_sign
 use steps
@@ -131,10 +129,9 @@ room broken_stairs
 walk 105                      # the wall: a hint to leave him here
 grab                          # let go of him behind it
 expect !dragging && stairs_left_x
-use creature
-choose Fight
+walk 200                      # walking up to it starts the fight
 fight                         # two crawlers up the path, then the creature
-expect creature_cleared
+expect creature_cleared && y_health >= 1   # won (losing is death)
 use fallen_beam
 expect beam_moved
 talk

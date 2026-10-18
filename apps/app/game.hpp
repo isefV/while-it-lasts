@@ -114,11 +114,23 @@ private:
         Playing,
         Paused,
         Settings, // debug builds only, from the title or the pause menu
+        Dead,     // Y_HEALTH or X_CONDITION reached 0: E tries the level again
         EndCard,
     };
 
     void newGame(const std::string& room = {});
     void enterRoom(const std::string& id, float spawnX);
+
+    // Dying and trying again: everything as it was when the level began.
+    void saveCheckpoint(const std::string& room, float spawnX);
+    void retry();
+    void checkDeath();
+    void updateDead(float dt);
+    [[nodiscard]] bool dead() const { return screen_ == Screen::Dead; }
+    void drawDead();
+    // Low health: a shake, the alarm and a note, when it drops that low.
+    void updateWarnings(float dt);
+    void drawWarning();
     void runEnterRules();
     void onCommand(const hollow::Effect& effect);
     hollow::Actor* actor(const std::string& id);
@@ -235,6 +247,27 @@ private:
     Fight fight_;
     Revive revive_;
     Reaper reaper_;
+
+    struct Checkpoint
+    {
+        bool valid = false;
+        std::string room;
+        float spawnX = -1.0f;
+        CompanionMode mode = CompanionMode::Absent; // entering still pulling X, or not
+        hollow::StoryState state;
+        std::set<std::string> usedOnce;
+        std::map<std::string, int> useCount;
+        std::set<std::string> firedTriggers;
+        std::set<std::string> enterRulesDone;
+    };
+    Checkpoint checkpoint_;
+    float deadTime_ = 0.0f;
+    std::string deadText_; // who died
+
+    int warnHealth_ = 0;    // the values last seen, to notice a drop
+    int warnCondition_ = 0;
+    float warning_ = 0.0f;  // seconds the note stays up
+    std::string warningText_;
 
     // The bars: the value last shown, and a flash when it changes.
     std::array<int, 3> barValue_{};

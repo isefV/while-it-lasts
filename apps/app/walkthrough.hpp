@@ -22,6 +22,8 @@
 //   revive slow          press nothing: the Reaper reaches him
 //   shot <file.png>      save the canvas
 //   ended                fail unless the game reached the end card (waits up to 20 s)
+//   died                 fail unless someone dies (the death screen; waits up to 30 s)
+//   retry                E on the death screen: the level again, from its start
 //
 // Conversations advance on their own; a choice without a "choose" takes the
 // first option. A fight or a revive scene needs its command. The walkthrough

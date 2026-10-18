@@ -44,6 +44,12 @@ namespace
     // The Reaper's frames, wherever it shows up (reaper.cpp, revive.cpp, the scripts).
     constexpr const char* ReaperSheet = "sprites/reaper.json";
 
+    // Dying, and the warning before it.
+    constexpr float DeadWait = 1.5f;   // seconds on the death screen before E works
+    constexpr int LowHealth = 2;       // y_health this low (of 5) sounds the alarm
+    constexpr int LowCondition = 1;    // x_condition this low (of 3)
+    constexpr float WarningTime = 4.5f;
+
     float number(const std::vector<std::string>& args, std::size_t index, float fallback)
     {
         if (index >= args.size()) return fallback;
@@ -58,9 +64,19 @@ namespace
         return dot == std::string::npos ? sprite + "_hover" : sprite.substr(0, dot) + "_hover" + sprite.substr(dot);
     }
 
-    Rectangle grow(Rectangle r, float by)
+    // What the player can use lights up, slowly breathing: how strongly.
+    float selectGlow()
     {
-        return Rectangle{r.x - by, r.y - by, r.width + 2 * by, r.height + 2 * by};
+        return 0.24f + 0.10f * std::sin(static_cast<float>(GetTime()) * 4.0f);
+    }
+
+    // The selected thing drawn a second time, added on top: it lights up.
+    template <typename Draw>
+    void drawSelected(Draw draw)
+    {
+        BeginBlendMode(BLEND_ADDITIVE);
+        draw();
+        EndBlendMode();
     }
 } // namespace
 
@@ -214,7 +230,119 @@ void Game::newGame(const std::string& room)
     fade_.set(1.0f);
     fade_.to(0.0f, 1.2f);
     companionMode_ = CompanionMode::Absent; // a new game starts with nobody in tow
-    enterRoom(room.empty() ? data_.startRoom : room, -1.0f);
+    const std::string first = room.empty() ? data_.startRoom : room;
+    saveCheckpoint(first, -1.0f);
+    enterRoom(first, -1.0f);
+}
+
+void Game::saveCheckpoint(const std::string& room, float spawnX)
+{
+    checkpoint_.valid = true;
+    checkpoint_.room = room;
+    checkpoint_.spawnX = spawnX;
+    checkpoint_.mode = companionMode_;
+    checkpoint_.state = state_.snapshot();
+    checkpoint_.usedOnce = usedOnce_;
+    checkpoint_.useCount = useCount_;
+    checkpoint_.firedTriggers = firedTriggers_;
+    checkpoint_.enterRulesDone = enterRulesDone_;
+    warnHealth_ = state_.get("y_health");
+    warnCondition_ = state_.get("x_condition");
+    warning_ = 0.0f;
+}
+
+void Game::retry()
+{
+    // The level again, from its start, with everything as it was then.
+    state_.restore(checkpoint_.state);
+    usedOnce_ = checkpoint_.usedOnce;
+    useCount_ = checkpoint_.useCount;
+    firedTriggers_ = checkpoint_.firedTriggers;
+    enterRulesDone_ = checkpoint_.enterRulesDone;
+    companionMode_ = checkpoint_.mode;
+    runner_->stop();
+    barks_.stop();
+    pendingRoom_.clear();
+    ending_ = false;
+    for (std::size_t i = 0; i < data_.bars.size() && i < barValue_.size(); ++i)
+    {
+        barValue_[i] = state_.get(data_.bars[i].var);
+        barFlash_[i] = 0.0f;
+    }
+    warnHealth_ = state_.get("y_health");
+    warnCondition_ = state_.get("x_condition");
+    warning_ = 0.0f;
+    companion_.pose = "idle";
+    screen_ = Screen::Playing;
+    fade_.set(1.0f);
+    fade_.to(0.0f, 1.0f);
+    enterRoom(checkpoint_.room, checkpoint_.spawnX);
+}
+
+void Game::checkDeath()
+{
+    // Not in the middle of a room change, a fight (Y goes down first) or a
+    // near-death scene (it plays out).
+    if (!pendingRoom_.empty() || ending_ || haul_.active || fight_.active() || revive_.active()) return;
+    const bool robDead = state_.get("y_health") <= 0;
+    const bool jaceDead = state_.get("x_condition") <= 0;
+    if (!robDead && !jaceDead) return;
+
+    const auto name = [this](const std::string& id) {
+        const auto it = data_.characters.find(id);
+        return it == data_.characters.end() ? id : it->second.name;
+    };
+    if (robDead)
+    {
+        deadText_ = name(data_.player) + " is dead.";
+        player_.pose = "lying";
+    }
+    else
+    {
+        deadText_ = name(data_.companion) + " is gone.";
+        if (companion_.visible) companion_.pose = "lying";
+    }
+    runner_->stop();
+    barks_.stop();
+    player_.stop();
+    audio_.setMusic({});
+    audio_.setAmbient({});
+    audio_.play("sting");
+    screen_ = Screen::Dead;
+    deadTime_ = 0.0f;
+}
+
+void Game::updateDead(float dt)
+{
+    deadTime_ += dt;
+    shake_.update(dt, random_);
+    if (deadTime_ < DeadWait) return;
+    if (input_.pressed(Action::Confirm)) retry();
+    else if (input_.pressed(Action::Pause)) toTitle();
+}
+
+void Game::updateWarnings(float dt)
+{
+    warning_ = std::max(0.0f, warning_ - dt);
+    const int health = state_.get("y_health");
+    const int condition = state_.get("x_condition");
+    const auto name = [this](const std::string& id) {
+        const auto it = data_.characters.find(id);
+        return it == data_.characters.end() ? id : it->second.name;
+    };
+    std::string text;
+    if (health < warnHealth_ && health > 0 && health <= LowHealth)
+        text = name(data_.player) + " is badly hurt. Tab: bandages, painkillers.";
+    else if (condition < warnCondition_ && condition > 0 && condition <= LowCondition)
+        text = name(data_.companion) + " is fading. Tab: bandages, painkillers.";
+    warnHealth_ = health;
+    warnCondition_ = condition;
+    if (text.empty()) return;
+
+    warningText_ = text;
+    warning_ = WarningTime;
+    shake_.start(0.5f, 2.5f);
+    audio_.play("alarm", 0.8f);
 }
 
 bool Game::startAt(const std::string& room, const std::vector<std::pair<std::string, int>>& values)
@@ -230,6 +358,7 @@ bool Game::startAt(const std::string& room, const std::vector<std::pair<std::str
         if (!state_.defined(name)) TraceLog(LOG_WARNING, "Hollow: --set: no variable \"%s\"", name.c_str());
         state_.set(name, value);
     }
+    saveCheckpoint(room_->id, -1.0f); // with the values set
     fade_.set(0.0f);
     return true;
 }
@@ -655,6 +784,7 @@ void Game::update(float dt)
     }
     case Screen::Settings: updateSettings(); break;
     case Screen::Playing: updatePlaying(dt); break;
+    case Screen::Dead: updateDead(dt); break;
     case Screen::EndCard:
         endCardTime_ += dt;
         if (endCardTime_ > 4.0f && input_.pressed(Action::Confirm)) toTitle();
@@ -728,6 +858,7 @@ void Game::updatePlaying(float dt)
     {
         const std::string id = pendingRoom_;
         pendingRoom_.clear();
+        saveCheckpoint(id, pendingX_); // dying here starts this level again
         enterRoom(id, pendingX_);
         fade_.to(0.0f, RoomFade);
     }
@@ -861,6 +992,8 @@ void Game::updatePlaying(float dt)
     }
 
     if (script_) script_->update(*this, dt);
+    updateWarnings(dt);
+    checkDeath();
 }
 
 void Game::updateExploring(float dt)
@@ -1171,7 +1304,7 @@ Game::Target Game::selectedTarget() const
 void Game::draw()
 {
     const bool fromGame = screen_ == Screen::Settings && settingsFrom_ == Screen::Paused;
-    const bool inGame = screen_ == Screen::Playing || screen_ == Screen::Paused || fromGame;
+    const bool inGame = screen_ == Screen::Playing || screen_ == Screen::Paused || screen_ == Screen::Dead || fromGame;
     if (inGame) drawScene();
 
     // The scene is shown under the canvas, which is see-through over it.
@@ -1193,9 +1326,11 @@ void Game::draw()
     case Screen::Paused:
         drawSceneLabels();
         drawHud();
+        drawWarning();
         fade_.draw(Rectangle{0, 0, static_cast<float>(layout::CanvasWidth), static_cast<float>(layout::CanvasHeight)});
         if (screen_ == Screen::Paused) drawPause();
         break;
+    case Screen::Dead: drawDead(); break;
     case Screen::Settings:
         if (fromGame) drawHud();
         drawSettings();
@@ -1262,7 +1397,7 @@ void Game::drawScene()
     if (script_) script_->drawMiddle(*this);
     fight_.drawBack(*this);
     companion_.draw(tint_);
-    if (highlight.companion) DrawRectangleLinesEx(grow(companion_.bounds(), 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
+    if (highlight.companion) drawSelected([&] { companion_.draw(ColorAlpha(WHITE, selectGlow())); });
     player_.draw(tint_);
 
     for (const auto& object : room_->objects)
@@ -1358,25 +1493,25 @@ const SpriteSheet* Game::objectSheet(const ObjectDef& object) const
 
 void Game::drawObject(const ObjectDef& object, bool highlighted)
 {
-    const Color tint = ColorAlpha(tint_, object.alpha);
+    const SpriteSheet* sheet = objectSheet(object);
+    // A "_hover" image beside the sprite, if there is one, is shown while selected.
+    const Texture2D* hover = highlighted && !sheet ? assets_.texture(hoverSprite(object.sprite)) : nullptr;
 
-    // An animated sprite: its "idle" frames, top-left at the object's.
-    if (const SpriteSheet* sheet = objectSheet(object))
-    {
-        const auto animation = sheet->animations.find("idle");
-        const Vector2 origin = animation == sheet->animations.end() ? Vector2{} : animation->second.origin;
-        if (animation != sheet->animations.end() &&
-            drawSprite(*sheet, objectAnimators_[objectKey(object)],
-                       Vector2{object.rect.x + origin.x * object.scale, object.rect.y + origin.y * object.scale}, false, tint,
-                       object.scale))
+    // Drawn with this tint; true if there was an image to draw.
+    const auto drawImage = [&](Color tint) {
+        // An animated sprite: its "idle" frames, top-left at the object's.
+        if (sheet)
         {
-            if (highlighted) DrawRectangleLinesEx(grow(object.rect, 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
-            return;
+            const auto animation = sheet->animations.find("idle");
+            const Vector2 origin = animation == sheet->animations.end() ? Vector2{} : animation->second.origin;
+            if (animation != sheet->animations.end() &&
+                drawSprite(*sheet, objectAnimators_[objectKey(object)],
+                           Vector2{object.rect.x + origin.x * object.scale, object.rect.y + origin.y * object.scale}, false,
+                           tint, object.scale))
+                return true;
         }
-    }
-    if (const Texture2D* texture = assets_.texture(object.sprite))
-    {
-        const Texture2D* hover = highlighted ? assets_.texture(hoverSprite(object.sprite)) : nullptr;
+        const Texture2D* texture = assets_.texture(object.sprite);
+        if (!texture) return false;
         const Texture2D& shown = hover ? *hover : *texture;
         if (object.scale == 1.0f)
             DrawTexture(shown, static_cast<int>(object.rect.x), static_cast<int>(object.rect.y), tint);
@@ -1389,12 +1524,16 @@ void Game::drawObject(const ObjectDef& object, bool highlighted)
             DrawTexturePro(shown, Rectangle{0, 0, static_cast<float>(shown.width), static_cast<float>(shown.height)}, dest,
                            Vector2{0, 0}, 0.0f, tint);
         }
-        if (highlighted && !hover)
-            DrawRectangleLinesEx(grow(object.rect, 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
+        return true;
+    };
+
+    if (!drawImage(ColorAlpha(tint_, object.alpha)))
+    {
+        DrawRectangleRec(object.rect, multiply(object.color, tint_));
+        if (highlighted) drawSelected([&] { DrawRectangleRec(object.rect, ColorAlpha(object.color, selectGlow())); });
         return;
     }
-    DrawRectangleRec(object.rect, multiply(object.color, tint_));
-    if (highlighted) DrawRectangleLinesEx(grow(object.rect, 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
+    if (highlighted && !hover) drawSelected([&] { drawImage(ColorAlpha(WHITE, object.alpha * selectGlow())); });
 }
 
 void Game::drawEffect(const ObjectDef& object)
@@ -1502,6 +1641,8 @@ void Game::drawTitle()
     const std::string title = data_.title;
     const float w = text_.measureScaled(title, 2);
     text_.drawScaled(title, Vector2{std::round(240 - w / 2), 90}, data_.ui.highlight, 2);
+    const std::string version = "v" + std::string(hollow::version());
+    text_.draw(version, Vector2{std::round(240 - text_.measure(version) / 2), 112}, data_.ui.dim);
 
     // The one warm thing on a cold screen.
     const float t = static_cast<float>(GetTime());
@@ -1522,6 +1663,30 @@ void Game::drawTitle()
     }
     const char* engine = "Powered by raylib";
     text_.draw(engine, Vector2{std::round(472 - text_.measure(engine)), 252}, data_.ui.dim);
+}
+
+void Game::drawWarning()
+{
+    // Over the top of the scene, blinking, under a boss bar if there is one.
+    if (warning_ <= 0.0f || std::fmod(warning_, 0.6f) < 0.18f) return;
+    const float w = text_.measure(warningText_);
+    const Rectangle box{std::round(240 - w / 2 - 6), 28, std::round(w + 12), layout::LineHeight + 6};
+    DrawRectangleRec(box, ColorAlpha(BLACK, 0.75f));
+    text_.draw(warningText_, Vector2{box.x + 6, box.y + 3}, Color{230, 92, 80, 255});
+}
+
+void Game::drawDead()
+{
+    // The scene, frozen, going dark red; then the way back.
+    const float k = std::min(1.0f, deadTime_ / DeadWait);
+    DrawRectangle(0, 0, layout::CanvasWidth, layout::CanvasHeight, ColorAlpha(Color{40, 4, 6, 255}, 0.8f * k));
+    const float w = text_.measureScaled(deadText_, 2);
+    text_.drawScaled(deadText_, Vector2{std::round(240 - w / 2), 104}, ColorAlpha(Color{230, 92, 80, 255}, k), 2);
+    if (deadTime_ < DeadWait) return;
+    const char* again = "E: try this level again";
+    const char* quit = "Esc: quit to title";
+    text_.draw(again, Vector2{std::round(240 - text_.measure(again) / 2), 150}, data_.ui.highlight);
+    text_.draw(quit, Vector2{std::round(240 - text_.measure(quit) / 2), 164}, data_.ui.dim);
 }
 
 void Game::drawPause()

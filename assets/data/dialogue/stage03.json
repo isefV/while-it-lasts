@@ -13,7 +13,7 @@
         { "narration": "{y} offers his arm. {x} takes it." },
         { "x": "Fine. But if I die, I'm blaming the stairs." },
         { "y": "Noted." },
-        { "thought": "I wish he'd stop saying that.", "do": ["reaper follow 150"] }
+        { "thought": "I wish he'd stop saying that.", "do": ["reaper stalk"] }
     ],
 
     "foot.lantern": [
@@ -89,7 +89,7 @@
         { "y": "I know. I saw." },
         { "x": "Get me up there, {y}. That's all I want. That was the deal." },
         { "y": "That's still the deal." },
-        { "do": ["music music_mountain", "ambient wind footsteps leaves", "reaper follow 100", "pose x sit"] },
+        { "do": ["music music_mountain", "ambient wind footsteps leaves", "reaper stalk", "pose x sit"] },
         { "narration": "{y} tries to stand him up. {x} cries out." },
         { "y": "We have to keep going." },
         { "x": "No." },
@@ -151,9 +151,8 @@
     ],
 
     "stairs.safe_hint": [
-        { "narration": "A creature blocks the collapsed stairs ahead." },
-        { "thought": "Behind that log, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" },
-        { "thought": "And a bottle down the slope, or the pistol, could move it from right here. (Tab: items.)", "_added": "the items that work on it from a distance" }
+        { "narration": "A creature blocks the collapsed stairs ahead. There's no way round it." },
+        { "thought": "Behind that log, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" }
     ],
     "stairs.release": [
         { "if": "!stairs_left_x && !creature_cleared", "then": [
@@ -161,11 +160,9 @@
             { "x": "Wasn't planning on going anywhere." },
             { "y": "I mean it. Don't move." },
             { "x": "You say that like I've got a choice." }
-        ] },
-        { "if": "!creature_cleared", "do": ["reaper show 50 80 5"], "_added": "left alone, X has company" }
+        ] }
     ],
     "stairs.grab": [
-        { "do": ["reaper hide 1"] },
         { "if": "beam_moved && !stairs_back", "then": [ { "goto": "stairs.back" } ] }
     ],
     "stairs.cant_drag": [
@@ -175,42 +172,13 @@
         { "y": "Scratches in the stone. Over and over, in the same place.", "_added": "new thing to look at" },
         { "thought": "Like it's been waiting here a long time." }
     ],
-    "stairs.creature": [
-        { "narration": "It turns its head toward {y}.", "_added": "the mountain creature (the script has no lines for it)" },
-        { "choice": [
-            { "text": "Throw a rock down the slope.", "next": "stairs.distract" },
-            { "text": "Throw a bottle down the slope.", "if": "bottles >= 1", "do": ["bottles -= 1"], "next": "stairs.bottle" },
-            { "text": "Shoot it.", "if": "item.pistol && ammo >= 1", "next": "stairs.shot" },
-            { "text": "Fight it.", "if": "item.bat || (item.pistol && ammo >= 1)", "next": "stairs.fight" },
-            { "timeout": true, "next": "stairs.charge" }
-        ], "timer": 6 }
-    ],
-    "stairs.distract": [
-        { "narration": "The rock clatters down the slope. The creature follows the sound into the dark.", "do": ["sound clatter", "creature_cleared = true", "stairs_creature = false", "event creature_leave 360"], "_added": "" }
-    ],
-    "stairs.bottle": [
-        { "narration": "The bottle sails down the slope and bursts on the rocks. The creature's head snaps toward the sound, and it lopes off after it.", "do": ["sound glass", "creature_cleared = true", "stairs_creature = false", "event creature_leave 360"], "_added": "a bottle (or the bolt) from the items, at the creature" },
-        { "thought": "Thank you, whoever drank that." }
-    ],
-    "stairs.shot": [
-        { "narration": "{y} fires. The shot cracks off the stones beside it; it shrieks and bolts down the mountain.", "do": ["ammo -= 1", "sound shot", "shake 0.25 1", "creature_cleared = true", "stairs_creature = false", "event creature_leave 360"], "_added": "the pistol from the items, at the creature" },
-        { "y": "Sorry. Not today." }
-    ],
     "stairs.fight": [
-        { "narration": "{y} grips the bat. Behind him, down the path, something small skitters on the stones.", "_added": "the fight: a wave first, then the creature" },
-        { "do": ["fight"] }
-    ],
-    "stairs.charge": [
-        { "narration": "It comes at {y}. And behind him, down the path, something small skitters on the stones.", "do": ["sound roar", "shake 0.4 2"], "_added": "too slow: the fight anyway" },
+        { "narration": "It turns its head toward {y}, and comes. Behind him, down the path, something small skitters on the stones.", "do": ["sound roar", "shake 0.4 2"], "_changed": "no way round it: walking up to it starts the fight" },
         { "do": ["fight"] }
     ],
     "stairs.fight_won": [
-        { "narration": "It reels, and slinks off down the mountain.", "do": ["creature_cleared = true"], "_added": "" },
+        { "narration": "It crumples on the stones. Then there is nothing there at all.", "do": ["creature_cleared = true"], "_changed": "beaten, it is gone" },
         { "y": "Okay. Still here." }
-    ],
-    "stairs.fight_lost": [
-        { "narration": "{y} goes down hard. It stands over him, sniffs, and loses interest. It lumbers off down the slope.", "do": ["creature_cleared = true", "event creature_leave -60"], "_added": "losing: it leaves anyway, never game over" },
-        { "y": "Okay. Still... here." }
     ],
     "stairs.beam": [
         { "if": "!creature_cleared",
@@ -218,7 +186,7 @@
           "else": [ { "narration": "{y} braces against the beam and shoves. It scrapes aside.", "do": ["beam_moved = true", "sound scrape"] } ] }
     ],
     "stairs.back": [
-        { "narration": "{x} is barely awake.", "do": ["stairs_back = true", "reaper hide 1"] },
+        { "narration": "{x} is barely awake.", "do": ["stairs_back = true"] },
         { "y": "Hey. I'm back." },
         { "x": "Took you long enough." },
         { "y": "Did you miss me?" },
@@ -231,7 +199,7 @@
         { "if": "beam_moved",
           "then": [
             { "if": "!stairs_back", "then": [ { "goto": "stairs.back" } ] },
-            { "do": ["reaper hide 1", "companion drag"] }
+            { "do": ["companion drag"] }
           ],
           "else": [
             { "if": "creature_cleared",

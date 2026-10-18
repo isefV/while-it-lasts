@@ -124,13 +124,6 @@
         { "x": "I'm coming!" },
         { "goto": "barricade.collapse" }
     ],
-    "barricade.waves_lost": [
-        { "narration": "{y} goes down under them. Then {x} is there, swinging the rod like a madman, yelling until they scatter.", "do": ["x_condition -= 1"], "_added": "losing the waves: X saves Y, and it costs him" },
-        { "x": "Get. Up." },
-        { "y": "...Up. I'm up." },
-        { "x": "Good. Because I'm not dragging you back." },
-        { "goto": "barricade.collapse" }
-    ],
     "barricade.collapse": [
         { "narration": "{x} takes two steps toward the gap, and folds.", "do": ["sound thud", "pose x lying", "ambient wind@0.4"], "_added": "the first near-death scene" },
         { "y": "{x}?" },

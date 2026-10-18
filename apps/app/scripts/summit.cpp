@@ -12,7 +12,7 @@
 //   event spirit_rise       a faint light rises from X
 //   event spirit_to_reaper  it drifts to the Reaper and fades
 //   event reaper_vanish     the Reaper turns into the dark
-//   event final_image       the sun comes up, the ember fades
+//   event final_image       the morning light comes up, the ember fades
 
 #include "room_script.hpp"
 
@@ -23,7 +23,7 @@ using namespace hollow;
 namespace
 {
     constexpr float ReaperAfter = 30.0f;  // seconds of quiet after the cigarette
-    constexpr float SunTime = 7.0f;       // the sun clearing the hills, in the final image
+    constexpr float SunTime = 7.0f;       // the morning light coming up, in the final image
     const Color Dawn{248, 206, 176, 255};
     const Color Morning{255, 240, 222, 255};
 
@@ -52,6 +52,7 @@ namespace
             reaper_.rect = Rectangle{285, 62, 32, 80};
             reaper_.color = Color{6, 6, 10, 255};
             reaper_.sheet = game.reaperSheet();
+            reaper_.flipX = true; // the sheet faces right; here it stands right of them and faces them
             spirit_.color = Color{230, 236, 244, 255};
             spirit_.texture = game.assets().texture("sprites/spirit.png");
         }
@@ -60,7 +61,6 @@ namespace
         {
             reaper_.update(dt);
             spirit_.update(dt);
-            if (sunrise_ >= 0.0f) sunrise_ += dt;
 
             if (started_ || game.busy() || game.state().get("cig_scene_done") == 0) return;
             quiet_ += dt;
@@ -69,17 +69,6 @@ namespace
                 started_ = true;
                 game.startDialogue("summit.reaper");
             }
-        }
-
-        void drawBack(Game& game) override
-        {
-            // In the final image the sun comes up (the dawn itself is the tint).
-            const float t = sunrise_ < 0.0f ? 0.0f : smoothstep(std::min(1.0f, sunrise_ / SunTime));
-            if (t <= 0.0f) return;
-            const Color warm = game.ui().accent;
-            const Vector2 sun{262.0f, std::round(106.0f - 16.0f * t)};
-            drawGlow(sun, 26.0f + 18.0f * t, warm, 0.6f * t);
-            DrawCircleV(sun, 6.0f, ColorAlpha(mix(warm, game.ui().highlight, 0.55f), t));
         }
 
         void drawFront(Game&) override
@@ -121,9 +110,9 @@ namespace
             }
             if (name == "final_image")
             {
+                // No sun drawn: the morning is the light (the tint) alone.
                 game.setTint(Morning, SunTime);
                 game.state().set("ember_out", 1);
-                sunrise_ = 0.0f;
                 return true;
             }
             return false;
@@ -134,7 +123,6 @@ namespace
         Apparition spirit_;
         float quiet_ = 0.0f;
         bool started_ = false;
-        float sunrise_ = -1.0f; // seconds since the final image began
     };
 } // namespace
 

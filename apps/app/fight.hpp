@@ -9,9 +9,9 @@
 // A creature shows a red "!" before it lunges; a lunge that reaches Y costs
 // Y_HEALTH, one that reaches X (not dragged, not behind cover) costs
 // X_CONDITION, at most once a wave. When every creature is beaten or gone the
-// room's "win" conversation starts; when Y_HEALTH reaches 0, "lose" (Y comes
-// to with 1 left: never game over). Y cannot fight while dragging X: G lets
-// go of him first.
+// room's "win" conversation starts; a beaten brute fades where it stands.
+// When Y_HEALTH reaches 0, Y goes down and the game's death screen follows.
+// Y cannot fight while dragging X: G lets go of him first.
 
 #include <hollow/hollow.hpp>
 
@@ -28,7 +28,7 @@ public:
     void stop();
 
     [[nodiscard]] bool active() const { return active_; }
-    /// Y is on the ground (lost): no walking until the "lose" conversation.
+    /// Y is on the ground (lost): no walking; then the death screen.
     [[nodiscard]] bool down() const { return active_ && downTime_ >= 0.0f; }
 
     /// Reads F, R and Q; moves the creatures. Only while the player is free
@@ -134,5 +134,5 @@ private:
     float banner_ = 0.0f;     // "More of them" on screen
     float noAmmo_ = 0.0f;     // "No rounds left" on screen
     float holding_ = 0.0f;    // "Not while holding him" on screen
-    float downTime_ = -1.0f;  // Y went down: the lose conversation after a moment
+    float downTime_ = -1.0f;  // Y went down: the death screen after a moment
 };

@@ -46,7 +46,7 @@
             { "id": "barrier", "name": "Concrete barrier", "x": 56, "y": 119, "w": 48, "h": 32, "color": "#4a4e52",
               "sprite": "props/barrier_1.png", "cover": true, "interactive": false, "front": true },
             { "id": "sandbags", "name": "Sandbag wall", "x": 126, "y": 120, "w": 48, "h": 32, "color": "#4f4a3c",
-              "sprite": "props/sandbags.png", "cover": true, "interactive": false, "front": true },
+              "sprite": "props/sandbags.png", "cover": true, "interactive": false },
             // Still a hiding spot, but drawn behind them: they crouch by the car, not inside it.
             // The road's two cars (here and at the barricade) are drawn at 1.5 x, a
             // little taller than the two of them.
@@ -77,8 +77,7 @@
         // both sides (the ones from X's side go for him).
         "fight": {
             "waves": [ { "crawlers": 2, "from": "right" }, { "crawlers": 3, "from": "both" } ],
-            "win": "barricade.waves_won",
-            "lose": "barricade.waves_lost"
+            "win": "barricade.waves_won"
         },
         "objects": [
             { "id": "car", "name": "Abandoned car", "x": 0, "y": 103, "w": 96, "h": 48, "color": "#2e343c",

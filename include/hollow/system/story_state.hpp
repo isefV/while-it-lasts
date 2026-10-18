@@ -58,6 +58,11 @@ namespace hollow
         /// Every variable back to its start value; no items; nothing seen.
         void reset();
 
+        /// A copy of everything (a checkpoint), and putting one back. The
+        /// state itself stays the same object (the dialogue runner holds it).
+        [[nodiscard]] StoryState snapshot() const;
+        void restore(const StoryState& from);
+
     private:
         struct Impl;
         std::unique_ptr<Impl> d_;

@@ -93,16 +93,7 @@
                 { "text": "Not yet." }
             ] }
           ],
-          "else": [
-            { "if": "stairs_creature && !creature_cleared",
-              "then": [
-                { "choice": [
-                    { "text": "Throw it down the slope, past it.", "do": ["bottles -= 1"], "next": "stairs.bottle" },
-                    { "text": "Not yet." }
-                ] }
-              ],
-              "else": [ { "thought": "Empty. Good for making noise somewhere I'm not. Later." } ] }
-          ] }
+          "else": [ { "thought": "Empty. Good for making noise somewhere I'm not. Later." } ] }
     ],
     "use.bolt": [
         { "if": "stealth_active",
@@ -112,30 +103,10 @@
                 { "text": "Not yet." }
             ] }
           ],
-          "else": [
-            { "if": "stairs_creature && !creature_cleared",
-              "then": [
-                { "choice": [
-                    { "text": "Throw it down the slope, past it.", "do": ["take bolt"], "next": "stairs.bottle" },
-                    { "text": "Not yet." }
-                ] }
-              ],
-              "else": [ { "thought": "Heavy. Good for throwing, when there's something to throw it past." } ] }
-          ] }
+          "else": [ { "thought": "Heavy. Good for throwing, when there's something to throw it past." } ] }
     ],
     "use.pistol": [
-        { "if": "stairs_creature && !creature_cleared",
-          "then": [
-            { "if": "ammo >= 1",
-              "then": [
-                { "choice": [
-                    { "text": "Shoot it.", "next": "stairs.shot" },
-                    { "text": "Not yet." }
-                ] }
-              ],
-              "else": [ { "thought": "No rounds left." } ] }
-          ],
-          "else": [ { "thought": "Not wasting a round on nothing. In a fight, R fires it." } ] }
+        { "thought": "Not wasting a round on nothing. In a fight, R fires it." }
     ],
     "use.throw": [
         { "narration": "It sails over the road and smashes somewhere in the trees. The creature's head snaps toward the sound, and it lumbers off after it.", "do": ["event distract"] },

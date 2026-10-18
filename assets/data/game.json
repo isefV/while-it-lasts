@@ -1,7 +1,7 @@
-// The Last Light: what the game loads first. The format is described in
+// The Hollow Dawn: what the game loads first. The format is described in
 // docs/DATA-FORMAT.md. Comments like this one are allowed in every data file.
 {
-    "title": "THE LAST LIGHT",
+    "title": "THE HOLLOW DAWN",
     "start_room": "campsite",
     "start_items": ["bat", "pistol"],
 
@@ -9,8 +9,8 @@
     "player": "y",
     "companion": "x",
     "characters": {
-        "y": { "name": "Ezra", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
-        "x": { "name": "Luca", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 43, "sprite": "sprites/x.json" }
+        "y": { "name": "Rob", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
+        "x": { "name": "Jace", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 43, "sprite": "sprites/x.json" }
     },
 
     "files": {
@@ -105,7 +105,6 @@
         "rests":          { "value": 0, "min": 0, "max": 4 },
         "stairs_left_x": false,
         "stairs_back": false,
-        "stairs_creature": false,
 
         "_stage04": "The summit",
         "cig_lit": false,
@@ -142,8 +141,8 @@
     // Up to 3 bars, top left: Y's health (fights cost it; bandages,
     // antiseptic and painkillers give it back) and X's condition.
     "bars": [
-        { "label": "Ezra", "var": "y_health",    "max": 5, "color": "#8fa4b8" },
-        { "label": "Luca", "var": "x_condition", "max": 3, "color": "#9aab8c" }
+        { "label": "Rob", "var": "y_health",    "max": 5, "color": "#8fa4b8" },
+        { "label": "Jace", "var": "x_condition", "max": 3, "color": "#9aab8c" }
     ],
 
     // The last screen: only this line.
@@ -154,7 +153,7 @@
     // Who made the game, bottom left of the title screen.
     "credits": [
         "Developed by N2 Team",
-        "Art: @EiArt, @Danial2882",
-        "Code: @isef_v"
+        "Art: Faeze, Danial",
+        "Code: Isef"
     ]
 }

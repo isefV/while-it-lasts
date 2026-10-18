@@ -39,7 +39,7 @@ bool Walkthrough::load(const std::string& path, std::string& error)
         command.line = line;
 
         static const std::vector<std::string> verbs = {"use",  "talk",  "walk",  "choose", "wait",   "expect", "room",
-                                                       "inventory", "item", "grab", "fight", "revive", "shot", "ended"};
+                                                       "inventory", "item", "grab", "fight", "revive", "shot", "ended", "died", "retry"};
         if (std::find(verbs.begin(), verbs.end(), command.verb) == verbs.end())
         {
             error = path + ":" + std::to_string(line) + ": unknown command \"" + command.verb + "\"";
@@ -112,6 +112,36 @@ bool Walkthrough::step(Game& game, float dt)
     const bool ended = game.screen_ == Game::Screen::EndCard;
     if (ended && command.verb != "wait" && command.verb != "expect" && command.verb != "shot" && command.verb != "ended")
         return fail("the game has ended");
+
+    // Dying: "died" expects it, "retry" starts the level again; anything
+    // else fails (with who died).
+    if (game.dead())
+    {
+        if (command.verb == "died" || ((command.verb == "fight" || command.verb == "revive") && sawScene_))
+        {
+            next(); // a lost fight or a revive scene ends on the death screen
+            return true;
+        }
+        if (command.verb == "retry")
+        {
+            if (game.deadTime_ >= 1.6f)
+            {
+                input.pressVirtual(Action::Confirm);
+                next();
+            }
+            return true;
+        }
+        if (command.verb != "wait" && command.verb != "expect" && command.verb != "shot")
+            return fail("died: " + game.deadText_);
+    }
+    else if (command.verb == "died" && !game.busy() && !game.fight_.active() && !game.revive_.active())
+    {
+        return time_ < 30.0f || fail("nobody died");
+    }
+    else if (command.verb == "retry")
+    {
+        return fail("nobody died, nothing to retry");
+    }
 
     // "wait" and "shot" also run while a conversation is on screen (pauses,
     // the ending), which keeps advancing below.
@@ -282,11 +312,18 @@ bool Walkthrough::step(Game& game, float dt)
             input.setVirtualDown(side > 0 ? Action::Right : Action::Left, true); // turn to it
             return true;
         }
-        if (std::fabs(d) <= 30.0f)
+        // The "!": step back out of the lunge, or, against a wall, hit it
+        // first (a hit in its windup staggers it).
+        const float behind = side > 0 ? player.x - game.room().walkMin : game.room().walkMax - player.x;
+        if (threat->windup && std::fabs(d) <= threat->reach + 4.0f && behind > 24.0f)
+        {
+            input.pressVirtual(Action::Dodge);
+        }
+        else if (std::fabs(d) <= 30.0f)
         {
             if (game.fight_.canSwing()) input.pressVirtual(Action::Attack);
         }
-        else if (std::fabs(d) > 34.0f)
+        else if (!threat->windup)
         {
             input.setVirtualDown(side > 0 ? Action::Right : Action::Left, true);
         }

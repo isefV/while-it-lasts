@@ -5,22 +5,23 @@
     "summit": {
         "name": "The Summit",
         "background": "backgrounds/summit.png",
-        "frame": true,
+        // No foliage frame: at the end, only the open sky.
         "color": "#26242e",
         "tint": "#e6c6ae",
         "ambient": ["wind"],
         "script": "summit",
-        "player_x": 112,
-        "walk": [100, 150],
+        "player_x": 56,
+        "walk": [40, 80],
         "enter": [
             { "dialogue": "summit.arrive" }
         ],
-        "companion": { "x": 162, "mode": "stay", "pose": "sit", "dialogue": "summit.x" },
+        "companion": { "x": 92, "mode": "stay", "pose": "sit", "dialogue": "summit.x" },
         "objects": [
-            { "id": "horizon", "name": "Horizon", "x": 96, "y": 24, "w": 220, "h": 70, "hidden": true,
+            { "id": "horizon", "name": "Horizon", "x": 30, "y": 24, "w": 286, "h": 70, "hidden": true,
               "if": "cig_scene_done", "dialogue": "summit.horizon" },
-            { "id": "cigarette", "name": "Cigarette", "x": 152, "y": 124, "w": 2, "h": 2, "color": "#d8d2c4",
-              "effect": "ember", "if": "cig_lit && !ember_out && !cig_held", "dialogue": "summit.cigarette" }
+            // Not drawn (no dot between them): only a place to use it again.
+            { "id": "cigarette", "name": "Cigarette", "x": 82, "y": 124, "w": 2, "h": 2, "color": "#d8d2c4", "hidden": true,
+              "if": "cig_lit && !ember_out && !cig_held", "dialogue": "summit.cigarette" }
         ]
     }
 }

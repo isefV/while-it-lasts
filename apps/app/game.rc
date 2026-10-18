@@ -1,0 +1,31 @@
+// The program's icon in Explorer and on shortcuts: the logo
+// (assets/icons/logo.png) at several sizes. And its name, as Windows shows
+// it (Task Manager, the file's properties).
+#include <winver.h>
+
+1 ICON "game.ico"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1, 1, 3, 0
+PRODUCTVERSION 1, 1, 3, 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "N2 Team"
+            VALUE "FileDescription", "The Hollow Dawn"
+            VALUE "FileVersion", "1.1.3"
+            VALUE "InternalName", "game"
+            VALUE "OriginalFilename", "The Hollow Dawn.exe"
+            VALUE "ProductName", "The Hollow Dawn"
+            VALUE "ProductVersion", "1.1.3"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

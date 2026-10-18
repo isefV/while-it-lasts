@@ -107,4 +107,16 @@ namespace hollow
         d_->items.clear();
         d_->seen.clear();
     }
+
+    StoryState StoryState::snapshot() const
+    {
+        StoryState copy;
+        *copy.d_ = *d_;
+        return copy;
+    }
+
+    void StoryState::restore(const StoryState& from)
+    {
+        *d_ = *from.d_;
+    }
 } // namespace hollow

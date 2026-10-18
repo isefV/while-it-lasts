@@ -1,4 +1,4 @@
-# The Last Light: decisions
+# The Hollow Dawn: decisions
 
 Step 0 of the project plan, answered on 13–14 October, and what the
 prototype does with each answer. Change this file when a decision changes.
@@ -13,7 +13,7 @@ prototype does with each answer. Change this file when a decision changes.
 | 6 | A dialogue entry | Simply text; thoughts in another colour | Text, plus an optional `if` and `do` where the story needs them (docs/DATA-FORMAT.md) |
 | 7 | Text speed, skipping | Letter by letter; a press goes on | First press shows the whole line, second goes to the next |
 | 8 | Palette | Dark and cold | `game.json` → `ui`; one warm accent (`#e0873a`) for fire, ember and sunrise only |
-| 9 | JSON mistakes | The data is written from the script | `game --check` (also in CTest) names the file and line or place of every mistake |
+| 9 | JSON mistakes | The data is written from the script | `"The Hollow Dawn" --check` (also in CTest) names the file and line or place of every mistake |
 | 10 | Inventory | Opens on a key | Tab or I. Items are used through options at the target ("Use the key.") |
 | 11 | Encounters | Some choices are timed; changed 15 October: fights are real time | Factory creature (7 s, 4 s if it heard the cabinet), checkpoint chase (3 s), mountain creature (6 s). "Fight it", or being too slow, starts a real-time fight (`apps/app/fight.cpp`); waves of crawlers at the barricade and on the broken stairs |
 | 12 | Doing badly | The story changes a little | See "Consequences" below |
@@ -38,7 +38,7 @@ prototype does with each answer. Change this file when a decision changes.
 | Too slow in a near-death scene | The Reaper touches X: `reaper_touched +1`, `x_condition` 0, other lines after |
 | X left alone on the mountain | The Reaper walks to him; if it reaches him, `x_condition -1` (once a room) |
 | Spotted at the checkpoint | 2nd time `x_condition -1`; 3rd time a chase, and a stumble if too slow (`-1`) |
-| `x_condition` | X's speed when following, X's idle lines, his lines on the first landing, the X bar |
+| `x_condition` | X's speed when following, X's idle lines, his lines at the foot of the mountain, the X bar; at 0 he dies |
 | Bottles kept | Thrown at the checkpoint, the creature goes off into the trees for 12 s: no sneaking needed |
 
 ## Playtest notes, 15 October
@@ -53,7 +53,7 @@ prototype does with each answer. Change this file when a decision changes.
 | 6 | Items more useful | Inventory E: bandages, antiseptic, antibiotics and painkillers heal X or Y; bottles and the bolt distract. Found in the booth, the locker, the cabinet, the backpack |
 | 7 | Combat more immersive | Real-time fights: swing, shoot, dodge, the "!" before a lunge, hits, knockback, shake, red at the edges |
 | 8 | More of the Reaper; monsters hurt | It shows up in every stage, closer each time, and follows on the mountain; fights cost `y_health` and `x_condition` |
-| 9 | Sunrise, not sunset | They leave at midnight; the climb and the summit get lighter, and the sun comes up in the final image ("sunrise" script) |
+| 9 | Sunrise, not sunset | They leave at midnight; the climb and the summit get lighter, and the morning light comes up in the final image ("sunrise" script; no sun is drawn) |
 | 10 | Monster waves | Two waves at the barricade (the slab's noise), one before the creature on the broken stairs |
 | 11 | Grab and release X | G, whenever X cannot walk (`x_down`): after the barricade and from the Collapse on |
 

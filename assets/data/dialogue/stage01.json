@@ -318,18 +318,14 @@
     "floor.fight": [
         { "narration": "{y} steps out from behind the machine. It turns.", "_added": "the start of the real-time fight" },
         { "y": "Okay. You and me." },
-        { "narration": "F swings the bat, R shoots, Q dodges back. Watch for the \"!\": it lunges right after.", "if": "!seen.floor.fight_won && !seen.floor.fight_lost", "_added": "how fighting works" },
+        { "narration": "F swings the bat, R shoots, Q dodges back. Watch for the \"!\": it lunges right after.", "if": "!seen.floor.fight_won", "_added": "how fighting works" },
         { "do": ["fight"] }
     ],
     "floor.fight_won": [
         { "do": ["factory_cleared = true", "factory_won = true", "event creature_leave 360"] },
-        { "narration": "It reels back into the dark between the machines, and doesn't come out again.", "_added": "" },
+        { "narration": "It crumples between the machines. Then there is nothing there at all.", "_changed": "beaten, it is gone" },
         { "y": "Okay. Okay. That happened." },
         { "y": "...I think it's gone." }
-    ],
-    "floor.fight_lost": [
-        { "narration": "{y} hits the floor hard. When he can see again, it's standing by the far machines, guarding something.", "do": ["factory_cleared = true", "factory_lost = true", "place y 120", "event creature_guard 262"], "_added": "losing the fight: the backpack is lost" },
-        { "thought": "Whatever was back there, it's staying there." }
     ],
     "floor.win": [
         { "do": ["factory_cleared = true", "factory_won = true", "event creature_leave 360"] },
@@ -339,7 +335,7 @@
     "floor.seen": [
         { "y": "Okay. Okay. Not good.", "do": ["sound roar", "shake 0.5 3"] },
         { "narration": "It sees {y}. It comes.", "_added": "seen: the fight starts anyway" },
-        { "narration": "F swings the bat, R shoots, Q dodges back. Watch for the \"!\": it lunges right after.", "if": "!seen.floor.fight_won && !seen.floor.fight_lost", "_added": "how fighting works" },
+        { "narration": "F swings the bat, R shoots, Q dodges back. Watch for the \"!\": it lunges right after.", "if": "!seen.floor.fight_won", "_added": "how fighting works" },
         { "do": ["fight"] }
     ],
     "floor.backpack": [

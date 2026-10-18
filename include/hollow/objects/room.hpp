@@ -120,9 +120,9 @@ namespace hollow
         bool present = false;
         bool brute = false;          ///< the room's creature takes part, after the waves
         int hp = 4;                  ///< the brute's strength
+        int damage = 2;              ///< y_health a brute's hit costs
         std::vector<WaveDef> waves;
         std::string win;             ///< conversation when every creature is beaten or gone
-        std::string lose;            ///< conversation when Y goes down (never game over)
     };
 
     struct RoomDef

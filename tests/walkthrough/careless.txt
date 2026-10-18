@@ -1,9 +1,10 @@
 # The whole game on a careless route: the cigarette left behind, too slow to
-# leave the campsite, the noisy cabinet, seen in the factory and the fight
-# lost, spotted three times, the waves lost, X not kept breathing (the Reaper
-# reaches him, twice), every timed choice run out, no cigarette left for the
-# summit.
-#   game --walkthrough tests/walkthrough/careless.txt
+# leave the campsite, the noisy cabinet, seen in the factory, spotted three
+# times, X not kept breathing (the Reaper takes him), every timed choice
+# run out, no cigarette left for the summit. Losing a fight, or X's
+# condition running out, is death: the level starts again ("died", "retry"),
+# and the second try gets through.
+#   "The Hollow Dawn" --walkthrough tests/walkthrough/careless.txt
 # The game must still reach its end, with the choices visible in it.
 
 # --- Stage 00 ---------------------------------------------------------------
@@ -34,8 +35,15 @@ use floor_door
 room factory_floor
 walk 110
 choose Sneak                  # it heard the cabinet: seen, and it charges
-fight lose                    # Y goes down; it guards the backpack
-expect factory_lost && !factory_won && y_health == 1 && y_hurt
+fight lose                    # Y goes down, and with no health left he dies...
+died
+retry                         # ...and the floor starts again, as it was
+room factory_floor
+expect !factory_won && y_health == 5 && noisy_entry
+walk 110
+choose Sneak                  # seen again; this time it is fought
+fight
+expect factory_won
 use exit_office
 room factory_office
 use exit_entrance
@@ -43,9 +51,6 @@ room factory_entrance
 talk
 choose Share
 expect !has_antibiotics && x_condition == 2 && cig_count == 0 && smoked_with_x == 1 && bandages == 1
-item bandages                 # Y binds his own cuts
-choose Bind
-expect y_health == 3 && bandages == 0
 use road
 
 # --- Stage 02 ---------------------------------------------------------------
@@ -53,15 +58,29 @@ room checkpoint
 wait 30                       # standing in the open: spotted each time it watches,
                               # put back at the start; the second time costs
                               # X_CONDITION, the third is the chase...
-choose timeout                # ...and too slow to run
+choose timeout                # ...and too slow to run: X has nothing left
+died
+retry
+room checkpoint
+expect spotted_count == 0 && x_condition == 2
+use bottles
+item bottle                   # this time a bottle into the trees
+choose Throw
+use exit_road
 room barricade
-expect spotted_count == 3 && x_condition == 0
 use rod
 use slab
 choose Lever
-fight lose                    # the crawlers get Y; X drives them off
-revive slow                   # and nobody keeps him breathing: the Reaper reaches him
-expect reaper_touched == 1 && x_condition == 0 && y_health == 1
+fight lose                    # the crawlers get Y: dead again
+died
+retry
+room barricade
+use rod
+use slab
+choose Lever
+fight
+revive                        # kept breathing this time
+expect reaper_touched == 0 && x_condition == 1   # a crawler got to him in the fight
 grab
 use exit_road
 
@@ -70,22 +89,30 @@ room foot
 use crushed_pack
 choose Smoke
 expect smoked_with_x == 2 && cig_count == 0
-use steps
-room landing
 use lantern                   # X's line for a low condition
 use steps
 room collapse
-revive slow
-expect reaper_touched == 2 && dragging
+revive slow                   # nobody keeps him breathing: the Reaper takes him
+died
+retry
+room collapse
+revive
+expect reaper_touched == 0 && dragging && x_condition == 1
 walk 200
 use steps
 room broken_stairs
 walk 105
 grab
-use creature
-choose timeout                # it charges
-fight lose                    # it loses interest and leaves anyway
-expect creature_cleared && y_hurt
+walk 200                      # walking up to it starts the fight
+fight lose
+died
+retry
+room broken_stairs
+walk 105
+grab
+walk 200
+fight
+expect creature_cleared
 use fallen_beam
 talk
 use steps

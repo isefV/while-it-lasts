@@ -71,3 +71,6 @@ cricket, faint low air; no voices, no frogs, no birds) and `campfire`
 (made from scratch).
 
 Added 17 October: `choice`.
+
+Added 18 October: `alarm` (someone is badly hurt): three falling two-tone
+beeps, synthesised.

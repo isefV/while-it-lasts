@@ -61,7 +61,7 @@
         },
         {
             "label": "Build game",
-            "detail": "Configure, then build the game (game.exe, with the library and assets) in build/<toolchain>-<config>/bin",
+            "detail": "Configure, then build the game (The Hollow Dawn.exe, with the library and assets) in build/<toolchain>-<config>/bin",
             "type": "shell",
             "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target game",
             "group": "build",

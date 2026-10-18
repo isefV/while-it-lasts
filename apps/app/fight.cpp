@@ -27,7 +27,7 @@ namespace
     constexpr float DodgeSafe = 0.35f;    // no lunge lands this long after Q
     constexpr float HurtSafe = 0.9f;      // after a hit
     constexpr float WavePause = 1.8f;
-    constexpr float DownTime = 1.6f;      // Y on the ground before the "lose" conversation
+    constexpr float DownTime = 1.6f;      // Y on the ground before the death screen
     constexpr float Edge = 14.0f;         // creatures enter this far outside the scene
 
     const Color Blood{122, 30, 30, 255};
@@ -89,9 +89,12 @@ void Fight::finish(Game& game, bool won)
     active_ = false;
     foes_.clear();
     game.state().set("fighting", 0);
-    game.player().pose = "idle";
-    if (!won) game.state().set("y_health", std::max(1, game.state().get("y_health")));
-    game.startDialogue(won ? def_->win : def_->lose);
+    // Lost: Y lies where he fell, and the game's death screen takes over.
+    if (won)
+    {
+        game.player().pose = "idle";
+        game.startDialogue(def_->win);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -106,7 +109,7 @@ Fight::Params Fight::params(const Foe& foe) const
         const float h = creature_ ? creature_->height : 54.0f;
         const float speed = (creature_ ? creature_->speed : 30.0f) * 1.3f * bruteSpeed_;
         const float quick = std::clamp(bruteSpeed_, 1.0f, 1.4f);
-        return Params{w, h, speed, 34.0f, 30.0f, 0.3f, 0.8f / quick, 1.0f, 18.0f, 2};
+        return Params{w, h, speed, 34.0f, 30.0f, 0.3f, 0.8f / quick, 1.0f, 18.0f, def_ ? def_->damage : 2};
     }
     return Params{16.0f, 9.0f, 40.0f, 26.0f, 26.0f, 0.22f, 0.55f, 0.75f, 10.0f, 1};
 }
@@ -215,9 +218,10 @@ void Fight::damage(Game& game, Foe& foe, int amount, int fromSide)
     foe.x += static_cast<float>(fromSide) * 4.0f;
     if (foe.hp <= 0)
     {
-        setState(foe, State::Flee);
-        game.sound("roar", 0.9f, 0.85f);
-        game.shake(0.4f, 2.0f);
+        // Beaten, it does not run: it fades where it stands and is gone.
+        setState(foe, State::Dead);
+        game.sound("roar", 0.9f, 0.7f);
+        game.shake(0.5f, 2.5f);
         return;
     }
     if (foe.state == State::Recover || foe.state == State::Windup) setState(foe, State::Stagger);
@@ -333,7 +337,7 @@ void Fight::update(Game& game, float dt)
     banner_ -= dt;
     hurtFlash_ = std::max(0.0f, hurtFlash_ - dt * 1.6f);
 
-    // Y is down: the creatures scatter, then the "lose" conversation.
+    // Y is down: the creatures scatter, then the death screen (Game).
     if (downTime_ >= 0.0f)
     {
         downTime_ += dt;
@@ -463,7 +467,7 @@ void Fight::update(Game& game, float dt)
             foe.alpha = std::max(0.0f, foe.alpha - dt * (foe.kind == Kind::Brute ? 0.5f : 0.9f));
             break;
         }
-        case State::Dead: foe.alpha = std::max(0.0f, foe.alpha - dt * 2.5f); break;
+        case State::Dead: foe.alpha = std::max(0.0f, foe.alpha - dt * (foe.kind == Kind::Brute ? 0.7f : 2.5f)); break;
         }
     }
 
@@ -577,8 +581,8 @@ void Fight::drawBack(Game& game) const
                 DrawRectangleRec(Rectangle{hx + headW / 2 + 1, ey, 2, 1}, eye);
             }
 
-            // Its strength, while it stands.
-            if (foe.state != State::Flee)
+            // Its strength, while it stands (the brute's is the bar at the top, drawHud).
+            if (foe.state != State::Flee && foe.state != State::Dead && foe.kind == Kind::Crawler)
                 for (int i = 0; i < foe.maxHp; ++i)
                     DrawRectangleRec(Rectangle{r.x + r.width / 2 - static_cast<float>(foe.maxHp) * 2 + static_cast<float>(i) * 4,
                                                r.y - 6, 3, 2},
@@ -664,4 +668,18 @@ void Fight::drawHud(Game& game) const
         status = waves > 1 ? "Fight   " + std::to_string(now) + "/" + std::to_string(waves) : "Fight";
     }
     text.draw(status, Vector2{box.x + layout::Padding, box.y + layout::Padding}, ui.highlight);
+
+    // The brute's strength: a boss bar across the top, while it stands.
+    for (const Foe& foe : foes_)
+    {
+        if (foe.kind != Kind::Brute || foe.state == State::Flee || foe.state == State::Dead) continue;
+        const Rectangle bar{160, 16, 160, 5};
+        const char* name = "The Creature";
+        text.draw(name, Vector2{std::round(240 - text.measure(name) / 2), bar.y - layout::LineHeight - 1}, ui.dim);
+        const float fraction = std::clamp(static_cast<float>(foe.hp) / static_cast<float>(foe.maxHp), 0.0f, 1.0f);
+        DrawRectangleRec(bar, ColorAlpha(BLACK, 0.7f));
+        const Color fill = foe.flash > 0.0f ? ui.highlight : Blood;
+        DrawRectangleRec(Rectangle{bar.x + 1, bar.y + 1, std::round((bar.width - 2) * fraction), bar.height - 2}, fill);
+        DrawRectangleLinesEx(bar, 1.0f, ui.frame);
+    }
 }

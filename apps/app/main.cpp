@@ -106,7 +106,13 @@ int main(int argc, char* argv[])
 
     SetConfigFlags(scripted ? FLAG_WINDOW_HIDDEN : FLAG_VSYNC_HINT);
     SetTraceLogLevel(LOG_WARNING);
-    InitWindow(1280, 720, "The Last Light");
+    InitWindow(1280, 720, "The Hollow Dawn");
+    // The logo on the window and the taskbar (the .exe's own icon is game.rc).
+    if (Image icon = LoadImage((assets + "icons/logo.png").c_str()); icon.data)
+    {
+        SetWindowIcon(icon);
+        UnloadImage(icon);
+    }
     SetExitKey(KEY_NULL); // Esc pauses; quitting is in the menus
     HideCursor();         // the game is played with the keyboard only
     if (!windowed && !scripted) ToggleBorderlessWindowed();

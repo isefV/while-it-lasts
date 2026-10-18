@@ -103,7 +103,7 @@ TEST(Story, DataLoadsAndChecks)
         ADD_FAILURE() << e;
     for (const auto& w : diag.warnings)
         ADD_FAILURE() << "warning: " << w;
-    EXPECT_EQ(data().rooms.size(), 12u); // the Sheltered Wall's scene moved to the foot of the mountain
+    EXPECT_EQ(data().rooms.size(), 11u); // the foot of the mountain holds the Sheltered Wall and the First Landing
 }
 
 TEST(Story, CampsiteNeedsTheBandageThenEndsWithTheFireOut)
@@ -155,9 +155,9 @@ TEST(Story, NoisyCabinetMakesTheSneakFail)
     EXPECT_TRUE(s.ran("fight"));
     EXPECT_EQ(s.state.get("factory_won"), 0);
 
-    s.play("floor.fight_lost");
-    EXPECT_EQ(s.state.get("factory_lost"), 1);
-    EXPECT_TRUE(s.ran("event creature_guard 262"));
+    // Won, the creature is gone (losing is death: the level starts again).
+    s.play("floor.fight_won");
+    EXPECT_EQ(s.state.get("factory_won"), 1);
 }
 
 TEST(Story, BandagesHealEitherOfThem)

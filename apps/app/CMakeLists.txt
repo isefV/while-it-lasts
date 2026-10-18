@@ -17,6 +17,15 @@ add_executable(
     walkthrough.cpp
 )
 
+# The program carries the game's name: "The Hollow Dawn.exe" (the target is
+# still "game" in CMake, the tasks and the tests).
+set_target_properties(game PROPERTIES OUTPUT_NAME "The Hollow Dawn")
+
+# The logo as the program's own icon, and its name in Windows (game.rc, game.ico).
+if(WIN32)
+    target_sources(game PRIVATE game.rc)
+endif()
+
 target_link_libraries(
     game
     PRIVATE

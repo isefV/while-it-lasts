@@ -393,13 +393,13 @@ namespace hollow
                 const std::string at = child(where, "fight");
                 if (requireObject(f, at, diag))
                 {
-                    detail::checkKeys(f, {"brute", "hp", "waves", "win", "lose"}, at, diag);
+                    detail::checkKeys(f, {"brute", "hp", "damage", "waves", "win"}, at, diag);
                     FightDef& fight = room.fight;
                     fight.present = true;
                     fight.brute = detail::readBool(f, "brute", at, diag);
                     fight.hp = std::max(1, detail::readInt(f, "hp", at, diag, fight.hp));
+                    fight.damage = std::max(1, detail::readInt(f, "damage", at, diag, fight.damage));
                     fight.win = detail::readString(f, "win", at, diag);
-                    fight.lose = detail::readString(f, "lose", at, diag);
                     if (fight.brute && !room.creature.present)
                         diag.error(child(at, "brute") + ": the room has no \"creature\" to fight");
                     if (f.contains("waves"))
@@ -875,7 +875,6 @@ namespace hollow
                 if (def.fight.present)
                 {
                     conversation(def.fight.win, where + ".fight.win");
-                    conversation(def.fight.lose, where + ".fight.lose");
                 }
                 for (const auto& id : def.idleBarks)
                     bark(id, where + ".idle_barks");

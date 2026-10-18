@@ -1,4 +1,4 @@
-# The Last Light: data format
+# The Hollow Dawn: data format
 
 Everything the story needs is in `assets/data/`. Writing and art never wait for
 code: a new line, choice, room object or item is a change to these files only.
@@ -13,7 +13,7 @@ assets/data/
 └── rooms/stage00.json … stage04.json      rooms and what is in them
 ```
 
-**Checking your work.** Run `game --check` (or the `CMake: ctest` task).
+**Checking your work.** Run `"The Hollow Dawn" --check` (or the `CMake: ctest` task).
 It reads every file and prints each mistake with its file and place, for
 example:
 
@@ -162,6 +162,8 @@ gives 0.
 | `reaper show <x> [height] [seconds]` | the Reaper stands at x; height 80 is near, 40 far away |
 | `reaper hide [seconds]` / `reaper glimpse <x> [height]` | gone / there for a moment, with a sting |
 | `reaper follow <distance>` / `reaper stop` | it walks behind them, that far back: it creeps up while they stand still, fades while they look back at it, walks to X when he is left lying alone, and costs `x_condition` once a room if it reaches him |
+| `reaper stalk` | it shows up behind them (or ahead, with no room behind), fades after a moment and shows up again a few seconds later, a little closer each time; it never touches them (the foot of the mountain, the collapse) |
+| `reaper chase [distance]` | it comes after them, a little slower than Y can drag X: walking on keeps it back, standing still lets it catch up; a catch costs `y_health` 1 and `x_condition` 1 and knocks it back (the final ascent). Conversations pause it |
 | `end` | fades out to the end card |
 
 ---
@@ -210,34 +212,41 @@ gives 0.
 
 ```json
 "fight": {
-    "brute": true, "hp": 5,
+    "brute": true, "hp": 12, "damage": 3,
     "waves": [ { "crawlers": 2, "from": "left" }, { "crawlers": 3, "from": "both" } ],
-    "win": "stairs.fight_won",
-    "lose": "stairs.fight_lost"
+    "win": "stairs.fight_won"
 }
 ```
 
 The waves of small creatures ("crawlers") come one after the other from the
 sides (`right`, `left`, `both`); then, with `"brute": true`, the room's
-`creature` itself, with `hp` strength. The player fights in real time: **F**
+`creature` itself, with `hp` strength (a boss bar at the top of the screen). The player fights in real time: **F**
 swings the bat, **R** shoots (a round a shot, needs the pistol), **Q** dodges
 back, A/D move. A creature shows a "!" just before it lunges. A lunge that
-reaches Y costs `y_health` (1, the brute 2); crawlers coming from X's side go
+reaches Y costs `y_health` (1, the brute `damage`, default 2); crawlers coming from X's side go
 for him, and one that reaches him costs `x_condition` (once a wave) unless he
 is dragged or lies behind a `cover` object. Y cannot fight while dragging X:
 G lets go of him first.
 
-When every creature is beaten or gone, `win` plays. When `y_health` reaches
-0, Y goes down, the creatures scatter and `lose` plays (Y is left with 1):
-never game over. A brute still standing goes back to the room's script, so
-`lose` can say what it does next (`event creature_guard 262`).
+When every creature is beaten or gone, `win` plays; a beaten brute does not
+run off, it fades where it stands. When `y_health` reaches 0, Y goes down,
+the creatures scatter, and he dies (below).
+
+### Dying
+
+When `y_health` or `x_condition` reaches 0, that one dies: the death screen
+("Rob is dead." / "Jace is gone."), and E starts the level again, with every
+variable, item and used thing as it was when the level began. Nothing heals
+them by itself: the player has to use bandages, painkillers, antiseptic or
+antibiotics from the inventory. When `y_health` drops to 2 or less, or
+`x_condition` to 1, the screen shakes, an alarm sounds and a note says so.
 
 ### Objects
 
 Positions are scene pixels: the scene is 320 x 180, and characters stand on
 the ground line at y = 150. An object without `"y"` stands on that line.
 Every object is a coloured rectangle until its `sprite` exists; the highlight
-when it can be used is `<sprite>_hover.png`, or a light outline.
+when it can be used is `<sprite>_hover.png`; without one it lights up (drawn again, added on top, slowly breathing).
 
 | Object key | Meaning |
 |---|---|
@@ -263,7 +272,7 @@ when it can be used is `<sprite>_hover.png`, or a light outline.
 | `event` | sent to the room's script when used |
 
 A player uses things with **E** while standing next to them: the nearest
-usable thing within reach gets the "E" prompt and an outline, and only that
+usable thing within reach gets the "E" prompt and lights up, and only that
 one can be used; when several are within reach, W/S (or ↑/↓) moves the
 prompt between them. The game has no mouse input.
 
@@ -358,7 +367,7 @@ size is the font's ascent + descent in pixels, which is how raylib sizes it:
 Pixeloid Sans and Greybeard-11px are both 11. Any other size draws it off the
 pixel grid, blurred. `fonts`: a list of `{ "name", "file", "size" }` that a
 debug build's Settings (title or pause menu) switches between, to compare
-them; `game --font <name>` starts with one of them. An empty `file` is
+them; `"The Hollow Dawn" --font <name>` starts with one of them. An empty `file` is
 raylib's built-in font. Without `font`, the game uses Pixeloid Sans
 (`fonts/pixeloid_sans.ttf`, size 11).
 
@@ -381,8 +390,8 @@ and X's condition (`x_condition`, 0 to 3). A bar flashes when it changes.
 ## 5. Testing a branch
 
 ```
-game --room factory_office --set noisy_entry=true --set cig_count=2
-game --walkthrough tests/walkthrough/full.txt
+"The Hollow Dawn" --room factory_office --set noisy_entry=true --set cig_count=2
+"The Hollow Dawn" --walkthrough tests/walkthrough/full.txt
 ```
 
 `--room` starts a new game in any room, `--set` presets variables. A
