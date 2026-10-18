@@ -99,7 +99,7 @@
     ],
 
     "factory.cigarette": [
-        { "do": ["cig_count -= 1", "smoked_with_x += 1", "sound lighter"] },
+        { "do": ["cig_count -= 1", "smoked_with_x += 1", "sound lighter", "pose x smoke", "pose y smoke"] },
         { "x": "Okay, now we're talking." },
         { "y": "That's literally the opposite of medicine." },
         { "x": "You sound like a pamphlet." },
@@ -111,7 +111,7 @@
     ],
 
     "factory.leave": [
-        { "do": ["stage01_done = true", "pose x idle", "companion follow"] }
+        { "do": ["stage01_done = true", "pose x idle", "pose y idle", "companion follow"] }
     ],
 
     "entrance.vending": [

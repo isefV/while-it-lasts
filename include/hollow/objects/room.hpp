@@ -137,6 +137,7 @@ namespace hollow
         bool frame = false;          ///< the foliage border (ui/frame/) around the scene: outdoor rooms
         bool flip = false;           ///< the background mirrored left to right (one image, two rooms)
         std::vector<std::string> ambient; ///< sound loops, assets/sounds/<id>.ogg, .wav, .mp3 or .qoa
+        std::vector<std::string> steps;   ///< footstep sounds, one picked at each footfall; none = silent feet
         std::string music;
         float playerX = 40.0f;
         float walkMin = 8.0f;

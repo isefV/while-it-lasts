@@ -39,6 +39,7 @@ Levelled and crossfaded at the loop point.
 | `roar`, `alert`, `groan`, `low_call`, `crawler` | [Monster growls.ogg](https://commons.wikimedia.org/wiki/File:Monster_growls.ogg), [Monster growls 2.ogg](https://commons.wikimedia.org/wiki/File:Monster_growls_2.ogg) | stilgar | Public domain |
 | `breath`, `inhale`, `gasp`, `hurt` | [Breathing man.ogg](https://commons.wikimedia.org/wiki/File:Breathing_man.ogg) | hugh | Public domain |
 | `footsteps` | [Forest track 2.ogg](https://commons.wikimedia.org/wiki/File:Forest_track_2.ogg) | tball74 | Public domain |
+| `step_1` to `step_3` | [Forest track 2.ogg](https://commons.wikimedia.org/wiki/File:Forest_track_2.ogg) | tball74 | Public domain (three single footfalls cut from it at 6.69, 7.25 and 8.85 s, faded and normalised) |
 
 ## Kenney sound packs (CC0)
 

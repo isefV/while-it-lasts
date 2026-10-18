@@ -7,6 +7,7 @@ add_executable(
     dialogue_test.cpp
     text_test.cpp
     story_test.cpp
+    actor_test.cpp
 )
 
 target_link_libraries(

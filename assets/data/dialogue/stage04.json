@@ -65,7 +65,8 @@
             { "x": "Selfish." },
             { "y": "Learned from the best." },
             { "x": "(quiet laugh) True." },
-            { "narration": "{y} lights it and holds it out. {x} takes it with shaking fingers, inhales weakly, and hands it back.", "do": ["cig_count -= 1", "cig_lit = true", "sound lighter"] }
+            { "narration": "{y} lights it and holds it out.", "do": ["cig_count -= 1", "cig_lit = true", "cig_held = true", "sound lighter", "pose y smoke"] },
+            { "narration": "{x} takes it with shaking fingers, inhales weakly, and hands it back.", "do": ["pose y idle", "pose x smoke"] }
           ],
           "else": [
             { "narration": "{y} checks his pockets and finds nothing. A small, crumpled cigarette falls from the lining of {x}'s blanket." },
@@ -74,9 +75,9 @@
             { "x": "It was for a special occasion." },
             { "y": "Well." },
             { "x": "Yeah. Well." },
-            { "narration": "{y} lights it. They share it.", "do": ["cig_lit = true", "sound lighter"] }
+            { "narration": "{y} lights it. They share it.", "do": ["cig_lit = true", "cig_held = true", "sound lighter", "pose y smoke"] }
           ] },
-        { "x": "You know what's funny?" },
+        { "x": "You know what's funny?", "do": ["pose x sit", "pose y idle", "cig_held = false"] },
         { "y": "What?" },
         { "x": "All the things we used to worry about." },
         { "y": "School. Money. Getting out of here." },
@@ -117,7 +118,8 @@
         { "y": "We used to think we'd never get out of here.", "do": ["summit_moments += 1"] }
     ],
     "summit.cigarette": [
-        { "narration": "{y} takes another drag. The ember flickers in the wind.", "do": ["summit_moments += 1", "sound inhale"] }
+        { "narration": "{y} takes another drag. The ember flickers in the wind.", "do": ["summit_moments += 1", "sound inhale", "pose y smoke", "cig_held = true"] },
+        { "do": ["pose y idle", "cig_held = false"] }
     ],
 
     "summit.reaper": [

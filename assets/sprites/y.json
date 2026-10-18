@@ -9,15 +9,15 @@
     "origin": { "x": 16, "y": 47 },
     "animations": {
         "idle":  { "row": 0, "frames": 4, "fps": 3, "loop": true },
-        "walk":  { "row": 1, "frames": 4, "fps": 6, "loop": true },
+        "walk":  { "row": 1, "frames": 4, "fps": 6, "loop": true, "steps": [1, 3] },
         "sit":   { "row": 2, "frames": 1 },
         "kneel": { "row": 2, "frames": 1 },
         "lying": { "row": 2, "frames": 1 },
-        "drag":  { "row": 3, "frames": 4, "fps": 4, "loop": true },
+        "drag":  { "row": 3, "frames": 4, "fps": 4, "loop": true, "steps": [1, 3] },
         "swing_down":    { "row": 4, "frames": 4, "fps": 14 },
         "swing_forward": { "row": 5, "frames": 4, "fps": 14 },
         "crouch":{ "row": 6, "frames": 3, "fps": 3, "loop": true },
-        "smoke" :{ "row": 7, "frames": 1 }
+        "smoke": { "row": 7, "frames": 1, "emit": { "x": 24, "y": 10 } }
 
 
     }

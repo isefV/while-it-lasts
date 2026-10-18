@@ -2,6 +2,7 @@
 #include <hollow/utility/color.hpp>
 #include <hollow/utility/math.hpp>
 
+#include <algorithm>
 #include <cmath>
 
 namespace hollow
@@ -64,7 +65,26 @@ namespace hollow
 
         // Dragging and crouching only move with the feet: standing still (or
         // in a conversation) holds the frame it stopped on.
+        const std::string before = animator_.current();
+        const int frameBefore = animator_.frame();
         if (moved_ || !movingPose) animator_.update(dt, sheet);
+
+        footfall_ = false;
+        if (moved_ && sheet && (animator_.frame() != frameBefore || animator_.current() != before))
+            if (const auto it = sheet->animations.find(animator_.current()); it != sheet->animations.end())
+                footfall_ = std::find(it->second.steps.begin(), it->second.steps.end(), animator_.frame()) !=
+                            it->second.steps.end();
+    }
+
+    std::optional<Vector2> Actor::emitPoint() const
+    {
+        if (!sheet || !visible) return std::nullopt;
+        const auto it = sheet->animations.find(animator_.current());
+        if (it == sheet->animations.end() || !it->second.emit) return std::nullopt;
+        // The art faces right; facing left mirrors it about the feet.
+        const Animation& a = it->second;
+        const float dx = a.emit->x - a.origin.x;
+        return Vector2{x + (facing < 0 ? -dx : dx), ground + (a.emit->y - a.origin.y)};
     }
 
     Rectangle Actor::bounds() const

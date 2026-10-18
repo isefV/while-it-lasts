@@ -20,7 +20,7 @@
             { "id": "horizon", "name": "Horizon", "x": 96, "y": 24, "w": 220, "h": 70, "hidden": true,
               "if": "cig_scene_done", "dialogue": "summit.horizon" },
             { "id": "cigarette", "name": "Cigarette", "x": 152, "y": 124, "w": 2, "h": 2, "color": "#d8d2c4",
-              "effect": "ember", "if": "cig_lit && !ember_out", "dialogue": "summit.cigarette" }
+              "effect": "ember", "if": "cig_lit && !ember_out && !cig_held", "dialogue": "summit.cigarette" }
         ]
     }
 }

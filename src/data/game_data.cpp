@@ -302,7 +302,7 @@ namespace hollow
             const std::string where = file + ": " + id;
             if (!requireObject(obj, where, diag)) return room;
             detail::checkKeys(obj,
-                              {"name", "background", "frame", "flip", "color", "tint", "fog", "ambient", "music", "player_x", "walk",
+                              {"name", "background", "frame", "flip", "color", "tint", "fog", "ambient", "steps", "music", "player_x", "walk",
                                "companion", "creature", "fight", "enter", "objects", "idle_barks", "script"},
                               where, diag);
 
@@ -314,6 +314,7 @@ namespace hollow
             room.frame = detail::readBool(obj, "frame", where, diag);
             room.flip = detail::readBool(obj, "flip", where, diag);
             room.ambient = detail::readStrings(obj, "ambient", where, diag);
+            room.steps = detail::readStrings(obj, "steps", where, diag);
             room.music = detail::readString(obj, "music", where, diag);
             room.playerX = detail::readNumber(obj, "player_x", where, diag, room.playerX);
             readRange(obj, "walk", where, diag, room.walkMin, room.walkMax);

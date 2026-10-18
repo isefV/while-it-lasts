@@ -196,6 +196,7 @@ gives 0.
 | `frame` | `true` draws the foliage border (`ui/frame/`: four corners and four edges, 24 x 24 each) over the edges of the scene. Outdoor rooms have it |
 | `fog` | mist over the background, behind everything else: `backgrounds/fog_1.png` and `fog_2.png` slowly fading into each other. 1 = as drawn, 0 = none |
 | `ambient`, `music` | sound loops |
+| `steps` | footstep sounds (`["step_1", "step_2", "step_3"]`): one, picked at random, each time a foot lands in the walk or drag animation (an animation's `steps`), X's quieter. The mountain rooms have them |
 | `player_x` | where the player appears (an exit's `spawn_x` wins) |
 | `walk` | `[from, to]`, how far the player can walk |
 | `enter` | list of `{ "if", "dialogue", "do", "once" }`: on entering, every rule whose `if` is true applies its `do`; the first with a `dialogue` starts it. `once` (default true): only the first time |
@@ -331,7 +332,11 @@ frame). The game asks for `idle`, `walk`, `sit`, `lying`, `kneel` and `drag`
 (Y dragging X), and `dragged` (X being dragged; without it, `lying`),
 `crouch` (sneaking at the checkpoint: a walk that holds its frame when they
 stop), and Y's `swing_forward` and `swing_down` (F in a fight, one after the
-other; make them `"loop": false`, about 0.3 s long).
+other; make them `"loop": false`, about 0.3 s long), and `smoke` (holding a
+cigarette: `pose y smoke` / `pose x smoke` in a conversation). Two more keys:
+`steps`, the frames where a foot lands (`[1, 3]`: a footstep sound in rooms
+with `steps`), and `emit`, the point in the frame that smoke rises from
+(`{ "x": 24, "y": 10 }`, the cigarette's tip).
 A pose the sheet lacks is drawn with its `idle` frames (or `walk` while
 moving), so point it at the nearest row (Y's `kneel` uses the sitting frame). An Aseprite export is not a sheet
 config: rewrite it in this form.

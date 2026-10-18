@@ -152,7 +152,8 @@
 
     "stairs.safe_hint": [
         { "narration": "A creature blocks the collapsed stairs ahead." },
-        { "thought": "Behind that log, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" }
+        { "thought": "Behind that log, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" },
+        { "thought": "And a bottle down the slope, or the pistol, could move it from right here. (Tab: items.)", "_added": "the items that work on it from a distance" }
     ],
     "stairs.release": [
         { "if": "!stairs_left_x && !creature_cleared", "then": [
@@ -178,12 +179,22 @@
         { "narration": "It turns its head toward {y}.", "_added": "the mountain creature (the script has no lines for it)" },
         { "choice": [
             { "text": "Throw a rock down the slope.", "next": "stairs.distract" },
+            { "text": "Throw a bottle down the slope.", "if": "bottles >= 1", "do": ["bottles -= 1"], "next": "stairs.bottle" },
+            { "text": "Shoot it.", "if": "item.pistol && ammo >= 1", "next": "stairs.shot" },
             { "text": "Fight it.", "if": "item.bat || (item.pistol && ammo >= 1)", "next": "stairs.fight" },
             { "timeout": true, "next": "stairs.charge" }
         ], "timer": 6 }
     ],
     "stairs.distract": [
-        { "narration": "The rock clatters down the slope. The creature follows the sound into the dark.", "do": ["sound clatter", "creature_cleared = true", "event creature_leave 360"], "_added": "" }
+        { "narration": "The rock clatters down the slope. The creature follows the sound into the dark.", "do": ["sound clatter", "creature_cleared = true", "stairs_creature = false", "event creature_leave 360"], "_added": "" }
+    ],
+    "stairs.bottle": [
+        { "narration": "The bottle sails down the slope and bursts on the rocks. The creature's head snaps toward the sound, and it lopes off after it.", "do": ["sound glass", "creature_cleared = true", "stairs_creature = false", "event creature_leave 360"], "_added": "a bottle (or the bolt) from the items, at the creature" },
+        { "thought": "Thank you, whoever drank that." }
+    ],
+    "stairs.shot": [
+        { "narration": "{y} fires. The shot cracks off the stones beside it; it shrieks and bolts down the mountain.", "do": ["ammo -= 1", "sound shot", "shake 0.25 1", "creature_cleared = true", "stairs_creature = false", "event creature_leave 360"], "_added": "the pistol from the items, at the creature" },
+        { "y": "Sorry. Not today." }
     ],
     "stairs.fight": [
         { "narration": "{y} grips the bat. Behind him, down the path, something small skitters on the stones.", "_added": "the fight: a wave first, then the creature" },

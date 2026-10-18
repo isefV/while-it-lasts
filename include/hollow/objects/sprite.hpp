@@ -15,7 +15,8 @@
  *
  * An animation may also set its own "frame" and "origin" (a row of wider
  * frames, such as lying down), "top" (the row's first pixel line, instead of
- * row x frame height) and "column" (the first frame in the row).
+ * row x frame height) and "column" (the first frame in the row), "steps"
+ * (the frames where a foot lands) and "emit" (a point smoke rises from).
  */
 
 #include <hollow/utility/diagnostics.hpp>
@@ -25,6 +26,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace hollow
 {
@@ -43,6 +45,9 @@ namespace hollow
         int frameHeight = 48;
         Vector2 origin{16, 48};
         int top = 0; ///< first pixel line of the row
+
+        std::vector<int> steps;      ///< "steps": frames where a foot lands (a footstep sound, in rooms with "steps")
+        std::optional<Vector2> emit; ///< "emit": where smoke rises from (the cigarette's tip), frame pixels
     };
 
     struct SpriteSheet

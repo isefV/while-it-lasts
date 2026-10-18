@@ -105,9 +105,11 @@
         "rests":          { "value": 0, "min": 0, "max": 4 },
         "stairs_left_x": false,
         "stairs_back": false,
+        "stairs_creature": false,
 
         "_stage04": "The summit",
         "cig_lit": false,
+        "cig_held": false,
         "cig_scene_done": false,
         "summit_moments": { "value": 0, "min": 0, "max": 9 },
         "ember_out": false

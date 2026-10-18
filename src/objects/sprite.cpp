@@ -39,7 +39,7 @@ namespace hollow
             for (const auto& [name, obj] : (*root)["animations"].items())
             {
                 const std::string at = child(child(where, "animations"), name);
-                detail::checkKeys(obj, {"row", "column", "frames", "fps", "loop", "frame", "origin", "top"}, at, diag);
+                detail::checkKeys(obj, {"row", "column", "frames", "fps", "loop", "frame", "origin", "top", "steps", "emit"}, at, diag);
                 Animation animation;
                 animation.row = detail::readInt(obj, "row", at, diag);
                 animation.column = detail::readInt(obj, "column", at, diag, 0);
@@ -66,6 +66,22 @@ namespace hollow
                     animation.origin.y = detail::readNumber(origin, "y", child(at, "origin"), diag, animation.origin.y);
                 }
                 animation.top = detail::readInt(obj, "top", at, diag, animation.row * sheet.frameHeight);
+                if (obj.contains("steps"))
+                {
+                    const Json& steps = obj["steps"];
+                    if (!steps.is_array()) diag.error(child(at, "steps") + ": expected a list of frame numbers");
+                    for (std::size_t i = 0; steps.is_array() && i < steps.size(); ++i)
+                    {
+                        if (steps[i].is_number_integer()) animation.steps.push_back(steps[i].get<int>());
+                        else diag.error(child(at, "steps") + ": expected a list of frame numbers");
+                    }
+                }
+                if (obj.contains("emit"))
+                {
+                    const Json& emit = obj["emit"];
+                    animation.emit = Vector2{detail::readNumber(emit, "x", child(at, "emit"), diag),
+                                             detail::readNumber(emit, "y", child(at, "emit"), diag)};
+                }
                 sheet.animations[name] = animation;
             }
         }

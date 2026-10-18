@@ -9,7 +9,7 @@
     "origin": { "x": 16, "y": 47 },
     "animations": {
         "idle":  { "row": 0, "frames": 4, "fps": 3, "loop": true },
-        "walk":  { "row": 1, "frames": 4, "fps": 5, "loop": true },
+        "walk":  { "row": 1, "frames": 4, "fps": 5, "loop": true, "steps": [1, 3] },
         "sit":   { "row": 2, "frames": 1 },
         "lying": { "top": 144, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } },
         "kneel": { "top": 176, "frames": 1 },
@@ -18,6 +18,7 @@
         "dragged": { "top": 224, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } },
         "crouch" : { "top": 256, "frames": 3, "fps": 3, "loop": true },
 
-        "smoke"  : { "top": 304, "frames": 1 }
+        // Sitting with the cigarette; smoke rises from its tip ("emit").
+        "smoke"  : { "top": 304, "frames": 1, "emit": { "x": 24, "y": 22 } }
     }
 }

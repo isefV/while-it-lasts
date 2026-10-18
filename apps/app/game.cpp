@@ -808,6 +808,29 @@ void Game::updatePlaying(float dt)
     }
     player_.update(dt);
     companion_.update(dt);
+
+    // Footsteps in time with the feet (the room's "steps"), X's quieter.
+    if (!room_->steps.empty())
+    {
+        const auto stepSound = [this] {
+            return room_->steps[static_cast<std::size_t>(random_.range(0, static_cast<int>(room_->steps.size()) - 1))];
+        };
+        if (player_.footfall()) audio_.play(stepSound(), 0.55f, random_.uniform(0.9f, 1.1f));
+        if (companion_.visible && companion_.footfall()) audio_.play(stepSound(), 0.32f, random_.uniform(0.85f, 1.0f));
+    }
+
+    // A cigarette smoking: a thin grey wisp from its tip.
+    for (const Actor* who : {&player_, &companion_})
+        if (const auto tip = who->emitPoint(); tip && random_.chance(dt * 5.0f))
+        {
+            Particles::Style smoke;
+            smoke.color = Color{168, 172, 178, 255};
+            smoke.velocityMin = Vector2{-2, -9};
+            smoke.velocityMax = Vector2{3, -5};
+            smoke.life = 1.6f;
+            particles_.emit(*tip, 1, smoke, random_);
+        }
+
     for (const auto& object : room_->objects)
         if (const SpriteSheet* sheet = objectSheet(object)) objectAnimators_[objectKey(object)].update(dt, sheet);
     barks_.update(dt);

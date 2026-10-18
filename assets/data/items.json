@@ -9,7 +9,7 @@
     "painkillers":  { "name": "Painkillers", "description": "Two to a dose. Takes the edge off, for either of them.", "icon": "items/painkillers.png", "color": "#b4a4b8", "count": "painkillers", "use": "use.painkillers" },
     "cigarette":    { "name": "Cigarettes", "description": "Saved, not smoked. Not yet.", "icon": "items/cigarette.png", "color": "#d8d2c4", "count": "cig_count" },
     "bat":          { "name": "Bat", "description": "Old, dented, reliable. F swings it in a fight.", "icon": "items/bat.png", "color": "#7a6a56" },
-    "pistol":       { "name": "Pistol", "description": "Heavy. R fires it in a fight, a round a shot.", "icon": "items/pistol.png", "color": "#4c5258" },
+    "pistol":       { "name": "Pistol", "description": "Heavy. R fires it in a fight, a round a shot.", "icon": "items/pistol.png", "color": "#4c5258", "use": "use.pistol" },
     "ammunition":   { "name": "Rounds", "description": "A few rounds. Somebody was optimistic.", "icon": "items/ammunition.png", "color": "#9a8a5a", "count": "ammo" },
     "bottle":       { "name": "Empty Bottles", "description": "Good for making noise somewhere you're not.", "icon": "items/bottle.png", "color": "#5c7a6c", "count": "bottles", "use": "use.bottle" },
     "key":          { "name": "Small Key", "description": "Found behind the office clock.", "icon": "items/key.png", "color": "#a0946a" },

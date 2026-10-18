@@ -193,7 +193,7 @@
         ] }
     ],
     "shelter.smoke": [
-        { "do": ["cig_count -= 1", "smoked_with_x += 1", "sound lighter"] },
+        { "do": ["cig_count -= 1", "smoked_with_x += 1", "sound lighter", "pose x smoke", "pose y smoke"] },
         { "x": "Remember the place up the mountain? Where we used to go?" },
         { "y": "The one where you got us lost?" },
         { "x": "I did not get us lost." },
@@ -202,7 +202,7 @@
         { "y": "There was a dog." },
         { "x": "A really friendly dog." },
         { "y": "It chased us halfway down the hill." },
-        { "narration": "{x} laughs, then coughs hard. {y} reaches out automatically." },
+        { "narration": "{x} laughs, then coughs hard. {y} reaches out automatically.", "do": ["pose x sit", "pose y idle"] },
         { "x": "I'm fine." },
         { "y": "...I know." },
         { "narration": "{y} leaves his hand there a moment longer than he needs to." },
@@ -221,7 +221,7 @@
     "shelter.go": [
         { "x": "Let's go home." },
         { "y": "...Yeah." },
-        { "do": ["stage02_done = true", "x_down = false", "pose x idle", "companion follow", "reaper hide 2"] },
+        { "do": ["stage02_done = true", "x_down = false", "pose x idle", "pose y idle", "companion follow", "reaper hide 2"] },
         { "goto": "foot.arrive" }
     ]
 }

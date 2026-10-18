@@ -47,10 +47,19 @@ namespace hollow
         [[nodiscard]] float speed() const;
         [[nodiscard]] bool moved() const { return moved_; }
 
+        /// True on the frame a foot lands: the animation reached one of its
+        /// "steps" frames while moving.
+        [[nodiscard]] bool footfall() const { return footfall_; }
+
+        /// Where smoke rises from in the frame showing (its "emit"), scene
+        /// pixels; nothing when it has none.
+        [[nodiscard]] std::optional<Vector2> emitPoint() const;
+
     private:
         std::optional<float> target_;
         bool moved_ = false;
         bool steppedThisFrame_ = false;
+        bool footfall_ = false;
         Animator animator_;
     };
 } // namespace hollow

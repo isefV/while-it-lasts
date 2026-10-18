@@ -1,6 +1,7 @@
 // STAGE 03 rooms. All use the one mountain background. Audio rule: each
 // screen loses one ambient layer; the final ascent has only wind and
-// footsteps. The Reaper follows from the foot of the mountain on ("reaper
+// footsteps. The footsteps are theirs: "steps" plays one on each footfall
+// of the walk and drag animations, instead of a loop. The Reaper follows from the foot of the mountain on ("reaper
 // follow", closer in each room); it fades when the player looks back at it,
 // creeps up when they stand still, and goes for X when he is left alone.
 {
@@ -11,7 +12,8 @@
         "color": "#182027",
         "tint": "#9fa8bc",
         "fog": 1,
-        "ambient": ["wind", "footsteps", "leaves", "insects", "stream"],
+        "ambient": ["wind", "leaves", "insects", "stream"],
+        "steps": ["step_1", "step_2", "step_3"],
         "music": "music_mountain",
         "player_x": 24,
         "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak", "x_reaper"],
@@ -45,7 +47,8 @@
         "color": "#1a2128",
         "tint": "#9ca4b8",
         "fog": 1,
-        "ambient": ["wind", "footsteps", "leaves", "insects"],
+        "ambient": ["wind", "leaves", "insects"],
+        "steps": ["step_1", "step_2", "step_3"],
         "music": "music_mountain",
         "player_x": 24,
         "idle_barks": ["x_idle_good", "x_idle_weak", "x_reaper", "y_hurt"],
@@ -69,7 +72,8 @@
         "color": "#1b1f27",
         "tint": "#9a9fb4",
         "fog": 1,
-        "ambient": ["wind", "footsteps", "leaves"],
+        "ambient": ["wind", "leaves"],
+        "steps": ["step_1", "step_2", "step_3"],
         "music": "music_mountain",
         "player_x": 40,
         "idle_barks": ["x_idle_weak", "x_reaper"],
@@ -96,11 +100,17 @@
         "color": "#1c1e26",
         "tint": "#9a9aae",
         "fog": 1,
-        "ambient": ["wind", "footsteps", "groan"],
+        "ambient": ["wind", "groan"],
+        "steps": ["step_1", "step_2", "step_3"],
         "music": "music_mountain",
         "script": "creature",
         "player_x": 36,
         "idle_barks": ["x_idle_weak", "y_hurt"],
+        // While it is here, a bottle (or the bolt) thrown down the slope or a
+        // shot from the pistol deals with it from anywhere: Tab, items.
+        "enter": [
+            { "if": "!creature_cleared", "do": ["stairs_creature = true"], "once": false }
+        ],
         "companion": { "mode": "drag", "dialogue": "stairs.x", "release": "stairs.release", "grab": "stairs.grab" },
         "creature": {
             "if": "!creature_cleared", "x": 226, "y": 150, "w": 34, "h": 54, "speed": 30,
@@ -140,7 +150,8 @@
         "color": "#22222c",
         "tint": "#8a8ca8",
         "fog": 1,
-        "ambient": ["wind", "footsteps"],
+        "ambient": ["wind"],
+        "steps": ["step_1", "step_2", "step_3"],
         "script": "sunrise",
         "player_x": 24,
         "enter": [
