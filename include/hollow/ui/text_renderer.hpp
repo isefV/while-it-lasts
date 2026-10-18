@@ -10,6 +10,7 @@
 
 #include <raylib.h>
 
+#include <string>
 #include <string_view>
 
 namespace hollow
@@ -28,6 +29,8 @@ namespace hollow
         /// The font named in @p ui (assets/fonts/...), or raylib's built-in
         /// pixel font while there is none. Needs the window.
         void load(Assets& assets, const UiConfig& ui);
+        /// @p file (assets/fonts/...) drawn at @p size pixels; empty = the built-in font.
+        void load(Assets& assets, const std::string& file, int size);
         void unload();
 
         void draw(std::string_view text, Vector2 position, Color color) const;

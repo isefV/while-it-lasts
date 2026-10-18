@@ -28,7 +28,7 @@ namespace hollow
         /// The line showing now, or nullptr.
         [[nodiscard]] const BarkLine* current() const;
 
-        /// Draws the current line centred above @p head (scene pixels).
+        /// Draws the current line centred above @p head (canvas pixels), inside the scene box.
         void draw(const TextRenderer& text, Vector2 head, Color color) const;
 
     private:

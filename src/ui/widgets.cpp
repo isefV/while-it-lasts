@@ -58,11 +58,11 @@ namespace hollow
         const float noteW = note.empty() ? 0.0f : text.measure(note) + 4.0f;
         const float w = std::round(keyW + labelW + noteW + 6.0f);
         const float h = 12.0f;
-        const float sceneW = layout::SceneBox.width;
+        const Rectangle box = layout::SceneBox;
 
         float x = std::round(anchor.x - w / 2.0f);
-        x = std::clamp(x, 1.0f, sceneW - w - 1.0f);
-        const float y = std::max(1.0f, std::round(anchor.y - h - 3.0f));
+        x = std::clamp(x, box.x + 1.0f, box.x + box.width - w - 1.0f);
+        const float y = std::max(box.y + 1.0f, std::round(anchor.y - h - 3.0f));
 
         DrawRectangleRec(Rectangle{x, y, w, h}, ColorAlpha(ui.box, 0.85f));
         DrawRectangleLinesEx(Rectangle{x, y, w, h}, 1.0f, ui.frame);

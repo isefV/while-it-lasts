@@ -95,6 +95,11 @@ shows the whole line; the next goes on. A line too long for the box (about
 | `next` | conversation to continue with; without it, the conversation goes on below the choice |
 | `timeout` | `true`: taken when the time runs out |
 
+When a choice appears it plays the sound `choice`, the box flashes, and for
+0.8 seconds no key picks anything (a line fills along the top of the box
+meanwhile), so a player pressing through the lines before it cannot choose
+by accident. A timed choice's clock starts after that.
+
 A **timed choice** has `"timer": <seconds>` and one option with
 `"timeout": true`. That option may have no `text`: it is then never shown and
 only happens when the player is too slow.
@@ -143,7 +148,7 @@ gives 0.
 | `sound <id>` | plays `assets/sounds/<id>.ogg` (or .wav, .mp3, .qoa) if it exists |
 | `ambient <id> <id> …` | the sound loops that play now (none: silence); `fire@0.4` plays a loop at 40 % |
 | `music <id>` / `music stop` | music track |
-| `pose <x\|y> <pose>` | idle, sit, lying, kneel |
+| `pose <x\|y> <pose>` | idle, sit, lying, kneel, crouch |
 | `companion follow\|stay [x]\|drag\|absent` | what X does |
 | `place <x\|y> <x>` | puts a character at x |
 | `step <x\|y> <dx>` | walks that far (negative: left) |
@@ -187,12 +192,15 @@ gives 0.
 | `name` | shown in the box between conversations |
 | `background` | 320 x 180 image; until it exists, `color` fills the scene (and it shows through see-through parts of the image, such as a window) |
 | `tint` | multiplies the whole scene (night, dusk) |
+| `flip` | `true` draws the background mirrored left to right, so one image serves two rooms |
+| `frame` | `true` draws the foliage border (`ui/frame/`: four corners and four edges, 24 x 24 each) over the edges of the scene. Outdoor rooms have it |
+| `fog` | mist over the background, behind everything else: `backgrounds/fog_1.png` and `fog_2.png` slowly fading into each other. 1 = as drawn, 0 = none |
 | `ambient`, `music` | sound loops |
 | `player_x` | where the player appears (an exit's `spawn_x` wins) |
 | `walk` | `[from, to]`, how far the player can walk |
 | `enter` | list of `{ "if", "dialogue", "do", "once" }`: on entering, every rule whose `if` is true applies its `do`; the first with a `dialogue` starts it. `once` (default true): only the first time |
 | `companion` | X here: `x`, `mode` (stay, follow, drag), `pose`, `dialogue` / `again` when talked to, or `bark`; `release` / `grab`: conversations when the player lets go of him (G) or takes hold again |
-| `creature` | the creature: `x`, `y`, `w`, `h`, `speed`, `color`, `sprite`, `patrol: [from, to]`, `phases`, `if` |
+| `creature` | the creature: `x`, `y` (its feet), `w`, `h`, `speed`, `color`, `sprite` (`sprites/creature.json`: `idle` and `walk`, facing right), `scale` (smaller when far away), `patrol: [from, to]`, `phases`, `if` |
 | `fight` | a real-time fight, started by the command `fight` (below) |
 | `idle_barks` | bark pools for when the player stands still |
 | `script` | code for this room (`campsite`, `creature`, `checkpoint`, `sunrise`, `summit`) |
@@ -235,7 +243,10 @@ when it can be used is `<sprite>_hover.png`, or a light outline.
 | `id` | unique in the room |
 | `name` | shown over it when the player can use it |
 | `x`, `y`, `w`, `h`, `color`, `sprite` | where and how it looks |
+| `scale` | the sprite drawn that many times its size (the road's cars: 1.5), its bottom on the rect's; make `w` and `h` the drawn size. An animated sheet (`.json`) keeps its top-left at the rect's |
 | `front` | drawn in front of the characters (hiding spots) |
+| `behind` | drawn behind the background, so it shows only through the image's see-through parts (the Reaper outside the office window) |
+| `alpha` | how solid the sprite is, 0 to 1 (default 1) |
 | `hidden` | not drawn (zones) |
 | `if` | it is there only while true (a cabinet closed / open is two objects) |
 | `dialogue`, `again` | conversation when used; `again` for the second and later times |
@@ -259,6 +270,10 @@ prompt between them. The game has no mouse input.
 near-death scene, and on the mountain), **G** next to him takes hold of him
 (the companion mode `drag`) and G again lets go of him where he is. Exits
 that need him (`"exit_if": "dragging"`) stay closed until he is held.
+Leaving a room while holding him, Y walks into the next one pulling him from
+the edge before anything starts. Where the room keeps him dragged (`drag`)
+Y keeps hold; otherwise Y lets go of him at his `x` (or the middle), he sits
+down (`pose`), Y steps to `player_x`, and then the room's `enter` runs.
 
 ---
 
@@ -313,21 +328,48 @@ the ground line. An animation is `row`, `frames`, `fps`, `loop`, and may set
 its own `frame` and `origin` (a row of wider frames), `top` (the row's first
 pixel line, when the rows above are another height) and `column` (its first
 frame). The game asks for `idle`, `walk`, `sit`, `lying`, `kneel` and `drag`
-(Y dragging X), and `dragged` (X being dragged; without it, `lying`).
-A pose the sheet lacks is drawn as a rectangle, so point it at the nearest
-row (Y's `kneel` uses the sitting frame). An Aseprite export is not a sheet
+(Y dragging X), and `dragged` (X being dragged; without it, `lying`),
+`crouch` (sneaking at the checkpoint: a walk that holds its frame when they
+stop), and Y's `swing_forward` and `swing_down` (F in a fight, one after the
+other; make them `"loop": false`, about 0.3 s long).
+A pose the sheet lacks is drawn with its `idle` frames (or `walk` while
+moving), so point it at the nearest row (Y's `kneel` uses the sitting frame). An Aseprite export is not a sheet
 config: rewrite it in this form.
 
 Props need no config: the object's `sprite` is the image, drawn unscaled
 from the object's top-left, so make `w` and `h` the image size and put its
-bottom on the ground line (y = 150 − h). An animated prop's `sprite` is a
-sheet config instead (`sprites/bonfire.json`): it plays the sheet's `idle`
-animation, frame top-left at the object's. A `fire` effect on an object with
-a sprite adds only the light.
+bottom on the ground line (y = 150 − h). Things standing side by side should
+not share one baseline: set their `y` a pixel or three above or below it
+(higher reads as a little further back), as at the campsite. An animated
+prop's `sprite` is a sheet config instead (`sprites/bonfire.json`): it plays
+the sheet's `idle` animation, frame top-left at the object's. A `fire` effect
+on an object with a sprite adds only the light.
 
-`game.json` → `bars`: up to three bars top left, each
+The Reaper is `sprites/reaper.json` (its `idle` frames, 32 x 80): the game
+draws it near or far, so at any height, keeping that shape.
+
+`game.json` → `ui` → `font`, `font_size`: the game's font (`fonts/*.ttf`). The
+size is the font's ascent + descent in pixels, which is how raylib sizes it:
+Pixeloid Sans and Greybeard-11px are both 11. Any other size draws it off the
+pixel grid, blurred. `fonts`: a list of `{ "name", "file", "size" }` that a
+debug build's Settings (title or pause menu) switches between, to compare
+them; `game --font <name>` starts with one of them. An empty `file` is
+raylib's built-in font. Without `font`, the game uses Pixeloid Sans
+(`fonts/pixeloid_sans.ttf`, size 11).
+
+`game.json` → `bars`: up to three bars top left, in the strip beside the scene, each
 `{ "label", "var", "max", "color" }`. Two: Y's health (`y_health`, 0 to 5)
 and X's condition (`x_condition`, 0 to 3). A bar flashes when it changes.
+
+`game.json` → `end_card`: the lines of the last screen, one after another.
+`credits`: lines bottom left of the title screen (who made the game).
+
+**File names.** Lower case, words joined with `_`, no spaces
+(`first_aid_cabinet_open.png`). Images that never move are props, in
+`props/`; sheets with a config are in `sprites/`; full-scene images
+(backgrounds, the fog) in `backgrounds/`; fonts and their licences in
+`fonts/`; the scene's border in `ui/frame/` (`top_left.png`, `top.png`, …,
+`bottom_right.png`).
 
 ---
 

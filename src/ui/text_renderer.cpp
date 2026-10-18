@@ -13,15 +13,20 @@ namespace hollow
 
     void TextRenderer::load(Assets& assets, const UiConfig& ui)
     {
+        load(assets, ui.font, ui.fontSize);
+    }
+
+    void TextRenderer::load(Assets& assets, const std::string& file, int size)
+    {
         unload();
-        if (assets.exists(ui.font))
+        if (!file.empty() && assets.exists(file))
         {
-            font_ = LoadFontEx(assets.path(ui.font).c_str(), ui.fontSize, nullptr, 0);
+            font_ = LoadFontEx(assets.path(file).c_str(), size, nullptr, 0);
             if (IsFontValid(font_))
             {
                 SetTextureFilter(font_.texture, TEXTURE_FILTER_POINT);
                 owned_ = true;
-                size_ = static_cast<float>(ui.fontSize);
+                size_ = static_cast<float>(size);
                 spacing_ = 0.0f;
                 return;
             }

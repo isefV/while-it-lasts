@@ -110,6 +110,8 @@ private:
     bool active_ = false;
     const hollow::FightDef* def_ = nullptr;
     const hollow::CreatureDef* creature_ = nullptr;
+    std::optional<hollow::SpriteSheet> bruteSheet_; // the room creature's art, while it fights
+    hollow::Animator bruteFrames_;
     float bruteSpeed_ = 1.0f;
     std::vector<Foe> foes_;
     std::size_t wave_ = 0;    // waves sent so far
@@ -119,6 +121,8 @@ private:
 
     float swingCooldown_ = 0.0f;
     float swingTime_ = -1.0f; // the swing on screen
+    float swingPose_ = 0.0f;  // Y's swing animation still playing
+    int swings_ = 0;          // the two swings alternate
     float shotCooldown_ = 0.0f;
     float shotFlash_ = 0.0f;
     float shotTo_ = 0.0f;     // where the shot ended

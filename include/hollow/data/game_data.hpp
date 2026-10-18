@@ -80,6 +80,7 @@ namespace hollow
         UiConfig ui;
         std::vector<BarDef> bars;            ///< top left; none in the prototype
         std::vector<std::string> endCard;    ///< lines of the end card
+        std::vector<std::string> credits;    ///< who made the game, on the title screen
 
         /// {y} and {x} -> the characters' names.
         [[nodiscard]] TokenMap tokens() const;

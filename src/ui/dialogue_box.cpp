@@ -57,6 +57,9 @@ namespace hollow
         {
             serial_ = view.serial;
             selected_ = 0;
+            choice_ = view.kind == DialogueView::Kind::Choice;
+            choiceAge_ = 0.0f;
+            result.choiceShown = choice_;
             if (view.kind == DialogueView::Kind::Line)
             {
                 layoutLine(view, speaker, text);
@@ -92,6 +95,10 @@ namespace hollow
         }
         else if (view.kind == DialogueView::Kind::Choice)
         {
+            // Locked for a moment: the keys that were reading lines do nothing.
+            choiceAge_ += dt;
+            if (choiceLocked()) return result;
+
             const int count = static_cast<int>(view.options.size());
             if (input.pressed(Action::Up)) selected_ = (selected_ + count - 1) % count;
             if (input.pressed(Action::Down)) selected_ = (selected_ + 1) % count;
@@ -134,17 +141,33 @@ namespace hollow
         }
         else if (view.kind == DialogueView::Kind::Choice)
         {
+            // A choice arrives: the frame flashes warm and fades, the options
+            // come in one after another, and a warm line fills along the top
+            // while it is locked. Then the selection lights up.
+            const float lock = std::clamp(choiceAge_ / ChoiceLock, 0.0f, 1.0f);
+            const bool locked = choiceLocked();
+            if (locked)
+            {
+                DrawRectangleLinesEx(Box, 1.0f, ColorAlpha(ui.accent, 0.9f * (1.0f - lock)));
+                DrawRectangleRec(Rectangle{Box.x + 2, Box.y + 2, std::round((Box.width - 4) * lock), 1},
+                                 ColorAlpha(ui.accent, 0.8f));
+            }
+            const float lit = std::clamp((choiceAge_ - ChoiceLock) / 0.15f, 0.0f, 1.0f);
+
             for (int i = 0; i < static_cast<int>(view.options.size()) && i < layout::MaxOptions; ++i)
             {
                 const Rectangle r = optionRect(i);
-                const bool active = i == selected_;
+                const float in = std::clamp((choiceAge_ - 0.12f * static_cast<float>(i)) / 0.25f, 0.0f, 1.0f);
+                const float slide = std::round((1.0f - in) * 6.0f);
+                const bool active = i == selected_ && !locked;
                 if (active)
                 {
-                    DrawRectangleRec(r, ColorAlpha(ui.frame, 0.35f));
-                    drawArrow(Vector2{r.x + 2, r.y + 2}, false, ui.highlight);
+                    DrawRectangleRec(r, ColorAlpha(ui.frame, 0.35f * lit));
+                    drawArrow(Vector2{r.x + 2, r.y + 2}, false, ColorAlpha(ui.highlight, lit));
                 }
-                text.draw(view.options[static_cast<std::size_t>(i)], Vector2{InnerX + 8, r.y + 1},
-                          active ? ui.highlight : ui.text);
+                const Color color = active ? ui.highlight : locked ? ui.narration : ui.text;
+                text.draw(view.options[static_cast<std::size_t>(i)], Vector2{InnerX + 8 + slide, r.y + 1},
+                          ColorAlpha(color, in));
             }
             if (view.timer > 0.0f)
             {

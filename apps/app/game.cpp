@@ -19,11 +19,30 @@ namespace
     constexpr float DragGap = 26.0f;       // X trails this far behind: his head at the player's hands
     constexpr float DragEnterX = 52.0f;    // entering a room pulling X: at least this far in, so he is on screen
     constexpr float DragSpeed = 0.45f;     // the player's speed while dragging X
+    constexpr float DragSwing = 240.0f;    // how fast X swings round when Y turns while dragging him
+    constexpr float HaulSpeed = 0.8f;      // Y's speed pulling X into a new room (the walk-in)
     constexpr float BarFlash = 0.8f;       // seconds a bar flashes after it changes
 
     // Music outside the rooms (assets/sounds/<id>.qoa); rooms name theirs in "music".
     constexpr const char* TitleMusic = "music_title";
     constexpr const char* EndMusic = "music_end";
+
+    // A room's "fog": these two images, fading into each other every FogCycle seconds.
+    constexpr const char* FogImages[] = {"backgrounds/fog_1.png", "backgrounds/fog_2.png"};
+    constexpr float FogCycle = 9.0f;
+
+    // A room's "frame": foliage over the edges of the scene, 24 x 24 pieces.
+    constexpr float FrameTile = 24.0f;
+    constexpr const char* FrameCorners[] = {"ui/frame/top_left.png", "ui/frame/top_right.png", "ui/frame/bottom_left.png",
+                                            "ui/frame/bottom_right.png"};
+    constexpr const char* FrameEdges[] = {"ui/frame/top.png", "ui/frame/bottom.png", "ui/frame/left.png", "ui/frame/right.png"};
+
+    // Screenshots are the 1080p screen: the canvas 4x, the scene 5x.
+    constexpr int ShotWidth = 1920;
+    constexpr int ShotHeight = 1080;
+
+    // The Reaper's frames, wherever it shows up (reaper.cpp, revive.cpp, the scripts).
+    constexpr const char* ReaperSheet = "sprites/reaper.json";
 
     float number(const std::vector<std::string>& args, std::size_t index, float fallback)
     {
@@ -49,8 +68,14 @@ Game::Game(std::string assetsDir)
     : assets_(std::move(assetsDir))
     , audio_(assets_)
 {
+#ifndef NDEBUG
+    // Debug builds: Settings, to compare the fonts in game.json "ui" "fonts".
+    titleMenu_.items = {"Begin", "Settings", "Quit"};
+    pauseMenu_.items = {"Resume", "Settings", "Quit to title", "Quit game"};
+#else
     titleMenu_.items = {"Begin", "Quit"};
     pauseMenu_.items = {"Resume", "Quit to title", "Quit game"};
+#endif
 }
 
 Game::~Game()
@@ -114,17 +139,21 @@ bool Game::load(Diagnostics& diag)
 void Game::initGraphics()
 {
     canvas_.load(layout::CanvasWidth, layout::CanvasHeight);
-    scene_.load(static_cast<int>(layout::SceneBox.width), static_cast<int>(layout::SceneBox.height));
+    scene_.load(static_cast<int>(layout::SceneWidth), static_cast<int>(layout::SceneHeight));
     text_.load(assets_, data_.ui);
+    for (std::size_t i = 0; i < data_.ui.fonts.size(); ++i)
+        if (data_.ui.fonts[i].file == data_.ui.font) fontIndex_ = i;
     audio_.init();
 
-    for (const auto& [id, character] : data_.characters)
-    {
+    const auto loadSheet = [this](const std::string& key, const std::string& config) {
         Diagnostics diag;
-        if (auto sheet = loadSpriteSheet(assets_, character.sprite, diag)) sheets_[id] = std::move(*sheet);
+        if (auto sheet = loadSpriteSheet(assets_, config, diag)) sheets_[key] = std::move(*sheet);
         for (const auto& e : diag.errors)
             TraceLog(LOG_WARNING, "%s", e.c_str());
-    }
+    };
+    for (const auto& [id, character] : data_.characters)
+        loadSheet(id, character.sprite);
+    loadSheet("reaper", ReaperSheet);
     const auto sheet = [this](const std::string& id) -> const SpriteSheet* {
         const auto it = sheets_.find(id);
         return it == sheets_.end() ? nullptr : &it->second;
@@ -184,6 +213,7 @@ void Game::newGame(const std::string& room)
     screen_ = Screen::Playing;
     fade_.set(1.0f);
     fade_.to(0.0f, 1.2f);
+    companionMode_ = CompanionMode::Absent; // a new game starts with nobody in tow
     enterRoom(room.empty() ? data_.startRoom : room, -1.0f);
 }
 
@@ -204,9 +234,14 @@ bool Game::startAt(const std::string& room, const std::vector<std::pair<std::str
     return true;
 }
 
-bool Game::saveCanvas(const std::string& path) const
+bool Game::saveCanvas(const std::string& path)
 {
-    Image image = LoadImageFromTexture(canvas_.texture());
+    RenderTexture2D shot = LoadRenderTexture(ShotWidth, ShotHeight);
+    BeginTextureMode(shot);
+    canvas_.compose(ShotWidth, ShotHeight, sceneShown_ ? &scene_ : nullptr, sceneAt_);
+    EndTextureMode();
+    Image image = LoadImageFromTexture(shot.texture);
+    UnloadRenderTexture(shot);
     ImageFlipVertical(&image);
     ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8); // as on screen: over black, no see-through pixels
     const bool saved = ExportImage(image, path.c_str());
@@ -216,6 +251,8 @@ bool Game::saveCanvas(const std::string& path) const
 
 void Game::enterRoom(const std::string& id, float spawnX)
 {
+    const bool hauling = companionMode_ == CompanionMode::Drag; // still pulling X from the last room
+    haul_ = HaulIn{};
     room_ = &data_.rooms.find(id)->second;
     script_ = makeRoomScript(room_->script);
 
@@ -247,6 +284,10 @@ void Game::enterRoom(const std::string& id, float spawnX)
     {
         setCompanionMode(CompanionMode::Absent);
     }
+    else if (hauling)
+    {
+        startHaulIn();
+    }
     else if (c.mode == "follow")
     {
         companion_.x = std::max(room_->walkMin, player_.x - FollowGap);
@@ -274,6 +315,46 @@ void Game::enterRoom(const std::string& id, float spawnX)
         if (!object.effect.empty() && present(object)) glow_[objectKey(object)] = 1.0f;
 
     if (script_) script_->enter(*this);
+    if (!haul_.active) runEnterRules();
+}
+
+void Game::startHaulIn()
+{
+    // Y comes in from the edge with X in tow. Where X waits in this room (or
+    // in the middle, in a room where he would walk) Y lets go and X sits;
+    // where the dragging goes on, Y keeps hold. The room's conversation
+    // starts after that (updateHaulIn).
+    const CompanionDef& c = room_->companion;
+    haul_ = HaulIn{};
+    haul_.active = true;
+    player_.x = room_->walkMin;
+    setCompanionMode(CompanionMode::Drag); // X behind him, off the edge
+
+    float target = std::max(room_->playerX, std::min(DragEnterX, room_->walkMax));
+    if (c.mode != "drag")
+    {
+        const bool waits = c.mode == "stay" && c.x >= 0.0f;
+        target = (waits ? c.x : layout::SceneWidth / 2.0f) + DragGap;
+        haul_.release = true;
+        haul_.returnX = waits ? room_->playerX : -1.0f;
+        haul_.pose = waits && !c.pose.empty() ? c.pose : "sit";
+    }
+    player_.walkTo(target);
+}
+
+void Game::updateHaulIn()
+{
+    if (player_.walking()) return;
+    if (haul_.release && companionMode_ == CompanionMode::Drag)
+    {
+        setCompanionMode(CompanionMode::Stay, companion_.x);
+        companion_.pose = haul_.pose;
+        audio_.play("dirt", 0.4f);
+        if (haul_.returnX >= 0.0f && std::fabs(player_.x - haul_.returnX) > 1.0f) player_.walkTo(haul_.returnX);
+        return;
+    }
+    player_.facing = companion_.x >= player_.x ? 1 : -1;
+    haul_.active = false;
     runEnterRules();
 }
 
@@ -391,7 +472,8 @@ bool Game::dialogueActive() const
 
 bool Game::busy() const
 {
-    return dialogueActive() || !pendingRoom_.empty() || inventoryPanel_.isOpen() || ending_ || revive_.active();
+    return dialogueActive() || !pendingRoom_.empty() || inventoryPanel_.isOpen() || ending_ || revive_.active() ||
+           haul_.active;
 }
 
 bool Game::startDialogue(const std::string& id)
@@ -535,8 +617,10 @@ void Game::update(float dt)
     case Screen::Title:
     {
         const int choice = titleMenu_.update(input_);
-        if (choice == 0) newGame();
-        else if (choice == 1 || input_.pressed(Action::Pause)) quit_ = true;
+        const std::string picked = choice >= 0 ? titleMenu_.items[choice] : std::string();
+        if (picked == "Begin") newGame();
+        else if (picked == "Settings") openSettings();
+        else if (picked == "Quit" || input_.pressed(Action::Pause)) quit_ = true;
         break;
     }
     case Screen::Paused:
@@ -547,23 +631,29 @@ void Game::update(float dt)
             break;
         }
         const int choice = pauseMenu_.update(input_);
-        if (choice == 0)
+        const std::string picked = choice >= 0 ? pauseMenu_.items[choice] : std::string();
+        if (picked == "Resume")
         {
             screen_ = Screen::Playing;
         }
-        else if (choice == 1)
+        else if (picked == "Settings")
+        {
+            openSettings();
+        }
+        else if (picked == "Quit to title")
         {
             runner_->stop();
             script_.reset();
             audio_.setAmbient({});
             toTitle();
         }
-        else if (choice == 2)
+        else if (picked == "Quit game")
         {
             quit_ = true;
         }
         break;
     }
+    case Screen::Settings: updateSettings(); break;
     case Screen::Playing: updatePlaying(dt); break;
     case Screen::EndCard:
         endCardTime_ += dt;
@@ -577,6 +667,50 @@ void Game::toTitle()
     screen_ = Screen::Title;
     titleMenu_.selected = 0;
     audio_.setMusic(TitleMusic);
+}
+
+void Game::openSettings()
+{
+    settingsFrom_ = screen_;
+    screen_ = Screen::Settings;
+    settingsMenu_.selected = 0;
+    useFont(fontIndex_); // writes the menu's labels
+}
+
+void Game::useFont(std::size_t index)
+{
+    const std::vector<FontChoice>& fonts = data_.ui.fonts;
+    if (index < fonts.size() && index != fontIndex_)
+    {
+        fontIndex_ = index;
+        text_.load(assets_, fonts[index].file, fonts[index].size);
+    }
+    const std::string name = fontIndex_ < fonts.size() ? fonts[fontIndex_].name : std::string("(none in game.json)");
+    settingsMenu_.items = {"Font: " + name, "Back"};
+}
+
+bool Game::setFont(const std::string& name)
+{
+    for (std::size_t i = 0; i < data_.ui.fonts.size(); ++i)
+        if (data_.ui.fonts[i].name == name)
+        {
+            useFont(i);
+            return true;
+        }
+    return false;
+}
+
+void Game::updateSettings()
+{
+    // E (or Left / Right on the font) goes to the next font; Esc or Back returns.
+    const int choice = settingsMenu_.update(input_);
+    const std::size_t count = data_.ui.fonts.size();
+    if (settingsMenu_.selected == 0 && count > 0 && (input_.pressed(Action::Left) || input_.pressed(Action::Right)))
+        useFont((fontIndex_ + (input_.pressed(Action::Left) ? count - 1 : 1)) % count);
+    else if (choice == 0 && count > 0)
+        useFont((fontIndex_ + 1) % count);
+    else if (choice == 1 || input_.pressed(Action::Pause))
+        screen_ = settingsFrom_;
 }
 
 void Game::updatePlaying(float dt)
@@ -622,6 +756,7 @@ void Game::updatePlaying(float dt)
         const int health = state_.get("y_health");
         const float pace = health <= 1 ? 0.75f : health <= 2 ? 0.88f : 1.0f;
         player_.speedScale = (companionMode_ == CompanionMode::Drag ? DragSpeed : 1.0f) * pace;
+        if (haul_.active) player_.speedScale = companionMode_ == CompanionMode::Drag ? HaulSpeed : 1.0f;
     }
 
     if (inventoryPanel_.isOpen())
@@ -638,13 +773,19 @@ void Game::updatePlaying(float dt)
                 speaker = DialogueBox::Speaker{it->second.name, it->second.textColor};
         }
         const auto result = dialogueBox_.update(view, speaker, input_, dt, text_, data_.ui);
+        if (result.choiceShown) sound("choice", 0.8f);
         if (result.advance) runner_->advance();
         else if (result.choice >= 0) runner_->choose(result.choice);
-        runner_->update(dt);
+        // A timed choice's clock starts once it can be picked.
+        runner_->update(dialogueBox_.choiceLocked() ? 0.0f : dt);
     }
     else if (revive_.active())
     {
         revive_.update(*this, dt);
+    }
+    else if (haul_.active)
+    {
+        updateHaulIn();
     }
     else if (pendingRoom_.empty() && !ending_)
     {
@@ -822,16 +963,18 @@ void Game::updateCompanion(float dt)
         // A little slower than the player, and a little slower again when he is worse.
         companion_.speedScale = 0.84f + 0.16f * static_cast<float>(condition) / 3.0f;
         if (std::fabs(companion_.x - target) > 8.0f) companion_.walkTo(target);
-        companion_.pose = player_.pose == "kneel" ? "kneel" : "idle";
+        // He keeps low when Y does (sneaking at the checkpoint).
+        companion_.pose = player_.pose == "kneel" || player_.pose == "crouch" ? player_.pose : "idle";
         break;
     }
     case CompanionMode::Drag:
     {
-        // X trails on the side the player is walking away from.
+        // X trails on the side the player is walking away from. Turning round
+        // swings him over quickly, his head always toward Y's hands.
         if (player_.moved()) dragSide_ = -player_.facing;
         const float target = player_.x + static_cast<float>(dragSide_) * DragGap;
-        companion_.x = approach(companion_.x, target, 80.0f * dt);
-        companion_.facing = -dragSide_;
+        companion_.x = approach(companion_.x, target, DragSwing * dt);
+        companion_.facing = companion_.x <= player_.x ? 1 : -1;
         companion_.pose = "dragged";
         break;
     }
@@ -1004,31 +1147,48 @@ Game::Target Game::selectedTarget() const
 
 void Game::draw()
 {
-    const bool inGame = screen_ == Screen::Playing || screen_ == Screen::Paused;
+    const bool fromGame = screen_ == Screen::Settings && settingsFrom_ == Screen::Paused;
+    const bool inGame = screen_ == Screen::Playing || screen_ == Screen::Paused || fromGame;
     if (inGame) drawScene();
 
+    // The scene is shown under the canvas, which is see-through over it.
+    sceneShown_ = inGame;
+    sceneAt_ = layout::SceneBox;
+    if (screen_ != Screen::Settings)
+    {
+        const Vector2 offset = shake_.offset();
+        sceneAt_.x += offset.x * layout::SceneScale;
+        sceneAt_.y += offset.y * layout::SceneScale;
+    }
+
     canvas_.begin();
-    ClearBackground(BLACK);
+    ClearBackground(inGame ? BLANK : BLACK);
     switch (screen_)
     {
     case Screen::Title: drawTitle(); break;
     case Screen::Playing:
     case Screen::Paused:
-    {
-        const Vector2 offset = shake_.offset();
-        scene_.draw(Vector2{layout::SceneBox.x + offset.x, layout::SceneBox.y + offset.y});
+        drawSceneLabels();
         drawHud();
         fade_.draw(Rectangle{0, 0, static_cast<float>(layout::CanvasWidth), static_cast<float>(layout::CanvasHeight)});
         if (screen_ == Screen::Paused) drawPause();
         break;
-    }
+    case Screen::Settings:
+        if (fromGame) drawHud();
+        drawSettings();
+        break;
     case Screen::EndCard: drawEndCard(); break;
     }
     canvas_.end();
 
     BeginDrawing();
-    canvas_.present();
+    canvas_.present(sceneShown_ ? &scene_ : nullptr, sceneAt_);
     EndDrawing();
+}
+
+Vector2 Game::toCanvas(Vector2 scenePoint) const
+{
+    return Vector2{sceneAt_.x + scenePoint.x * layout::SceneScale, sceneAt_.y + scenePoint.y * layout::SceneScale};
 }
 
 void Game::drawScene()
@@ -1038,9 +1198,15 @@ void Game::drawScene()
 
     if (const Texture2D* background = assets_.texture(room_->background))
     {
-        // See-through parts of the art (a window) show the room's colour.
+        // See-through parts of the art (a window) show the room's colour, and
+        // what stands behind the background (the Reaper out in the yard).
         ClearBackground(multiply(room_->color, tint_));
-        DrawTexture(*background, 0, 0, tint_);
+        for (const auto& object : room_->objects)
+            if (object.behind && !object.hidden && present(object)) drawObject(object, false);
+        const auto w = static_cast<float>(background->width);
+        const auto h = static_cast<float>(background->height);
+        DrawTexturePro(*background, Rectangle{0, 0, room_->flip ? -w : w, h}, Rectangle{0, 0, w, h}, Vector2{0, 0}, 0.0f,
+                       tint_);
     }
     else
     {
@@ -1050,22 +1216,27 @@ void Game::drawScene()
                       multiply(mix(room_->color, BLACK, 0.45f), tint_));
     }
 
+    // Mist over the ground: two images fading into each other, slowly.
+    if (room_->fog > 0.0f)
+    {
+        const float k = 0.5f + 0.5f * std::sin(timeInRoom_ * 2.0f * PI / FogCycle);
+        const Texture2D* fogs[] = {assets_.texture(FogImages[0]), assets_.texture(FogImages[1])};
+        if (fogs[0]) DrawTexture(*fogs[0], 0, 0, ColorAlpha(tint_, room_->fog * (1.0f - k)));
+        if (fogs[1]) DrawTexture(*fogs[1], 0, 0, ColorAlpha(tint_, room_->fog * k));
+    }
+
     if (script_) script_->drawBack(*this);
     reaper_.draw(*this);
 
     // Only what the player stands next to is marked, and only that can be used.
     Target highlight;
-    std::size_t inReach = 0;
-    if (!busy() && !fight_.active())
-    {
-        highlight = selectedTarget();
-        inReach = targetsInReach().size();
-    }
+    if (!busy() && !fight_.active()) highlight = selectedTarget();
 
     for (const auto& object : room_->objects)
-        if (!object.front && !object.hidden && present(object))
+        if (!object.front && !object.behind && !object.hidden && present(object))
             drawObject(object, highlight.object == &object);
 
+    if (script_) script_->drawMiddle(*this);
     fight_.drawBack(*this);
     companion_.draw(tint_);
     if (highlight.companion) DrawRectangleLinesEx(grow(companion_.bounds(), 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
@@ -1082,30 +1253,78 @@ void Game::drawScene()
 
     if (script_) script_->drawFront(*this);
     revive_.drawScene(*this);
+    if (room_->frame) drawFrame();
 
+    scene_.end();
+}
+
+void Game::drawFrame()
+{
+    // The corners, then the edges repeated between them (cut off where they
+    // run out): foliage closing in around the scene.
+    const float w = layout::SceneWidth;
+    const float h = layout::SceneHeight;
+    const float t = FrameTile;
+    const Vector2 corners[] = {{0, 0}, {w - t, 0}, {0, h - t}, {w - t, h - t}};
+    for (int i = 0; i < 4; ++i)
+        if (const Texture2D* corner = assets_.texture(FrameCorners[i])) DrawTextureV(*corner, corners[i], tint_);
+
+    const Rectangle edges[] = {{t, 0, w - 2 * t, t}, {t, h - t, w - 2 * t, t}};
+    for (int i = 0; i < 2; ++i)
+    {
+        const Texture2D* edge = assets_.texture(FrameEdges[i]);
+        if (!edge) continue;
+        SetTextureWrap(*edge, TEXTURE_WRAP_REPEAT);
+        const Rectangle& r = edges[i];
+        DrawTextureRec(*edge, Rectangle{0, 0, r.width, r.height}, Vector2{r.x, r.y}, tint_);
+    }
+
+    // Down each side the two side pieces take turns, the other side's one
+    // mirrored, so the 24 px repeat does not show.
+    const Texture2D* left = assets_.texture(FrameEdges[2]);
+    const Texture2D* right = assets_.texture(FrameEdges[3]);
+    if (!left || !right) return;
+    int n = 0;
+    for (float y = t; y < h - t; y += t, ++n)
+    {
+        const float part = std::min(t, h - t - y);
+        const bool other = n % 2 == 1;
+        const float sw = other ? -t : t; // a negative width mirrors it
+        DrawTextureRec(other ? *right : *left, Rectangle{0, 0, sw, part}, Vector2{0, y}, tint_);
+        DrawTextureRec(other ? *left : *right, Rectangle{0, 0, sw, part}, Vector2{w - t, y}, tint_);
+    }
+}
+
+void Game::drawSceneLabels()
+{
+    // Drawn on the canvas, not in the scene, so all text has the same pixels.
     if (const BarkLine* line = barks_.current())
     {
         Actor* who = actor(line->speaker);
         const auto it = data_.characters.find(line->speaker);
         if (who && it != data_.characters.end())
-            barks_.draw(text_, Vector2{who->x, who->bounds().y}, it->second.textColor);
+            barks_.draw(text_, toCanvas(Vector2{who->x, who->bounds().y}), it->second.textColor);
     }
 
-    if (highlight.valid())
+    if (busy() || fight_.active()) return;
+    const Target highlight = selectedTarget();
+    if (!highlight.valid()) return;
+    const Rectangle r = targetRect(highlight);
+    const std::string& label = highlight.companion ? companion_.def->name : highlight.object->name;
+    std::string note;
+    const std::vector<Target> targets = targetsInReach();
+    if (targets.size() > 1)
     {
-        const Rectangle r = targetRect(highlight);
-        const std::string& label = highlight.companion ? companion_.def->name : highlight.object->name;
-        std::string note;
-        if (inReach > 1)
-        {
-            const std::vector<Target> targets = targetsInReach();
-            const auto index = std::find(targets.begin(), targets.end(), highlight) - targets.begin();
-            note = std::to_string(index + 1) + "/" + std::to_string(targets.size());
-        }
-        drawPrompt(text_, label, Vector2{r.x + r.width / 2.0f, r.y}, data_.ui, note);
+        const auto index = std::find(targets.begin(), targets.end(), highlight) - targets.begin();
+        note = std::to_string(index + 1) + "/" + std::to_string(targets.size());
     }
+    drawPrompt(text_, label, toCanvas(Vector2{r.x + r.width / 2.0f, r.y}), data_.ui, note);
+}
 
-    scene_.end();
+const SpriteSheet* Game::reaperSheet() const
+{
+    const auto it = sheets_.find("reaper");
+    return it == sheets_.end() ? nullptr : &it->second;
 }
 
 const SpriteSheet* Game::objectSheet(const ObjectDef& object) const
@@ -1116,13 +1335,17 @@ const SpriteSheet* Game::objectSheet(const ObjectDef& object) const
 
 void Game::drawObject(const ObjectDef& object, bool highlighted)
 {
+    const Color tint = ColorAlpha(tint_, object.alpha);
+
     // An animated sprite: its "idle" frames, top-left at the object's.
     if (const SpriteSheet* sheet = objectSheet(object))
     {
         const auto animation = sheet->animations.find("idle");
+        const Vector2 origin = animation == sheet->animations.end() ? Vector2{} : animation->second.origin;
         if (animation != sheet->animations.end() &&
             drawSprite(*sheet, objectAnimators_[objectKey(object)],
-                       Vector2{object.rect.x + animation->second.origin.x, object.rect.y + animation->second.origin.y}, false, tint_))
+                       Vector2{object.rect.x + origin.x * object.scale, object.rect.y + origin.y * object.scale}, false, tint,
+                       object.scale))
         {
             if (highlighted) DrawRectangleLinesEx(grow(object.rect, 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
             return;
@@ -1131,7 +1354,18 @@ void Game::drawObject(const ObjectDef& object, bool highlighted)
     if (const Texture2D* texture = assets_.texture(object.sprite))
     {
         const Texture2D* hover = highlighted ? assets_.texture(hoverSprite(object.sprite)) : nullptr;
-        DrawTexture(hover ? *hover : *texture, static_cast<int>(object.rect.x), static_cast<int>(object.rect.y), tint_);
+        const Texture2D& shown = hover ? *hover : *texture;
+        if (object.scale == 1.0f)
+            DrawTexture(shown, static_cast<int>(object.rect.x), static_cast<int>(object.rect.y), tint);
+        else
+        {
+            // Scaled: the bottom stays where the rect's bottom is.
+            const float w = std::round(static_cast<float>(shown.width) * object.scale);
+            const float h = std::round(static_cast<float>(shown.height) * object.scale);
+            const Rectangle dest{std::round(object.rect.x), std::round(object.rect.y + object.rect.height - h), w, h};
+            DrawTexturePro(shown, Rectangle{0, 0, static_cast<float>(shown.width), static_cast<float>(shown.height)}, dest,
+                           Vector2{0, 0}, 0.0f, tint);
+        }
         if (highlighted && !hover)
             DrawRectangleLinesEx(grow(object.rect, 1), 1.0f, ColorAlpha(data_.ui.highlight, 0.7f));
         return;
@@ -1166,6 +1400,11 @@ void Game::drawEffect(const ObjectDef& object)
         DrawRectangleRec(Rectangle{std::round(cx + 2), bottom - h * 0.6f - 2, 4, h * 0.6f}, ColorAlpha(warm, strength));
         drawGlow(Vector2{cx, bottom - 6}, 70.0f * f, warm, strength);
     }
+    else if (object.effect == "ember" && objectSheet(object))
+    {
+        // The embers are in the sprite (the fire put out): a low, faint light.
+        drawGlow(Vector2{cx, bottom - 6}, 22.0f * f, warm, strength * 0.5f);
+    }
     else if (object.effect == "ember")
     {
         DrawRectangleRec(Rectangle{std::round(cx), std::round(object.rect.y), 1, 1}, ColorAlpha(hot, strength * std::min(1.0f, f)));
@@ -1181,16 +1420,14 @@ void Game::drawHud()
 {
     for (std::size_t i = 0; i < data_.bars.size() && i < 3; ++i)
     {
-        // "Y [=====   ]": the label, then the bar; it flashes when it changes.
+        // The name, the bar under it; it flashes when it changes.
         const BarDef& bar = data_.bars[i];
         const Rectangle slot = layout::BarSlots[i];
-        const float labelW = bar.label.empty() ? 0.0f : 10.0f;
         Color color = bar.color;
         if (barFlash_[i] > 0.0f && std::fmod(barFlash_[i], 0.2f) < 0.1f)
             color = barDown_[i] ? Color{170, 60, 60, 255} : data_.ui.highlight;
-        if (!bar.label.empty()) text_.draw(bar.label, Vector2{slot.x, slot.y - 1}, data_.ui.dim);
-        drawBar(assets_, Rectangle{slot.x + labelW, slot.y, slot.width - labelW, slot.height}, state_.get(bar.var), bar.max,
-                color, data_.ui);
+        if (!bar.label.empty()) text_.draw(bar.label, Vector2{slot.x, slot.y - layout::LineHeight - 1}, data_.ui.dim);
+        drawBar(assets_, slot, state_.get(bar.var), bar.max, color, data_.ui);
     }
 
     if (inventoryPanel_.isOpen())
@@ -1219,11 +1456,21 @@ void Game::drawHud()
 
     // Between conversations: where we are, and the keys.
     text_.draw(room_->name, Vector2{box.x + layout::Padding, box.y + layout::Padding}, data_.ui.dim);
-    std::string keys = "A/D walk   E use";
-    if (!busy() && targetsInReach().size() > 1) keys += "   W/S next";
-    if (companionMode_ == CompanionMode::Drag) keys += "   G let go";
-    else if (!busy() && canGrab()) keys += "   G take hold";
-    keys += "   Tab items   Esc pause";
+    std::vector<std::string> parts = {"A/D walk", "E use"};
+    if (!busy() && targetsInReach().size() > 1) parts.emplace_back("W/S next");
+    if (companionMode_ == CompanionMode::Drag && !busy()) parts.emplace_back("G let go");
+    else if (!busy() && canGrab()) parts.emplace_back("G take hold");
+    parts.emplace_back("Tab items");
+    parts.emplace_back("Esc pause");
+    // Three spaces between them, fewer if a wide font would run out of the box.
+    std::string keys;
+    for (const char* gap : {"   ", "  ", " "})
+    {
+        keys = parts.front();
+        for (std::size_t i = 1; i < parts.size(); ++i)
+            keys += gap + parts[i];
+        if (text_.measure(keys) <= box.width - 2 * layout::Padding) break;
+    }
     text_.draw(keys, Vector2{box.x + layout::Padding, box.y + box.height - layout::Padding - layout::LineHeight}, data_.ui.dim);
 }
 
@@ -1242,6 +1489,16 @@ void Game::drawTitle()
     titleMenu_.draw(text_, data_.ui, Vector2{240, 190});
     const char* help = "F11: fullscreen / window";
     text_.draw(help, Vector2{std::round(240 - text_.measure(help) / 2), 252}, data_.ui.dim);
+
+    // Who made it, bottom left (game.json "credits"); the engine, bottom right.
+    float y = 262.0f - 10.0f * static_cast<float>(data_.credits.size());
+    for (const std::string& line : data_.credits)
+    {
+        text_.draw(line, Vector2{8, y}, data_.ui.dim);
+        y += 10.0f;
+    }
+    const char* engine = "Powered by raylib";
+    text_.draw(engine, Vector2{std::round(472 - text_.measure(engine)), 252}, data_.ui.dim);
 }
 
 void Game::drawPause()
@@ -1251,6 +1508,24 @@ void Game::drawPause()
     drawPanel(assets_, panel, data_.ui);
     text_.draw("Paused", Vector2{std::round(240 - text_.measure("Paused") / 2), panel.y + 6}, data_.ui.dim);
     pauseMenu_.draw(text_, data_.ui, Vector2{240, 140});
+}
+
+void Game::drawSettings()
+{
+    DrawRectangle(0, 0, layout::CanvasWidth, layout::CanvasHeight, ColorAlpha(BLACK, 0.6f));
+    const Rectangle panel{140, 84, 200, 104};
+    drawPanel(assets_, panel, data_.ui);
+    const char* title = "Settings";
+    text_.draw(title, Vector2{std::round(240 - text_.measure(title) / 2), panel.y + 6}, data_.ui.dim);
+    settingsMenu_.draw(text_, data_.ui, Vector2{240, 120});
+    const char* keys = "E or A/D: next font";
+    text_.draw(keys, Vector2{std::round(240 - text_.measure(keys) / 2), panel.y + 58}, data_.ui.dim);
+
+    // A line of the game in the chosen font, to judge it by.
+    const char* sample[] = {"Supplies are low. Something is", "following them. 0123456789 ?!"};
+    const float y = panel.y + panel.height - 30;
+    text_.draw(sample[0], Vector2{panel.x + 10, y}, data_.ui.text);
+    text_.draw(sample[1], Vector2{panel.x + 10, y + layout::LineHeight}, data_.ui.thought);
 }
 
 void Game::drawEndCard()

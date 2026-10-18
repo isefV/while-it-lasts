@@ -36,13 +36,21 @@ namespace hollow
 
         struct Result
         {
-            bool advance = false; ///< the line was read: call DialogueRunner::advance()
-            int choice = -1;      ///< an option was picked: call DialogueRunner::choose()
+            bool advance = false;     ///< the line was read: call DialogueRunner::advance()
+            int choice = -1;          ///< an option was picked: call DialogueRunner::choose()
+            bool choiceShown = false; ///< a choice just appeared (the game plays its sound)
         };
+
+        /// How long a new choice ignores the keys, so a player pressing
+        /// through the lines before it sees it instead of picking by accident.
+        static constexpr float ChoiceLock = 0.8f;
 
         /// Follows the runner's view and reads the input.
         Result update(const DialogueView& view, const Speaker& speaker, const Input& input, float dt,
                       const TextRenderer& text, const UiConfig& ui);
+
+        /// A choice is on screen but cannot be picked yet (its timer waits too).
+        [[nodiscard]] bool choiceLocked() const { return choice_ && choiceAge_ < ChoiceLock; }
 
         void draw(const DialogueView& view, const TextRenderer& text, const UiConfig& ui, Assets& assets) const;
 
@@ -58,6 +66,8 @@ namespace hollow
         float revealed_ = 0.0f;
         float blink_ = 0.0f;
         int selected_ = 0;
+        bool choice_ = false;    ///< the entry on screen is a choice
+        float choiceAge_ = 0.0f; ///< seconds it has been on screen
         std::string prefix_;
         Color prefixColor_{};
         Color textColor_{};

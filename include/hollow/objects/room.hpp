@@ -26,7 +26,10 @@ namespace hollow
         Rectangle rect{};
         Color color{90, 100, 110, 255};
         std::string sprite;          ///< relative to assets/; the hover image is <name>_hover.png
+        float scale = 1.0f;          ///< the sprite drawn this many times its size (w and h stay the hit area)
         bool front = false;          ///< drawn in front of the characters
+        bool behind = false;         ///< drawn behind the background: seen only through its see-through parts (a window)
+        float alpha = 1.0f;          ///< how solid the sprite is drawn (0 to 1)
         bool hidden = false;         ///< nothing is drawn (zones, triggers)
         Condition condition;         ///< "if": in the room only while true
 
@@ -98,6 +101,7 @@ namespace hollow
         float speed = 30.0f;
         Color color{30, 32, 40, 255};
         std::string sprite;
+        float scale = 1.0f;          ///< the sprite drawn this many times its size
         float minX = 0.0f;           ///< patrol range
         float maxX = 320.0f;
         std::vector<PatrolPhase> phases;
@@ -129,6 +133,9 @@ namespace hollow
         std::string background;      ///< 320 x 180, relative to assets/; a flat colour until it exists
         Color color{20, 26, 36, 255};
         Color tint{255, 255, 255, 255}; ///< night, dawn: multiplies the background
+        float fog = 0.0f;            ///< mist over the background (backgrounds/fog_1.png, fog_2.png): 0 none, 1 full
+        bool frame = false;          ///< the foliage border (ui/frame/) around the scene: outdoor rooms
+        bool flip = false;           ///< the background mirrored left to right (one image, two rooms)
         std::vector<std::string> ambient; ///< sound loops, assets/sounds/<id>.ogg, .wav, .mp3 or .qoa
         std::string music;
         float playerX = 40.0f;

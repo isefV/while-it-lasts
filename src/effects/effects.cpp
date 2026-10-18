@@ -90,6 +90,7 @@ namespace hollow
     void Apparition::update(float dt)
     {
         alpha_.update(dt);
+        animator_.update(dt, sheet);
         if (moveLength_ > 0.0f && moveTime_ < moveLength_)
         {
             moveTime_ = std::min(moveTime_ + dt, moveLength_);
@@ -104,6 +105,7 @@ namespace hollow
         const float a = alpha_.value();
         if (a <= 0.0f) return;
         const Rectangle r{std::round(rect.x), std::round(rect.y), rect.width, rect.height};
+        if (sheet && drawSpriteIn(*sheet, animator_, r, flipX, ColorAlpha(WHITE, a))) return;
         if (texture)
         {
             const auto w = static_cast<float>(texture->width);

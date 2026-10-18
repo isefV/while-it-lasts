@@ -74,7 +74,12 @@ namespace hollow
         int frame_ = 0;
     };
 
-    /// Draws the current frame with its origin at @p feet. Returns false (and
-    /// draws nothing) when the sheet has no image or no such animation.
-    bool drawSprite(const SpriteSheet& sheet, const Animator& animator, Vector2 feet, bool flipX, Color tint);
+    /// Draws the current frame with its origin at @p feet, @p scale times its
+    /// size. Returns false (and draws nothing) when the sheet has no image or
+    /// no such animation.
+    bool drawSprite(const SpriteSheet& sheet, const Animator& animator, Vector2 feet, bool flipX, Color tint,
+                    float scale = 1.0f);
+
+    /// Draws the current frame stretched over @p dest (the Reaper, near or far).
+    bool drawSpriteIn(const SpriteSheet& sheet, const Animator& animator, Rectangle dest, bool flipX, Color tint);
 } // namespace hollow

@@ -1,5 +1,6 @@
 #include <hollow/ui/bark.hpp>
 #include <hollow/ui/text_renderer.hpp>
+#include <hollow/ui/theme.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -59,8 +60,9 @@ namespace hollow
         for (const auto& l : lines)
         {
             const float w = text.measure(l);
-            const float x = std::clamp(std::round(head.x - w / 2.0f), 2.0f, 318.0f - w);
-            text.drawShadowed(l, Vector2{x, std::max(2.0f, y)}, ColorAlpha(color, alpha));
+            const Rectangle box = layout::SceneBox;
+            const float x = std::clamp(std::round(head.x - w / 2.0f), box.x + 2.0f, box.x + box.width - 2.0f - w);
+            text.drawShadowed(l, Vector2{x, std::max(box.y + 2.0f, std::round(y))}, ColorAlpha(color, alpha));
             y += 10.0f;
         }
     }

@@ -15,6 +15,8 @@ namespace
     constexpr float SwingCooldown = 0.42f;
     constexpr float SwingActive = 0.08f;  // seconds into the swing when it hits
     constexpr float SwingShow = 0.16f;
+    constexpr float SwingPose = 0.29f;    // Y's swing animation: 4 frames at 14 per second
+    const char* const SwingPoses[] = {"swing_forward", "swing_down"};
     constexpr float SwingReach = 26.0f;   // in front of Y
     constexpr float ShotCooldown = 0.8f;
     constexpr float ShotRange = 220.0f;
@@ -47,6 +49,12 @@ void Fight::start(Game& game)
     active_ = true;
     def_ = &room.fight;
     creature_ = room.creature.present ? &room.creature : nullptr;
+    bruteSheet_.reset();
+    if (creature_)
+    {
+        Diagnostics diag;
+        bruteSheet_ = loadSpriteSheet(game.assets(), creature_->sprite, diag);
+    }
     foes_.clear();
     wave_ = 0;
     bruteSent_ = false;
@@ -54,6 +62,7 @@ void Fight::start(Game& game)
     xHitThisWave_ = false;
     swingCooldown_ = shotCooldown_ = dodgeCooldown_ = 0.0f;
     swingTime_ = -1.0f;
+    swingPose_ = 0.0f;
     dodgeTime_ = invulnerable_ = hurtFlash_ = banner_ = 0.0f;
     downTime_ = -1.0f;
     noAmmo_ = holding_ = 0.0f;
@@ -130,7 +139,7 @@ void Fight::spawnWave(Game& game)
         foe.kind = Kind::Crawler;
         bool left = wave.from == "left";
         if (wave.from == "both") left = i % 2 == 1;
-        foe.x = left ? -Edge : layout::SceneBox.width + Edge;
+        foe.x = left ? -Edge : layout::SceneWidth + Edge;
         foe.facing = left ? 1 : -1;
         foe.delay = 0.7f * static_cast<float>(i / (wave.from == "both" ? 2 : 1));
         foe.hp = foe.maxHp = 2;
@@ -146,7 +155,7 @@ void Fight::spawnBrute(Game& game)
     Foe foe;
     foe.kind = Kind::Brute;
     foe.hp = foe.maxHp = def_->hp;
-    foe.x = layout::SceneBox.width + Edge;
+    foe.x = layout::SceneWidth + Edge;
     bruteSpeed_ = 1.0f;
     if (RoomScript* script = game.script())
     {
@@ -312,6 +321,10 @@ void Fight::update(Game& game, float dt)
 
     swingCooldown_ -= dt;
     shotCooldown_ -= dt;
+    for (const Foe& foe : foes_)
+        if (foe.kind == Kind::Brute)
+            bruteFrames_.play(foe.state == State::Approach || foe.state == State::Flee || foe.state == State::Lunge ? "walk" : "idle");
+    bruteFrames_.update(dt, bruteSheet_ ? &*bruteSheet_ : nullptr);
     dodgeCooldown_ -= dt;
     invulnerable_ -= dt;
     shotFlash_ -= dt;
@@ -347,6 +360,8 @@ void Fight::update(Game& game, float dt)
         {
             swingCooldown_ = SwingCooldown;
             swingTime_ = 0.0f;
+            swingPose_ = SwingPose;
+            player.pose = SwingPoses[swings_++ % 2];
             game.sound("swing", 0.7f, game.random().uniform(0.9f, 1.1f));
         }
         else if (input.pressed(Action::Shoot) && shotCooldown_ <= 0.0f)
@@ -375,6 +390,11 @@ void Fight::update(Game& game, float dt)
         swingTime_ += dt;
         if (before < SwingActive && swingTime_ >= SwingActive) swing(game);
         if (swingTime_ > SwingShow) swingTime_ = -1.0f;
+    }
+    if (swingPose_ > 0.0f)
+    {
+        swingPose_ -= dt;
+        if (swingPose_ <= 0.0f && player.pose.starts_with("swing")) player.pose = "idle";
     }
 
     // The creatures.
@@ -449,7 +469,7 @@ void Fight::update(Game& game, float dt)
 
     // Gone: faded out or off the scene.
     std::erase_if(foes_, [](const Foe& foe) {
-        const bool off = foe.x < -40.0f || foe.x > layout::SceneBox.width + 40.0f;
+        const bool off = foe.x < -40.0f || foe.x > layout::SceneWidth + 40.0f;
         return foe.state != State::Enter && (foe.alpha <= 0.0f || (foe.state == State::Flee && off));
     });
 
@@ -538,18 +558,24 @@ void Fight::drawBack(Game& game) const
         }
         else
         {
-            // The room's creature: a hunched mass, eyes on Y.
-            const float shoulder = std::round(r.height * 0.3f);
+            // The room's creature: its art (red for a moment when hit), or a
+            // hunched mass, eyes on Y.
             const float lean = foe.state == State::Windup ? static_cast<float>(-foe.facing) * 2.0f
                              : foe.state == State::Lunge  ? static_cast<float>(foe.facing) * 3.0f
                                                           : 0.0f;
-            DrawRectangleRec(Rectangle{r.x, r.y + shoulder, r.width, r.height - shoulder}, c);
-            const float headW = std::round(r.width * 0.45f);
-            const float hx = (foe.facing > 0 ? r.x + r.width - headW - 2 : r.x + 2) + lean;
-            DrawRectangleRec(Rectangle{hx, r.y + std::round(shoulder * 0.35f), headW, shoulder}, c);
-            const float ey = r.y + std::round(shoulder * 0.35f) + 4;
-            DrawRectangleRec(Rectangle{hx + headW / 2 - 3, ey, 2, 1}, eye);
-            DrawRectangleRec(Rectangle{hx + headW / 2 + 1, ey, 2, 1}, eye);
+            const Color art = ColorAlpha(foe.flash > 0.0f ? Color{255, 120, 110, 255} : game.tint(), foe.alpha);
+            if (!bruteSheet_ || !drawSprite(*bruteSheet_, bruteFrames_, Vector2{foe.x + lean, r.y + r.height}, foe.facing < 0,
+                                            art, creature_ ? creature_->scale : 1.0f))
+            {
+                const float shoulder = std::round(r.height * 0.3f);
+                DrawRectangleRec(Rectangle{r.x, r.y + shoulder, r.width, r.height - shoulder}, c);
+                const float headW = std::round(r.width * 0.45f);
+                const float hx = (foe.facing > 0 ? r.x + r.width - headW - 2 : r.x + 2) + lean;
+                DrawRectangleRec(Rectangle{hx, r.y + std::round(shoulder * 0.35f), headW, shoulder}, c);
+                const float ey = r.y + std::round(shoulder * 0.35f) + 4;
+                DrawRectangleRec(Rectangle{hx + headW / 2 - 3, ey, 2, 1}, eye);
+                DrawRectangleRec(Rectangle{hx + headW / 2 + 1, ey, 2, 1}, eye);
+            }
 
             // Its strength, while it stands.
             if (foe.state != State::Flee)
@@ -577,8 +603,8 @@ void Fight::drawFront(Game& game) const
     const Actor& player = game.player();
     const Rectangle pr = player.bounds();
 
-    // The bat's arc.
-    if (swingTime_ >= 0.0f)
+    // The bat's arc, until Y's sheet has the swing drawn.
+    if (swingTime_ >= 0.0f && !(player.sheet && player.sheet->animations.contains(player.pose)))
     {
         const float k = std::min(1.0f, swingTime_ / SwingShow);
         const float dir = static_cast<float>(player.facing);
@@ -602,8 +628,8 @@ void Fight::drawFront(Game& game) const
     if (hurtFlash_ > 0.0f)
     {
         const float a = 0.55f * hurtFlash_;
-        const float w = layout::SceneBox.width;
-        const float h = layout::SceneBox.height;
+        const float w = layout::SceneWidth;
+        const float h = layout::SceneHeight;
         for (int i = 0; i < 6; ++i)
         {
             const float f = static_cast<float>(i);

@@ -414,24 +414,24 @@ svg.canvasmap .small { font-size: 8px; }
 <figure class="figure">
 <svg class="canvasmap" viewBox="0 0 480 290" role="img" aria-label="Canvas layout: scene box, dialogue box and bar slots">
   <rect x="0" y="0" width="480" height="270" style="fill:#000; stroke: var(--line)"/>
-  <rect x="80" y="16" width="320" height="180" class="lib"/>
-  <text x="90" y="34" class="title">scene box · 320×180 · at (80, 16)</text>
-  <text x="90" y="52" class="small">rooms are drawn here in scene pixels</text>
-  <line x1="80" y1="166" x2="400" y2="166" class="accent"/>
-  <text x="270" y="160" class="small">ground line: scene y = 150</text>
-  <rect x="80" y="202" width="320" height="64" class="app"/>
-  <text x="90" y="222" class="title">dialogue box · 320×64 · at (80, 202)</text>
-  <text x="90" y="240" class="small">4 lines of text, or up to 4 options</text>
-  <rect x="8" y="16" width="64" height="8" class="data"/>
-  <rect x="8" y="28" width="64" height="8" class="data"/>
-  <rect x="8" y="40" width="64" height="8" class="data"/>
-  <text x="8" y="64" class="small">bar slots</text>
-  <text x="0" y="285" class="small">canvas 480×270, enlarged by a whole number (×2, ×3, ×4 …) and centred; black around it</text>
+  <rect x="40" y="0" width="400" height="225" class="lib"/>
+  <text x="50" y="18" class="title">scene box · 400×225 · at (40, 0): the 320×180 scene, ×1.25</text>
+  <text x="50" y="36" class="small">rooms are drawn in scene pixels, shown under the canvas</text>
+  <line x1="40" y1="187.5" x2="440" y2="187.5" class="accent"/>
+  <text x="290" y="182" class="small">ground line: scene y = 150</text>
+  <rect x="8" y="202" width="464" height="64" class="app"/>
+  <text x="18" y="222" class="title">dialogue box · 464×64 · at (8, 202)</text>
+  <text x="18" y="240" class="small">4 lines of text, or up to 4 options; covers the scene below y = 162</text>
+  <rect x="4" y="8" width="32" height="8" class="data"/>
+  <rect x="4" y="20" width="32" height="8" class="data"/>
+  <rect x="4" y="32" width="32" height="8" class="data"/>
+  <text x="4" y="56" class="small">bars</text>
+  <text x="0" y="285" class="small">canvas 480×270 fills the screen (×4 at 1080p, the scene ×5); a whole number when that leaves ≤ 10 % black</text>
 </svg>
 </figure>
 <ul>
-  <li><strong>Scene pixels</strong> (0–320, 0–180): rooms, objects, actors, apparitions, prompts and barks. The game draws them into the <code>RenderLayer scene_</code>, which is then copied onto the canvas at (80, 16), shifted by the screen shake.</li>
-  <li><strong>Canvas pixels</strong> (0–480, 0–270): the HUD, dialogue box, inventory, menus, title and end card. Constants are in <code>hollow::layout</code> (<code>ui/theme.hpp</code>).</li>
+  <li><strong>Scene pixels</strong> (0–320, 0–180, <code>layout::SceneWidth</code>, <code>SceneHeight</code>): rooms, objects, actors, apparitions, the foliage frame. The game draws them into the <code>RenderLayer scene_</code>, which <code>Canvas::present()</code> shows on the screen in the scene box (1.25 canvas pixels per scene pixel), shifted by the screen shake, <em>under</em> the canvas. <code>Game::toCanvas()</code> turns a scene point into canvas pixels; prompts and barks are drawn on the canvas with it, so all text has the same pixels.</li>
+  <li><strong>Canvas pixels</strong> (0–480, 0–270): the HUD, dialogue box, inventory, menus, title and end card, prompts and barks. Constants are in <code>hollow::layout</code> (<code>ui/theme.hpp</code>). In a room the canvas is cleared see-through and drawn with colours multiplied by alpha, so a fade or a dimmed scene covers the scene under it as it should.</li>
   <li><strong>Screen pixels</strong>: only <code>Canvas::present()</code> and <code>Canvas::toCanvas()</code> know them. <code>Input</code> converts the mouse to canvas pixels at once; the game subtracts the scene box origin to test clicks on objects.</li>
 </ul>
 
@@ -582,9 +582,9 @@ svg.canvasmap .small { font-size: 8px; }
 
 <h3>9.6 Drawing a frame</h3>
 <ol class="steps">
-  <li><code>drawScene</code> renders into the 320×180 layer: background (or the room's colour and a darker ground band), the script's back layer (the creature), objects behind, X, the player, objects in front, lights, particles, the script's front layer (apparitions), the bark and the “[E] Name” prompt.</li>
-  <li>The canvas gets the scene at (80, 16) plus shake, the bars, then the dialogue box, inventory, or the room name and keys; the fade covers everything; pause draws over it.</li>
-  <li><code>Canvas::present</code> picks the biggest whole-number scale for the window and draws the canvas centred, so every art pixel stays a sharp square.</li>
+  <li><code>drawScene</code> renders into the 320×180 layer: background (or the room's colour and a darker ground band), the script's back layer (the creature), objects behind, X, the player, objects in front, lights, particles, the script's front layer (apparitions), then the room's foliage frame (<code>"frame": true</code>).</li>
+  <li>The canvas, cleared see-through, gets the bark and the “[E] Name” prompt, the bars, then the dialogue box, inventory, or the room name and keys; the fade covers everything; pause draws over it.</li>
+  <li><code>Canvas::present</code> picks the scale: the biggest whole number if that leaves 10 % of the screen black or less, otherwise the canvas fills the screen as far as its shape allows. It draws the scene in the scene box, then the canvas over it. A fractional scale is drawn by the next whole number first and then smoothly down (<code>Enlarger</code>), so every art pixel stays the same size.</li>
 </ol>
 
 <div class="note"><strong>One idea runs through all of this:</strong> the code provides <em>mechanisms</em> (conditions, effects, blocks, triggers, exits, companion modes, timed choices) and the JSON decides <em>where</em> they happen. Only things that need a clock or a shape on screen (a timer, a patrol, an apparition) live in a room script.</div>

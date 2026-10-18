@@ -67,7 +67,8 @@ void Creature::draw(Game& game) const
 {
     if (!visible || alpha <= 0.0f || !def) return;
     const Color tint = ColorAlpha(WHITE, alpha);
-    if (sheet_ && drawSprite(*sheet_, animator_, Vector2{x, y}, facing > 0, tint)) return;
+    // The art faces right.
+    if (sheet_ && drawSprite(*sheet_, animator_, Vector2{x, y}, facing < 0, tint, def->scale)) return;
 
     // Placeholder: a hunched dark mass, wider at the shoulders, and its eyes
     // when it looks our way.

@@ -37,7 +37,7 @@ void Reaper::place(float x, float height)
 {
     // Smaller is further away: it stands higher up, on the far ground.
     height_ = std::clamp(height, 20.0f, 90.0f);
-    const float w = std::round(height_ * 0.27f);
+    const float w = std::round(height_ * 0.4f); // the art is 32 x 80
     const float bottom = layout::GroundY - (80.0f - std::min(80.0f, height_)) * 0.45f;
     shape_.rect = Rectangle{std::round(x - w / 2.0f), std::round(bottom - height_), w, height_};
 }
@@ -45,7 +45,7 @@ void Reaper::place(float x, float height)
 void Reaper::command(Game& game, const std::vector<std::string>& args)
 {
     const std::string verb = args.empty() ? std::string() : args[0];
-    shape_.texture = game.assets().texture("sprites/reaper.png");
+    shape_.sheet = game.reaperSheet();
     if (verb == "show")
     {
         place(number(args, 1, 290.0f), number(args, 2, 80.0f));

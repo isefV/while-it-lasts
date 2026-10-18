@@ -43,7 +43,8 @@ namespace
             if (!game.busy() || !patrolling_) creature_.update(dt);
         }
 
-        void drawBack(Game& game) override
+        // It walks the same floor as Y and X: in front of the props against the wall.
+        void drawMiddle(Game& game) override
         {
             if (!taken_) creature_.draw(game);
         }

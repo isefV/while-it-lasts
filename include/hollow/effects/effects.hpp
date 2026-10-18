@@ -6,6 +6,7 @@
  * particles.
  */
 
+#include <hollow/objects/sprite.hpp>
 #include <hollow/utility/random.hpp>
 
 #include <raylib.h>
@@ -72,6 +73,8 @@ namespace hollow
         Rectangle rect{};             ///< position and size (scene pixels)
         Color color{8, 8, 12, 255};
         const Texture2D* texture = nullptr;
+        const SpriteSheet* sheet = nullptr; ///< plays its "idle" frames, stretched to rect (before texture)
+        bool flipX = false;
 
         void fadeTo(float alpha, float seconds);
         void moveTo(Vector2 position, float seconds);
@@ -83,6 +86,7 @@ namespace hollow
 
     private:
         Fade alpha_;
+        Animator animator_;
         Vector2 from_{};
         Vector2 to_{};
         float moveTime_ = 0.0f;

@@ -27,17 +27,6 @@ namespace
     const Color Dawn{248, 206, 176, 255};
     const Color Morning{255, 240, 222, 255};
 
-    /// Light low in the sky: the warm accent, strongest at the horizon. The
-    /// tint alone cannot brighten the placeholder colours, so the dawn is
-    /// drawn as well.
-    void drawSkyGlow(const Game& game, float horizon, float strength)
-    {
-        if (strength <= 0.0f) return;
-        const Color warm = game.ui().accent;
-        DrawRectangleGradientV(0, 0, static_cast<int>(layout::SceneBox.width), static_cast<int>(horizon),
-                               ColorAlpha(warm, 0.0f), ColorAlpha(warm, strength));
-    }
-
     class SunriseScript final : public RoomScript
     {
     public:
@@ -50,8 +39,6 @@ namespace
             game.setTint(mix(start_, Dawn, t_), 0.0f);
         }
 
-        void drawBack(Game& game) override { drawSkyGlow(game, 130.0f, 0.06f + 0.22f * t_); }
-
     private:
         Color start_{};
         float t_ = 0.0f;
@@ -62,9 +49,9 @@ namespace
     public:
         void enter(Game& game) override
         {
-            reaper_.rect = Rectangle{290, 62, 22, 80};
+            reaper_.rect = Rectangle{285, 62, 32, 80};
             reaper_.color = Color{6, 6, 10, 255};
-            reaper_.texture = game.assets().texture("sprites/reaper.png");
+            reaper_.sheet = game.reaperSheet();
             spirit_.color = Color{230, 236, 244, 255};
             spirit_.texture = game.assets().texture("sprites/spirit.png");
         }
@@ -86,9 +73,8 @@ namespace
 
         void drawBack(Game& game) override
         {
-            // First light behind the town; in the final image the sun comes up.
+            // In the final image the sun comes up (the dawn itself is the tint).
             const float t = sunrise_ < 0.0f ? 0.0f : smoothstep(std::min(1.0f, sunrise_ / SunTime));
-            drawSkyGlow(game, 112.0f, 0.3f + 0.35f * t);
             if (t <= 0.0f) return;
             const Color warm = game.ui().accent;
             const Vector2 sun{262.0f, std::round(106.0f - 16.0f * t)};

@@ -149,7 +149,8 @@ bool Walkthrough::step(Game& game, float dt)
             lastSerial_ = view.serial;
             serialAge_ = 0;
         }
-        const bool ready = ++serialAge_ > 2;
+        // A new choice also ignores the keys for a moment (DialogueBox::ChoiceLock).
+        const bool ready = ++serialAge_ > 2 && !game.dialogueBox_.choiceLocked();
         const bool letRunOut = chooseAt < commands_.size() && commands_[chooseAt].rest == "timeout";
         if (view.kind == DialogueView::Kind::Choice && letRunOut)
         {

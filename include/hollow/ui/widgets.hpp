@@ -26,7 +26,7 @@ namespace hollow
     /// One bar: a frame and a fill for @p value of @p max.
     void drawBar(Assets& assets, Rectangle rect, int value, int max, Color color, const UiConfig& ui);
 
-    /// "[E] Magazines" above a point of the scene, kept inside the scene box;
+    /// "[E] Magazines" above a point of the scene (canvas pixels), kept inside the scene box;
     /// shown over the thing the player stands next to. @p note is drawn dimmed
     /// after the label ("1/2" when several things are in reach).
     void drawPrompt(const TextRenderer& text, std::string_view label, Vector2 anchor, const UiConfig& ui,

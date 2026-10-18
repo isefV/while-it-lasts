@@ -19,7 +19,7 @@ namespace
     constexpr float PushBack = 6.0f;    // a good press holds the Reaper off a little
     constexpr float MissStep = 8.0f;    // a press off the beat lets it closer
     constexpr float ReachGap = 12.0f;   // it touches him at this distance
-    constexpr float ReaperW = 22.0f;
+    constexpr float ReaperW = 33.0f; // the art is 32 x 80
     constexpr float ReaperH = 82.0f;
     const Color Dark{70, 76, 96, 255}; // the scene while he is gone
 } // namespace
@@ -49,7 +49,7 @@ void Revive::start(Game& game, std::string then, int presses, float seconds)
     y.pose = "kneel";
 
     reaperSide_ = -ySide;
-    reaperX_ = reaperSide_ > 0 ? layout::SceneBox.width + 16.0f : -16.0f;
+    reaperX_ = reaperSide_ > 0 ? layout::SceneWidth + 16.0f : -16.0f;
     reaperSpeed_ = std::max(1.0f, std::fabs(reaperX_ - x.x) - ReachGap) / std::max(2.0f, seconds);
     reaperAlpha_ = 0.0f;
     closeness_ = 0.0f;
@@ -69,6 +69,7 @@ void Revive::update(Game& game, float dt)
 {
     if (!active_) return;
     const Actor& x = game.companion();
+    reaperFrames_.update(dt, game.reaperSheet());
     pulse_ = std::max(0.0f, pulse_ - dt * 3.0f);
     miss_ = std::max(0.0f, miss_ - dt * 2.5f);
 
@@ -123,7 +124,7 @@ void Revive::update(Game& game, float dt)
     reaperAlpha_ = std::min(0.92f, reaperAlpha_ + dt * 0.6f);
     reaperX_ -= static_cast<float>(reaperSide_) * reaperSpeed_ * dt;
     const float gap = std::fabs(reaperX_ - x.x);
-    const float start = layout::SceneBox.width * 0.5f;
+    const float start = layout::SceneWidth * 0.5f;
     closeness_ = std::clamp(1.0f - (gap - ReachGap) / start, 0.0f, 1.0f);
     game.shake(0.1f, 0.6f + 2.2f * closeness_);
 
@@ -148,8 +149,8 @@ void Revive::update(Game& game, float dt)
 void Revive::drawScene(Game& game) const
 {
     if (!active_) return;
-    const float w = layout::SceneBox.width;
-    const float h = layout::SceneBox.height;
+    const float w = layout::SceneWidth;
+    const float h = layout::SceneHeight;
 
     // The edges close in as it comes.
     const float dark = 0.25f + 0.45f * closeness_;
@@ -164,13 +165,8 @@ void Revive::drawScene(Game& game) const
     {
         const Color c = ColorAlpha(Color{6, 6, 10, 255}, reaperAlpha_);
         const Rectangle r{std::round(reaperX_ - ReaperW / 2), layout::GroundY - ReaperH, ReaperW, ReaperH};
-        const Texture2D* texture = game.assets().texture("sprites/reaper.png");
-        if (texture)
-        {
-            DrawTexturePro(*texture, Rectangle{0, 0, static_cast<float>(-reaperSide_ * texture->width), static_cast<float>(texture->height)},
-                           r, Vector2{0, 0}, 0.0f, ColorAlpha(WHITE, reaperAlpha_));
-        }
-        else
+        const SpriteSheet* sheet = game.reaperSheet();
+        if (!sheet || !drawSpriteIn(*sheet, reaperFrames_, r, reaperSide_ > 0, ColorAlpha(WHITE, reaperAlpha_)))
         {
             const float headW = std::round(r.width * 0.55f);
             DrawRectangleRec(Rectangle{r.x + std::round((r.width - headW) / 2), r.y, headW, 14}, c);

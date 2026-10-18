@@ -25,10 +25,12 @@ namespace
         std::cout << "game [options]\n"
                      "  --check              read and check every data file, no window\n"
                      "  --windowed           a 1280 x 720 window instead of fullscreen\n"
+                     "  --font <name>        start with that font from game.json \"ui\" \"fonts\"\n"
+                     "                       (Pixeloid, Greybeard, Built-in)\n"
                      "For testing:\n"
                      "  --room <id>          start a new game in that room (skips the title)\n"
                      "  --set <var>=<value>  set a story variable first (repeatable; true/false allowed)\n"
-                     "  --screenshot <file>  save the 480 x 270 canvas as a PNG and quit\n"
+                     "  --screenshot <file>  save the screen as a 1920 x 1080 PNG and quit\n"
                      "  --after <seconds>    when to take the screenshot (default 2)\n";
     }
 } // namespace
@@ -42,6 +44,7 @@ int main(int argc, char* argv[])
     std::string screenshot;
     float after = 2.0f;
     std::string walkthroughFile;
+    std::string font;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -53,6 +56,7 @@ int main(int argc, char* argv[])
         else if (arg == "--screenshot" && hasValue) screenshot = argv[++i];
         else if (arg == "--after" && hasValue) after = std::strtof(argv[++i], nullptr);
         else if (arg == "--walkthrough" && hasValue) walkthroughFile = argv[++i];
+        else if (arg == "--font" && hasValue) font = argv[++i];
         else if (arg == "--set" && hasValue)
         {
             const std::string pair = argv[++i];
@@ -109,6 +113,7 @@ int main(int argc, char* argv[])
     SetTargetFPS(scripted ? 0 : 60); // scripted runs go as fast as they can
 
     game.initGraphics();
+    if (!font.empty() && !game.setFont(font)) std::cerr << "warning: --font: no font \"" << font << "\" in game.json\n";
     if ((!room.empty() || !values.empty() || !walkthroughFile.empty()) && !game.startAt(room, values))
     {
         game.shutdownGraphics();

@@ -83,7 +83,8 @@ namespace
                 if (!wasHidden_ && game.random().chance(0.35f)) game.bark("hide");
             }
             wasHidden_ = cover != nullptr;
-            player.pose = cover && !player.moved() ? "kneel" : "idle";
+            // Sneaking: a crouch walk, and still behind cover, down on one knee.
+            player.pose = cover && !player.moved() ? "kneel" : "crouch";
 
             const PatrolPhase* phase = loop_.current();
             const bool seen = (phase->state == "watch" && !cover) || (phase->state == "listen" && player.moved());
@@ -149,6 +150,7 @@ namespace
             if (name == "stealth_stop")
             {
                 active_ = false;
+                game.player().pose = "idle";
                 return true;
             }
             if (name == "distract")

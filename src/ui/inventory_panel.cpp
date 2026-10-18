@@ -11,7 +11,7 @@ namespace hollow
     namespace
     {
         // Over the scene box, in canvas pixels.
-        constexpr Rectangle Panel{layout::SceneBox.x + 40, layout::SceneBox.y + 24, 240, 132};
+        constexpr Rectangle Panel{layout::SceneBox.x + (layout::SceneBox.width - 240) / 2, layout::SceneBox.y + 34, 240, 132};
         constexpr int Columns = 2;
         constexpr float CellW = 112;
         constexpr float CellH = 20;

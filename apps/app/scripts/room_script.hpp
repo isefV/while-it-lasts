@@ -26,6 +26,10 @@ public:
     /// Drawn after the background, before props and characters.
     virtual void drawBack(Game&) {}
 
+    /// Drawn after the props, before the characters and "front" props: on
+    /// the same ground as them.
+    virtual void drawMiddle(Game&) {}
+
     /// Drawn over everything in the scene.
     virtual void drawFront(Game&) {}
 

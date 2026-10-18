@@ -52,7 +52,7 @@ public:
     bool startAt(const std::string& room, const std::vector<std::pair<std::string, int>>& values);
 
     /// Saves the 480 x 270 canvas as a PNG ("--screenshot").
-    bool saveCanvas(const std::string& path) const;
+    bool saveCanvas(const std::string& path);
 
     /// The command verbs dialogue may use in "do".
     static const std::set<std::string, std::less<>>& commands();
@@ -76,6 +76,11 @@ public:
     hollow::Random& random() { return random_; }
     hollow::Particles& particles() { return particles_; }
     [[nodiscard]] const hollow::UiConfig& ui() const { return data_.ui; }
+    /// Switches to the font of that name in game.json "ui" "fonts" (--font).
+    bool setFont(const std::string& name);
+
+    /// sprites/reaper.json, or nullptr while it does not exist.
+    [[nodiscard]] const hollow::SpriteSheet* reaperSheet() const;
 
     hollow::Actor& player() { return player_; }
     hollow::Actor& companion() { return companion_; }
@@ -108,6 +113,7 @@ private:
         Title,
         Playing,
         Paused,
+        Settings, // debug builds only, from the title or the pause menu
         EndCard,
     };
 
@@ -119,6 +125,9 @@ private:
 
     void update(float dt);
     void toTitle();
+    void openSettings();
+    void updateSettings();
+    void useFont(std::size_t index);
     void updatePlaying(float dt);
     void updateExploring(float dt);
     void updateCompanion(float dt);
@@ -149,10 +158,14 @@ private:
     void drawScene();
     void drawObject(const hollow::ObjectDef& object, bool highlighted);
     void drawEffect(const hollow::ObjectDef& object);
+    void drawFrame();
+    void drawSceneLabels(); ///< barks and the "[E] thing" prompt, over the scene
+    [[nodiscard]] Vector2 toCanvas(Vector2 scenePoint) const;
     [[nodiscard]] const hollow::SpriteSheet* objectSheet(const hollow::ObjectDef& object) const;
     void drawHud();
     void drawTitle();
     void drawPause();
+    void drawSettings();
     void drawEndCard();
 
     std::string objectKey(const hollow::ObjectDef& object) const;
@@ -165,7 +178,21 @@ private:
     hollow::Random random_;
 
     hollow::Canvas canvas_;
+    // Entering a room still pulling X: Y walks him in before anything starts.
+    struct HaulIn
+    {
+        bool active = false;
+        bool release = false;  // lets go of him at the end (X waits in this room)
+        float returnX = -1.0f; // then steps back to here
+        std::string pose;      // how X is left: "sit"
+    };
+    void startHaulIn();
+    void updateHaulIn();
+    HaulIn haul_;
+
     hollow::RenderLayer scene_;
+    bool sceneShown_ = false; // this frame: the scene is under the canvas,
+    Rectangle sceneAt_{};     // here (canvas pixels, shaken)
     hollow::Input input_;
     hollow::TextRenderer text_;
     hollow::DialogueBox dialogueBox_;
@@ -174,7 +201,10 @@ private:
     std::map<std::string, hollow::NoRepeatPicker, std::less<>> barkPickers_;
     hollow::Menu titleMenu_;
     hollow::Menu pauseMenu_;
-    std::map<std::string, hollow::SpriteSheet, std::less<>> sheets_;
+    hollow::Menu settingsMenu_;
+    Screen settingsFrom_ = Screen::Title; // where Back returns to
+    std::size_t fontIndex_ = 0;           // in ui().fonts
+    std::map<std::string, hollow::SpriteSheet, std::less<>> sheets_; // characters by id, and "reaper"
     std::map<std::string, hollow::SpriteSheet, std::less<>> objectSheets_; // sheet config path -> sheet
 
     Screen screen_ = Screen::Title;

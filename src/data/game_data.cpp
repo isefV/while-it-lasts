@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <filesystem>
 
 namespace hollow
 {
@@ -245,7 +246,7 @@ namespace hollow
             def.where = where;
             if (!requireObject(obj, where, diag)) return def;
             detail::checkKeys(obj,
-                              {"id", "name", "x", "y", "w", "h", "color", "sprite", "front", "hidden", "if",
+                              {"id", "name", "x", "y", "w", "h", "color", "sprite", "scale", "front", "behind", "alpha", "hidden", "if",
                                "dialogue", "again", "interactive", "once", "exit", "spawn_x", "exit_if", "locked",
                                "trigger", "repeat", "cover", "rest", "block", "blocked", "effect", "event"},
                               where, diag);
@@ -262,7 +263,10 @@ namespace hollow
 
             def.color = detail::readColor(obj, "color", where, diag, def.color);
             def.sprite = detail::readString(obj, "sprite", where, diag);
+            def.scale = detail::readNumber(obj, "scale", where, diag, 1.0f);
             def.front = detail::readBool(obj, "front", where, diag);
+            def.behind = detail::readBool(obj, "behind", where, diag);
+            def.alpha = std::clamp(detail::readNumber(obj, "alpha", where, diag, 1.0f), 0.0f, 1.0f);
             def.hidden = detail::readBool(obj, "hidden", where, diag);
             def.condition = readCondition(obj, "if", where, diag);
 
@@ -298,7 +302,7 @@ namespace hollow
             const std::string where = file + ": " + id;
             if (!requireObject(obj, where, diag)) return room;
             detail::checkKeys(obj,
-                              {"name", "background", "color", "tint", "ambient", "music", "player_x", "walk",
+                              {"name", "background", "frame", "flip", "color", "tint", "fog", "ambient", "music", "player_x", "walk",
                                "companion", "creature", "fight", "enter", "objects", "idle_barks", "script"},
                               where, diag);
 
@@ -306,6 +310,9 @@ namespace hollow
             room.background = detail::readString(obj, "background", where, diag);
             room.color = detail::readColor(obj, "color", where, diag, room.color);
             room.tint = detail::readColor(obj, "tint", where, diag, room.tint);
+            room.fog = std::clamp(detail::readNumber(obj, "fog", where, diag, 0.0f), 0.0f, 1.0f);
+            room.frame = detail::readBool(obj, "frame", where, diag);
+            room.flip = detail::readBool(obj, "flip", where, diag);
             room.ambient = detail::readStrings(obj, "ambient", where, diag);
             room.music = detail::readString(obj, "music", where, diag);
             room.playerX = detail::readNumber(obj, "player_x", where, diag, room.playerX);
@@ -341,7 +348,7 @@ namespace hollow
                 const std::string at = child(where, "creature");
                 if (requireObject(c, at, diag))
                 {
-                    detail::checkKeys(c, {"x", "y", "w", "h", "speed", "color", "sprite", "patrol", "phases", "if"},
+                    detail::checkKeys(c, {"x", "y", "w", "h", "speed", "color", "sprite", "scale", "patrol", "phases", "if"},
                                       at, diag);
                     CreatureDef& creature = room.creature;
                     creature.present = true;
@@ -353,6 +360,7 @@ namespace hollow
                     creature.speed = detail::readNumber(c, "speed", at, diag, creature.speed);
                     creature.color = detail::readColor(c, "color", at, diag, creature.color);
                     creature.sprite = detail::readString(c, "sprite", at, diag);
+                    creature.scale = detail::readNumber(c, "scale", at, diag, 1.0f);
                     creature.minX = creature.x;
                     creature.maxX = creature.x;
                     readRange(c, "patrol", at, diag, creature.minX, creature.maxX);
@@ -539,7 +547,7 @@ namespace hollow
             const std::string where = file;
             detail::checkKeys(root,
                               {"title", "start_room", "start_items", "player", "companion", "files", "characters",
-                               "variables", "ui", "bars", "end_card"},
+                               "variables", "ui", "bars", "end_card", "credits"},
                               where, diag);
 
             data.title = detail::readString(root, "title", where, diag, "Hollow");
@@ -548,6 +556,7 @@ namespace hollow
             data.player = detail::readString(root, "player", where, diag, data.player);
             data.companion = detail::readString(root, "companion", where, diag, data.companion);
             data.endCard = detail::readStrings(root, "end_card", where, diag);
+            data.credits = detail::readStrings(root, "credits", where, diag);
 
             if (root.contains("characters") && requireObject(root["characters"], child(where, "characters"), diag))
             {
@@ -611,13 +620,32 @@ namespace hollow
                 const Json& ui = root["ui"];
                 const std::string at = child(where, "ui");
                 detail::checkKeys(ui,
-                                  {"text_speed", "font", "font_size", "text", "thought", "narration", "dim", "box",
-                                   "frame", "highlight", "accent"},
+                                  {"text_speed", "font", "font_size", "fonts", "text", "thought", "narration", "dim",
+                                   "box", "frame", "highlight", "accent"},
                                   at, diag);
                 UiConfig& c = data.ui;
                 c.textSpeed = detail::readNumber(ui, "text_speed", at, diag, c.textSpeed);
-                c.font = detail::readString(ui, "font", at, diag);
+                if (ui.contains("font")) c.font = detail::readString(ui, "font", at, diag); // "" = the built-in font
                 c.fontSize = detail::readInt(ui, "font_size", at, diag, c.fontSize);
+                if (ui.contains("fonts"))
+                {
+                    const Json& fonts = ui["fonts"];
+                    const std::string fat = child(at, "fonts");
+                    if (!fonts.is_array()) diag.error(fat + ": expected a list of { \"name\", \"file\", \"size\" }");
+                    for (std::size_t i = 0; fonts.is_array() && i < fonts.size(); ++i)
+                    {
+                        const std::string iat = child(fat, i);
+                        if (!requireObject(fonts[i], iat, diag)) continue;
+                        detail::checkKeys(fonts[i], {"name", "file", "size"}, iat, diag);
+                        FontChoice f;
+                        f.name = detail::readString(fonts[i], "name", iat, diag);
+                        f.file = detail::readString(fonts[i], "file", iat, diag);
+                        f.size = detail::readInt(fonts[i], "size", iat, diag, f.size);
+                        if (!f.file.empty() && !std::filesystem::exists(data.assetsDir + f.file))
+                            diag.warning(iat + ".file: no such file \"" + f.file + "\"");
+                        c.fonts.push_back(f);
+                    }
+                }
                 c.text = detail::readColor(ui, "text", at, diag, c.text);
                 c.thought = detail::readColor(ui, "thought", at, diag, c.thought);
                 c.narration = detail::readColor(ui, "narration", at, diag, c.narration);

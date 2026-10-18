@@ -95,20 +95,42 @@ namespace hollow
         frame_ = animation.loop ? step % animation.frames : std::min(step, animation.frames - 1);
     }
 
-    bool drawSprite(const SpriteSheet& sheet, const Animator& animator, Vector2 feet, bool flipX, Color tint)
+    namespace
     {
-        if (!sheet.texture) return false;
-        const auto it = sheet.animations.find(animator.current());
-        if (it == sheet.animations.end()) return false;
+        const Animation* currentAnimation(const SpriteSheet& sheet, const Animator& animator)
+        {
+            if (!sheet.texture) return nullptr;
+            const auto it = sheet.animations.find(animator.current());
+            return it == sheet.animations.end() ? nullptr : &it->second;
+        }
 
-        const Animation& animation = it->second;
-        const auto w = static_cast<float>(animation.frameWidth);
-        const auto h = static_cast<float>(animation.frameHeight);
-        const Rectangle source{static_cast<float>(animation.column + animator.frame()) * w,
-                               static_cast<float>(animation.top), flipX ? -w : w, h};
-        const float originX = flipX ? w - animation.origin.x : animation.origin.x;
-        const Rectangle dest{std::round(feet.x - originX), std::round(feet.y - animation.origin.y), w, h};
-        DrawTexturePro(*sheet.texture, source, dest, Vector2{0, 0}, 0.0f, tint);
+        Rectangle frameSource(const Animation& animation, const Animator& animator, bool flipX)
+        {
+            const auto w = static_cast<float>(animation.frameWidth);
+            const auto h = static_cast<float>(animation.frameHeight);
+            return Rectangle{static_cast<float>(animation.column + animator.frame()) * w, static_cast<float>(animation.top),
+                             flipX ? -w : w, h};
+        }
+    } // namespace
+
+    bool drawSprite(const SpriteSheet& sheet, const Animator& animator, Vector2 feet, bool flipX, Color tint, float scale)
+    {
+        const Animation* animation = currentAnimation(sheet, animator);
+        if (!animation) return false;
+        const auto w = static_cast<float>(animation->frameWidth);
+        const auto h = static_cast<float>(animation->frameHeight);
+        const float originX = flipX ? w - animation->origin.x : animation->origin.x;
+        const Rectangle dest{std::round(feet.x - originX * scale), std::round(feet.y - animation->origin.y * scale),
+                             std::round(w * scale), std::round(h * scale)};
+        DrawTexturePro(*sheet.texture, frameSource(*animation, animator, flipX), dest, Vector2{0, 0}, 0.0f, tint);
+        return true;
+    }
+
+    bool drawSpriteIn(const SpriteSheet& sheet, const Animator& animator, Rectangle dest, bool flipX, Color tint)
+    {
+        const Animation* animation = currentAnimation(sheet, animator);
+        if (!animation) return false;
+        DrawTexturePro(*sheet.texture, frameSource(*animation, animator, flipX), dest, Vector2{0, 0}, 0.0f, tint);
         return true;
     }
 } // namespace hollow

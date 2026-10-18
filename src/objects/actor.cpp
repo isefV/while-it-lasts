@@ -46,18 +46,25 @@ namespace hollow
             if (std::fabs(x - *target_) < 0.01f) target_.reset();
         }
 
-        // Dragging keeps its own animation while moving.
+        // Dragging and crouching keep their own animation while moving; a
+        // swing of the bat plays out even while stepping.
         // A sheet without a frame for being dragged shows him lying.
-        if (moved_)
-            animator_.play(pose == "drag" ? "drag" : "walk");
+        const bool movingPose = pose == "drag" || pose == "crouch";
+        if (pose.starts_with("swing"))
+            animator_.play(pose);
+        else if (moved_)
+            animator_.play(movingPose ? pose : "walk");
         else if (pose == "dragged" && sheet && !sheet->animations.contains("dragged"))
             animator_.play("lying");
         else
             animator_.play(pose);
+        // A pose the sheet has no frames for shows the nearest it has, never a box.
+        if (sheet && !sheet->animations.contains(animator_.current()))
+            animator_.play(moved_ && sheet->animations.contains("walk") ? "walk" : "idle");
 
-        // Dragging only moves with the feet: standing still (or in a
-        // conversation) holds the frame it stopped on.
-        if (moved_ || pose != "drag") animator_.update(dt, sheet);
+        // Dragging and crouching only move with the feet: standing still (or
+        // in a conversation) holds the frame it stopped on.
+        if (moved_ || !movingPose) animator_.update(dt, sheet);
     }
 
     Rectangle Actor::bounds() const
@@ -80,7 +87,7 @@ namespace hollow
         {
             bh = h * 0.65f;
         }
-        else if (pose == "drag")
+        else if (pose == "drag" || pose == "crouch")
         {
             bh = h * 0.85f;
         }

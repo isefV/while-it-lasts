@@ -11,16 +11,16 @@ namespace
 {
     constexpr float HurryAfter = 20.0f;  // seconds after the sound: branches snap, X urges
     constexpr float FigureAfter = 32.0f; // a tall silhouette between the trees, X_CONDITION -1
-    const Color Moonlight{150, 165, 200, 255};
+    const Color ColdNight{150, 165, 200, 255}; // the night without the fire
 
     class CampsiteScript final : public RoomScript
     {
     public:
         void enter(Game& game) override
         {
-            hint_.rect = Rectangle{13, 66, 9, 60};
-            figure_.rect = Rectangle{274, 58, 12, 72};
-            hint_.texture = figure_.texture = game.assets().texture("sprites/reaper.png");
+            hint_.rect = Rectangle{6, 66, 24, 60}; // the art is 32 x 80
+            figure_.rect = Rectangle{266, 58, 29, 72};
+            hint_.sheet = figure_.sheet = game.reaperSheet();
         }
 
         void update(Game& game, float dt) override
@@ -74,7 +74,7 @@ namespace
             if (name == "fire_out")
             {
                 game.sound("dirt");
-                game.setTint(Moonlight, 2.5f);
+                game.setTint(ColdNight, 2.5f);
                 game.setAmbient({"wind"});
                 return true;
             }

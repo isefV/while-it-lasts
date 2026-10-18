@@ -1,6 +1,8 @@
-// Y's sheet (128 x 192): 4 x 4 frames of 32 x 48, facing right (left is the
-// same art, flipped). The feet are at the bottom middle, on the ground line.
+// Y's sheet (128 x 384): 6 x 4 frames of 32 x 48, facing right, then crouch 
+// frames (32 x 48) at pixel line 288, and smoke frame (32 x 48 ) at 336  (left is the same art, flipped) .
+// The feet are at the bottom middle, on the ground line.
 // No kneeling or lying art yet: both use the sitting frame.
+
 {
     "texture": "sprites/y.png",
     "frame":  { "w": 32, "h": 48 },
@@ -11,6 +13,12 @@
         "sit":   { "row": 2, "frames": 1 },
         "kneel": { "row": 2, "frames": 1 },
         "lying": { "row": 2, "frames": 1 },
-        "drag":  { "row": 3, "frames": 4, "fps": 4, "loop": true }
+        "drag":  { "row": 3, "frames": 4, "fps": 4, "loop": true },
+        "swing_down":    { "row": 4, "frames": 4, "fps": 14 },
+        "swing_forward": { "row": 5, "frames": 4, "fps": 14 },
+        "crouch":{ "row": 6, "frames": 3, "fps": 3, "loop": true },
+        "smoke" :{ "row": 7, "frames": 1 }
+
+
     }
 }
