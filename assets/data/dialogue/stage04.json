@@ -150,7 +150,6 @@
         { "narration": "A faint light rises from {x}. It takes a familiar shape. {y} reaches for it, and his hand passes through." },
         { "pause": 1.5, "do": ["event spirit_to_reaper"] },
         { "narration": "It looks down at him for a last moment, then drifts toward the tall figure." },
-        { "y": "Be gentle with him. He bruises easy.", "_changed": "Y speaks to the Reaper" },
         { "pause": 2.5, "do": ["pose y smoke", "sound inhale"], "_added": "a moment after X is gone, Y smokes" },
         { "narration": "{y} raises the cigarette and takes a long, slow drag.", "_added": "" },
         { "pause": 4.0, "do": ["event reaper_vanish"] },

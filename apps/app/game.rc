@@ -6,8 +6,8 @@
 1 ICON "game.ico"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 1, 4, 0
-PRODUCTVERSION 1, 1, 4, 0
+FILEVERSION 1, 1, 5, 0
+PRODUCTVERSION 1, 1, 5, 0
 FILEOS VOS_NT_WINDOWS32
 FILETYPE VFT_APP
 BEGIN
@@ -17,11 +17,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "N2 Team"
             VALUE "FileDescription", "While It Lasts"
-            VALUE "FileVersion", "1.1.4"
+            VALUE "FileVersion", "1.1.5"
             VALUE "InternalName", "game"
             VALUE "OriginalFilename", "While It Lasts.exe"
             VALUE "ProductName", "While It Lasts"
-            VALUE "ProductVersion", "1.1.4"
+            VALUE "ProductVersion", "1.1.5"
         END
     END
     BLOCK "VarFileInfo"
