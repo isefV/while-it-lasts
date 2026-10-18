@@ -2,7 +2,8 @@
 
 Every file here was made from the recordings below: cut, layered, slowed,
 filtered, levelled and, for the loops, crossfaded end to start so they loop
-without a seam. All files are QOA, which raylib plays directly.
+without a seam. All files are QOA, which raylib plays directly, except
+`choice.wav`.
 
 These need a credit wherever the game is shown or shipped (CC BY and
 CC BY-SA): the music, the WWS recordings, the brook, leaves, pond and cricket
@@ -54,7 +55,8 @@ the low boom under `shot`, `crack` and `sting`.
 `ember` (the cigarette's crackle) is synthesised noise; `inhale` and `dirt`
 add synthesised crackle and hiss to the recordings above. `swing` (the bat
 through the air) is filtered noise, and `heartbeat` (the near-death scene)
-two synthesised low thumps. `campfire` (the campsite fire) is synthesised:
+two synthesised low thumps. `choice` (a choice appears) is a synthesised low
+thump and two soft bell notes a fifth apart. `campfire` (the campsite fire) is synthesised:
 a low breathing rumble, a little hiss and random crackle.
 
 Added 15 October: `jungle_night`, `crawler`, `swing`, `hurt`, `heartbeat`,
@@ -66,3 +68,5 @@ old night soundscape (`jungle_night`) or the bonfire recording (`fire`). Both
 are gone. The campsite now plays `night_quiet` (the pond's insect hum, one
 cricket, faint low air; no voices, no frogs, no birds) and `campfire`
 (made from scratch).
+
+Added 17 October: `choice`.

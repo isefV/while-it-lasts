@@ -1,0 +1,11 @@
+// The campfire after it is put out (128 x 32): 4 frames of 32 x 32, embers
+// and a thread of smoke. Same size and feet as sprites/bonfire.json, so it
+// stands where the fire stood.
+{
+    "texture": "sprites/bonfire_ember.png",
+    "frame":  { "w": 32, "h": 32 },
+    "origin": { "x": 16, "y": 31 },
+    "animations": {
+        "idle": { "row": 0, "frames": 4, "fps": 4, "loop": true }
+    }
+}

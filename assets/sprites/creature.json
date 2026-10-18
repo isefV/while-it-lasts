@@ -1,0 +1,12 @@
+// The creature (192 x 128): two rows of 4 frames of 48 x 64, facing right
+// (left is the same art, flipped). Row 0 stands and breathes, row 1 walks.
+// The feet are at the bottom middle, on the ground line.
+{
+    "texture": "sprites/creature.png",
+    "frame":  { "w": 48, "h": 64 },
+    "origin": { "x": 24, "y": 63 },
+    "animations": {
+        "idle": { "row": 0, "frames": 4, "fps": 3, "loop": true },
+        "walk": { "row": 1, "frames": 4, "fps": 5, "loop": true }
+    }
+}
