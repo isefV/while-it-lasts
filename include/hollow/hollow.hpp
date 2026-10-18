@@ -50,6 +50,6 @@
 
 namespace hollow
 {
-    /// The library's version, "1.0.7".
+    /// The library's version, "1.0.8".
     std::string_view version();
 } // namespace hollow

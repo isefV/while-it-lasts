@@ -58,7 +58,7 @@
     ],
     "use.antibiotics_x": [
         { "y": "These are antibiotics. Take them." },
-        { "x": "Dealer, doctor, hero. What can't you do?" },
+        { "x": "You know, I might not need this at all." },
         { "y": "Quit talking and swallow." },
         { "narration": "{x} sits up straighter. His voice is clearer.", "do": ["x_condition += 1", "take antibiotics", "antibiotics_given = true"] },
         { "x": "Hm. That's... a little better, actually." }

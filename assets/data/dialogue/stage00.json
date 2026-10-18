@@ -3,8 +3,9 @@
 {
     "campsite.start": [
         { "narration": "Midnight.", "_added": "the night starts here and ends at sunrise on the summit" },
-        { "narration": "{y} and {x} grew up in the same small town. Now they are walking back to the hideaway on the mountain where they spent their summers.", "_added": "opening text that introduces the two friends (step 4)" },
-        { "narration": "{x} has a wound that is getting worse. Supplies are low. Something is following them." },
+        { "narration": "{x} and {y} have had a long journey. They've spent days together surviving this brutal world.", "_changed": "opening text, rewritten 18 October" },
+        { "narration": "Now they want only one thing: to head back to their childhood hideaway, perhaps to reminisce about warm memories." },
+        { "narration": "{x} is badly wounded, and his condition is only getting worse. Supplies are running low, and they can feel a dark entity hunting them." },
         { "thought": "He's been asleep a while. Probably a good sign. Probably." }
     ],
 
@@ -13,14 +14,6 @@
         { "y": "You must have read this a hundred times." },
         { "thought": "I read it a hundred and one. Not telling him that." }
     ],
-    "campsite.moon": [
-        { "y": "Midnight, give or take. If he can walk, we're up top by sunrise.", "_added": "new thing to look at" },
-        { "thought": "If." }
-    ],
-    "campsite.moon_again": [
-        { "thought": "It hasn't moved. Neither have we.", "_added": "second look" }
-    ],
-
     "campsite.jacket": [
         { "narration": "A photo in the inside pocket. The two of them on the summit, fourteen and sunburnt.", "_added": "new thing to look at" },
         { "y": "He's carried this the whole way." },
@@ -165,7 +158,7 @@
         { "x": "Grab what you can carry. I'll walk." },
         { "y": "You'll lean on me." },
         { "x": "Fine. I'll graciously lean on you." },
-        { "narration": "{y} kicks dirt over the fire. The warm light drains away. Only cold moonlight is left.", "do": ["fire_out = true", "event fire_out"] },
+        { "narration": "{y} kicks dirt over the fire. The warm light drains away. Only the cold dark is left.", "do": ["fire_out = true", "event fire_out"] },
         { "pause": 1.2 },
         { "do": ["pose x idle", "companion follow", "event escape_start"] }
     ],

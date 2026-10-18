@@ -9,8 +9,8 @@
     "player": "y",
     "companion": "x",
     "characters": {
-        "y": { "name": "Y", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
-        "x": { "name": "X", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 43, "sprite": "sprites/x.json" }
+        "y": { "name": "Ezra", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
+        "x": { "name": "Luca", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 43, "sprite": "sprites/x.json" }
     },
 
     "files": {
@@ -76,6 +76,7 @@
         "key_found": false,
         "cabinet_open": false,
         "shelf_searched": false,
+        "filing_read": false,
         "factory_cleared": false,
         "factory_won": false,
         "factory_lost": false,
@@ -115,8 +116,17 @@
     // Dark and cold, with one warm accent (fire, ember, sunrise).
     "ui": {
         "text_speed": 45,
-        "font": "",
-        "font_size": 8,
+        // The font the game uses. "size" is the font's ascent + descent in pixels
+        // (how raylib sizes it): any other size puts it off the pixel grid.
+        "font": "fonts/pixeloid_sans.ttf",
+        "font_size": 11,
+        // A debug build's Settings switches between these, to compare them
+        // (licences: fonts/pixeloid_license.txt, fonts/greybeard_license.txt).
+        "fonts": [
+            { "name": "Pixeloid",  "file": "fonts/pixeloid_sans.ttf", "size": 11 },
+            { "name": "Greybeard", "file": "fonts/greybeard_11px.ttf", "size": 11 },
+            { "name": "Built-in",  "file": "", "size": 10 }
+        ],
         "text": "#c8d2da",
         "thought": "#7aa0c4",
         "narration": "#707a88",
@@ -130,14 +140,19 @@
     // Up to 3 bars, top left: Y's health (fights cost it; bandages,
     // antiseptic and painkillers give it back) and X's condition.
     "bars": [
-        { "label": "Y", "var": "y_health",    "max": 5, "color": "#8fa4b8" },
-        { "label": "X", "var": "x_condition", "max": 3, "color": "#9aab8c" }
+        { "label": "Ezra", "var": "y_health",    "max": 5, "color": "#8fa4b8" },
+        { "label": "Luca", "var": "x_condition", "max": 3, "color": "#9aab8c" }
     ],
 
+    // The last screen: only this line.
     "end_card": [
-        "Some places are worth returning to.",
-        "Some people don't make it home.",
-        "",
-        "END"
+        "You're gonna carry that weight."
+    ],
+
+    // Who made the game, bottom left of the title screen.
+    "credits": [
+        "Developed by N2 Team",
+        "Art: @EiArt, @Danial2882",
+        "Code: @isef_v"
     ]
 }

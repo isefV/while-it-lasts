@@ -3,13 +3,16 @@
 // behind the barriers (walk), pauses and listens (listen). A thrown bottle or
 // bolt sends it off into the trees instead (data/dialogue/items.json).
 // At the barricade the noise of the slab brings two waves of crawlers, then
-// X collapses (the first near-death scene) and has to be dragged through.
+// X collapses (the first near-death scene) and has to be dragged through,
+// straight to the foot of the mountain (stage03.json).
 {
     "checkpoint": {
         "name": "The Checkpoint",
         "background": "backgrounds/checkpoint.png",
+        "frame": true,
         "color": "#1b2027",
         "tint": "#a9b3c4",
+        "fog": 1,
         "ambient": ["groan", "wind"],
         "music": "music_perimeter",
         "script": "checkpoint",
@@ -19,8 +22,9 @@
         ],
         "companion": { "mode": "follow", "bark": "x_idle_good" },
         "creature": {
-            "x": 270, "y": 118, "w": 22, "h": 36, "speed": 26, "color": "#0e1116",
-            "sprite": "sprites/creature.json", "patrol": [150, 280],
+            // On the far side of the road, so drawn smaller.
+            "x": 270, "y": 134, "w": 22, "h": 36, "speed": 26, "color": "#0e1116",
+            "sprite": "sprites/creature.json", "scale": 0.6, "patrol": [150, 280],
             "phases": [
                 { "state": "turned", "time": 2.5 },
                 { "state": "walk",   "time": 1.5, "to": 180 },
@@ -33,25 +37,23 @@
             ]
         },
         "objects": [
-            { "id": "road_far", "x": 0, "y": 118, "w": 320, "h": 3, "color": "#232932", "interactive": false },
-
-            { "id": "sign", "name": "Warning sign", "x": 4, "y": 96, "w": 22, "h": 14, "color": "#6a5e48",
-              "dialogue": "checkpoint.sign" },
-            { "id": "bottles", "name": "Empty bottles", "x": 34, "y": 144, "w": 8, "h": 6, "color": "#5c7a6c",
+            // The road and the fences are in the background art.
+            { "id": "sign", "name": "Warning sign", "x": 2, "y": 118, "w": 32, "h": 32, "color": "#6a5e48",
+              "sprite": "props/warning_sign.png", "dialogue": "checkpoint.sign" },
+            { "id": "bottles", "name": "Empty bottles", "x": 34, "y": 135, "w": 16, "h": 16, "sprite": "props/water_bottle.png", "color": "#5c7a6c",
               "if": "!checkpoint_bottles_taken", "dialogue": "checkpoint.bottles" },
 
-            { "id": "barrier", "name": "Concrete barrier", "x": 56, "w": 48, "h": 32, "color": "#4a4e52",
-              "sprite": "props/barrier.png", "cover": true, "interactive": false, "front": true },
-            { "id": "boots", "name": "Boots", "x": 110, "y": 145, "w": 10, "h": 5, "color": "#3a3226",
-              "dialogue": "checkpoint.boots" },
-            { "id": "sandbags", "name": "Sandbag wall", "x": 126, "w": 48, "h": 32, "color": "#4f4a3c",
+            { "id": "barrier", "name": "Concrete barrier", "x": 56, "y": 119, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier_1.png", "cover": true, "interactive": false, "front": true },
+            { "id": "sandbags", "name": "Sandbag wall", "x": 126, "y": 120, "w": 48, "h": 32, "color": "#4f4a3c",
               "sprite": "props/sandbags.png", "cover": true, "interactive": false, "front": true },
-            { "id": "vehicle", "name": "Ruined vehicle", "x": 196, "w": 64, "h": 32, "color": "#3a3530",
-              "sprite": "props/wrecked_vehicle.png", "cover": true, "interactive": false, "front": true },
-            { "id": "ditch", "name": "Drainage ditch", "x": 270, "y": 144, "w": 26, "h": 6, "color": "#0b0e12",
-              "cover": true, "interactive": false },
+            // Still a hiding spot, but drawn behind them: they crouch by the car, not inside it.
+            // The road's two cars (here and at the barricade) are drawn at 1.5 x, a
+            // little taller than the two of them.
+            { "id": "vehicle", "name": "Ruined vehicle", "x": 177, "y": 100, "w": 96, "h": 48, "color": "#3a3530",
+              "sprite": "props/car_v1.png", "scale": 1.5, "cover": true, "interactive": false },
 
-            { "id": "exit_road", "name": "Road beyond", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217",
+            { "id": "exit_road", "name": "Road beyond", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217", "hidden": true,
               "exit": "barricade" }
         ]
     },
@@ -59,8 +61,10 @@
     "barricade": {
         "name": "The Barricade",
         "background": "backgrounds/checkpoint.png",
+        "frame": true,
         "color": "#1d2229",
         "tint": "#a9b3c4",
+        "fog": 1,
         "ambient": ["wind"],
         "music": "music_perimeter",
         "player_x": 24,
@@ -77,50 +81,26 @@
             "lose": "barricade.waves_lost"
         },
         "objects": [
-            { "id": "car", "name": "Abandoned car", "x": 6, "w": 44, "h": 24, "color": "#2e343c",
-              "dialogue": "barricade.car", "again": "barricade.car_again" },
-            { "id": "rod", "name": "Metal rod", "x": 92, "y": 146, "w": 24, "h": 4, "color": "#6c747c",
-              "if": "!rod_taken", "dialogue": "barricade.rod" },
-            { "id": "posters", "name": "Posters", "x": 130, "y": 96, "w": 16, "h": 20, "color": "#7a7466",
-              "dialogue": "barricade.posters" },
-            { "id": "slab", "name": "Concrete slab", "x": 168, "y": 136, "w": 28, "h": 14, "color": "#4a4d50",
+            { "id": "car", "name": "Abandoned car", "x": 0, "y": 103, "w": 96, "h": 48, "color": "#2e343c",
+              "sprite": "props/car_v2.png", "scale": 1.5, "dialogue": "barricade.car", "again": "barricade.car_again" },
+            { "id": "barrier", "x": 120, "y": 117, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier_2.png", "interactive": false },
+            { "id": "suitcase", "x": 156, "y": 136, "w": 16, "h": 16, "color": "#7a6a40",
+              "sprite": "props/abandoned_suitcase.png", "interactive": false },
+            { "id": "rod", "name": "Metal rod", "x": 100, "y": 135, "w": 16, "h": 16, "color": "#6c747c",
+              "sprite": "props/iron_rod.png", "if": "!rod_taken", "dialogue": "barricade.rod" },
+            { "id": "slab", "name": "Concrete slab", "x": 168, "y": 136, "w": 28, "h": 14, "color": "#4a4d50", "hidden": true,
               "if": "!gap_open", "dialogue": "barricade.slab" },
             { "id": "fallen_gate", "name": "Fallen gate", "x": 200, "y": 102, "w": 64, "h": 48, "color": "#363b41",
               "sprite": "props/fallen_gate.png", "dialogue": "barricade.gate", "if": "!gap_open",
               "block": "!gap_open", "blocked": "barricade.gate" },
-            { "id": "fallen_gate_open", "x": 200, "y": 118, "w": 40, "h": 32, "color": "#30353b", "if": "gap_open", "interactive": false },
-            { "id": "distant_creature", "x": 300, "y": 98, "w": 6, "h": 14, "color": "#0b0d11", "if": "gap_open", "interactive": false },
+            { "id": "barrier_far", "x": 266, "y": 120, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier_3.png", "interactive": false },
             { "id": "through", "x": 236, "w": 10, "h": 60, "trigger": true, "if": "gap_open && dragging",
               "dialogue": "barricade.through" },
 
-            { "id": "exit_road", "name": "Road", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217",
-              "exit": "sheltered_wall", "exit_if": "!x_down || dragging", "locked": "mountain.not_without" }
-        ]
-    },
-
-    "sheltered_wall": {
-        "name": "The Sheltered Wall",
-        "background": "backgrounds/sheltered_wall.png",
-        "color": "#1a1f26",
-        "tint": "#a7b0c2",
-        "ambient": ["wind"],
-        "music": "music_perimeter",
-        "player_x": 120,
-        "idle_barks": ["x_idle_good", "x_idle_weak", "y_hurt"],
-        "enter": [
-            { "dialogue": "shelter.arrive" }
-        ],
-        "companion": { "x": 150, "mode": "stay", "pose": "sit", "bark": "x_idle_weak" },
-        "objects": [
-            { "id": "wall", "x": 100, "y": 106, "w": 100, "h": 44, "color": "#2a2f36", "interactive": false },
-            { "id": "graffiti", "name": "Graffiti", "x": 104, "y": 112, "w": 24, "h": 10, "color": "#3c4452",
-              "dialogue": "shelter.graffiti" },
-            { "id": "crushed_pack", "name": "Crushed pack", "x": 212, "y": 144, "w": 12, "h": 6, "color": "#6a6458",
-              "sprite": "props/crushed_pack.png", "if": "!wall_pack_found", "dialogue": "shelter.pack" },
-            { "id": "fire_ring", "name": "Old fire ring", "x": 250, "y": 146, "w": 16, "h": 4, "color": "#2a2826",
-              "dialogue": "shelter.ring" },
-            { "id": "mountain_path", "name": "Mountain path", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#0e1217",
-              "exit": "foot", "exit_if": "stage02_done", "locked": "shelter.not_yet" }
+            { "id": "exit_road", "name": "Road", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217", "hidden": true,
+              "exit": "foot", "exit_if": "!x_down || dragging", "locked": "mountain.not_without" }
         ]
     }
 }

@@ -3,7 +3,8 @@
 {
     "factory_entrance": {
         "name": "Factory Entrance",
-        "background": "backgrounds/factory-entrance.png",
+        "background": "backgrounds/factory_entrance.png",
+        "frame": true,
         "color": "#20262e",
         "tint": "#b8c0cc",
         "ambient": ["wind", "metal", "sheet"],
@@ -11,8 +12,9 @@
         "player_x": 40,
         "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak", "y_hurt"],
         "enter": [
-            { "dialogue": "factory.arrive" },
-            { "if": "factory_cleared && !stage01_done", "dialogue": "factory.return" }
+            // Back from the floor, nothing starts by itself: talking to X
+            // plays factory.return (in factory.x).
+            { "dialogue": "factory.arrive" }
         ],
         "companion": { "x": 84, "mode": "stay", "pose": "sit", "dialogue": "factory.x" },
         "objects": [
@@ -28,7 +30,7 @@
 
     "factory_office": {
         "name": "The Office",
-        "background": "backgrounds/factory-office.png",
+        "background": "backgrounds/factory_office.png",
         "color": "#1e2329",
         "tint": "#b0b8c6",
         "ambient": ["metal", "wind"],
@@ -42,34 +44,43 @@
 
             { "id": "window", "name": "Window", "x": 58, "y": 35, "w": 83, "h": 46, "color": "#2b3747", "hidden": true,
               "dialogue": "office.window", "again": "office.window_again" },
-            { "id": "figure", "x": 95, "y": 48, "w": 8, "h": 26, "color": "#07080b", "if": "window_figure", "interactive": false },
-            { "id": "locker", "name": "Staff locker", "x": 82, "w": 18, "h": 44, "color": "#3a4450",
+            // The Reaper out in the yard: drawn behind the background, so it shows
+            // only through the glass; "alpha" 0.7 leaves a 0.3 haze of the window.
+            { "id": "figure", "x": 90, "y": 46, "w": 32, "h": 80, "color": "#07080b", "if": "window_figure", "interactive": false,
+              "sprite": "sprites/reaper.json", "scale": 0.55, "behind": true, "alpha": 0.7 },
+            { "id": "locker", "name": "Staff locker", "x": 82, "w": 18, "h": 44, "color": "#3a4450", "hidden": true,
               "dialogue": "office.locker", "again": "office.locker_again" },
 
             { "id": "desk", "name": "Desk drawer", "x": 16, "w": 48, "h": 32, "color": "#3b342c",
-              "sprite": "props/desk.png", "dialogue": "office.drawer", "again": "office.drawer_again" },
-            { "id": "radio", "name": "Radio", "x": 18, "y": 108, "w": 14, "h": 10, "color": "#4a4c48",
+              "sprite": "props/desk_2.png", "dialogue": "office.drawer", "again": "office.drawer_again" },
+            { "id": "radio", "name": "Radio", "x": 17, "y": 103, "w": 16, "h": 16, "color": "#4a4c48",
               "sprite": "props/radio.png", "dialogue": "office.radio" },
-            { "id": "mug", "name": "Coffee mug", "x": 34, "y": 110, "w": 6, "h": 8, "color": "#8a8478",
-              "dialogue": "office.mug" },
-            { "id": "clock", "name": "Desk clock", "x": 48, "y": 106, "w": 12, "h": 12, "color": "#5a5448",
+            { "id": "mug", "name": "Coffee mug", "x": 31, "y": 103, "w": 16, "h": 16, "color": "#8a8478",
+              "sprite": "props/coffee_mug.png", "dialogue": "office.mug" },
+            { "id": "clock", "name": "Desk clock", "x": 46, "y": 102, "w": 16, "h": 16, "color": "#5a5448",
               "sprite": "props/clock.png", "dialogue": "office.clock", "again": "office.clock_again" },
+            // Read, it stays open: a drawer pulled out.
             { "id": "filing_cabinet", "name": "Filing cabinet", "x": 114, "w": 32, "h": 48, "color": "#3d4650",
-              "sprite": "props/filing_cabinet.png", "dialogue": "office.filing", "again": "office.filing_again" },
+              "sprite": "props/filing_cabinet_1.png", "if": "!filing_read", "dialogue": "office.filing" },
+            { "id": "filing_cabinet_open", "name": "Filing cabinet", "x": 114, "w": 32, "h": 48, "color": "#3d4650",
+              "sprite": "props/filing_cabinet_2.png", "if": "filing_read", "dialogue": "office.filing_again" },
+            { "id": "filing_cabinet_2", "x": 147, "y": 103, "w": 32, "h": 48, "color": "#3d4650",
+              "sprite": "props/filing_cabinet_3.png", "interactive": false },
             { "id": "calendar", "name": "Wall calendar", "x": 150, "y": 66, "w": 16, "h": 16, "color": "#6d6a60",
               "sprite": "props/calendar.png", "dialogue": "office.calendar" },
             { "id": "notice", "name": "Evacuation notice", "x": 170, "y": 78, "w": 16, "h": 16, "color": "#7b7466",
               "sprite": "props/notice.png", "dialogue": "office.notice", "again": "office.notice_again" },
 
-            { "id": "poster", "name": "Safety poster", "x": 212, "y": 64, "w": 18, "h": 22, "color": "#5a6258",
-              "dialogue": "office.poster" },
-            { "id": "first_aid_cabinet", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#4f5a5c",
+            { "id": "first_aid_cabinet", "name": "First-aid cabinet", "x": 206, "y": 84, "w": 32, "h": 32, "color": "#4f5a5c",
               "sprite": "props/first_aid_cabinet.png", "if": "!cabinet_open", "dialogue": "office.cabinet" },
-            { "id": "first_aid_cabinet_open", "name": "First-aid cabinet", "x": 206, "y": 92, "w": 32, "h": 32, "color": "#36403f",
+            { "id": "first_aid_cabinet_open", "name": "First-aid cabinet", "x": 206, "y": 84, "w": 32, "h": 32, "color": "#36403f",
               "sprite": "props/first_aid_cabinet_open.png", "if": "cabinet_open", "dialogue": "office.cabinet_open" },
-            { "id": "shelves", "name": "Shelves", "x": 244, "y": 96, "w": 24, "h": 54, "color": "#33393f",
-              "dialogue": "office.shelves" },
-            { "id": "sink", "name": "Box under the sink", "x": 274, "y": 120, "w": 24, "h": 30, "color": "#444c52",
+            // A chest of drawers under the first-aid cabinet: decoration.
+            { "id": "drawers", "x": 192, "y": 119, "w": 48, "h": 32, "color": "#3b342c",
+              "sprite": "props/drawer_1.png", "interactive": false },
+            { "id": "shelves", "name": "Shelves", "x": 242, "y": 101, "w": 32, "h": 48, "color": "#33393f",
+              "sprite": "props/shelves.png", "dialogue": "office.shelves" },
+            { "id": "sink", "name": "Box under the sink", "x": 276, "y": 120, "w": 24, "h": 30, "hidden": true, "color": "#444c52",
               "dialogue": "office.sink" },
 
             { "id": "floor_door", "name": "Production floor", "x": 304, "y": 94, "w": 16, "h": 56, "color": "#101419", "hidden": true,
@@ -79,7 +90,7 @@
 
     "factory_floor": {
         "name": "Production Floor",
-        "background": "backgrounds/factory-floor.png",
+        "background": "backgrounds/factory_floor.png",
         "color": "#191d22",
         "tint": "#a8b2c0",
         "ambient": ["machines", "metal", "heavy_steps"],
@@ -102,12 +113,21 @@
             { "id": "exit_office", "name": "Office", "x": 0, "y": 90, "w": 10, "h": 60, "color": "#0e1217", "hidden": true,
               "exit": "factory_office", "spawn_x": 296 },
 
-            { "id": "bolt", "name": "Loose bolt", "x": 38, "y": 146, "w": 6, "h": 4, "color": "#7c848c",
+            { "id": "bolt", "name": "Loose bolt", "x": 38, "y": 142, "w": 8, "h": 8, "color": "#7c848c", "sprite": "items/bolt.png", "scale": 0.5,
               "if": "!bolt_taken", "dialogue": "floor.bolt" },
-            { "id": "bottles", "name": "Empty bottles", "x": 50, "y": 144, "w": 8, "h": 6, "color": "#5c7a6c",
+            { "id": "bottles", "name": "Empty bottles", "x": 48, "y": 135, "w": 16, "h": 16, "color": "#5c7a6c", "sprite": "props/water_bottle.png",
               "if": "!floor_bottles_taken", "dialogue": "floor.bottles" },
-            { "id": "claw_marks", "name": "Claw marks", "x": 76, "y": 104, "w": 12, "h": 14, "color": "#14181d",
-              "dialogue": "floor.claws" },
+            // Wrecked filing cabinets against the wall, and a sign: decoration.
+            { "id": "cabinet_wreck_1", "x": 132, "w": 32, "h": 48, "color": "#2e353c",
+              "sprite": "props/filing_cabinet_6.png", "interactive": false },
+            { "id": "cabinet_wreck_2", "x": 166, "y": 100, "w": 32, "h": 48, "color": "#2e353c",
+              "sprite": "props/filing_cabinet_7.png", "interactive": false },
+            { "id": "cabinet_wreck_3", "x": 200, "y": 103, "w": 32, "h": 48, "color": "#2e353c",
+              "sprite": "props/filing_cabinet_5.png", "interactive": false },
+            { "id": "cabinet_4", "x": 234, "y": 101, "w": 32, "h": 48, "color": "#2e353c",
+              "sprite": "props/filing_cabinet_4.png", "interactive": false },
+            { "id": "danger_sign", "x": 92, "y": 92, "w": 16, "h": 16, "color": "#8a7a3a",
+              "sprite": "props/danger_sign.png", "interactive": false },
 
             { "id": "encounter", "x": 104, "w": 10, "h": 60, "trigger": true, "if": "!factory_cleared",
               "dialogue": "floor.encounter" },
@@ -115,10 +135,8 @@
             { "id": "guard_block", "x": 246, "w": 4, "h": 60, "hidden": true, "block": "factory_lost",
               "blocked": "floor.guarded" },
 
-            { "id": "lunchbox", "name": "Lunchbox", "x": 196, "y": 144, "w": 8, "h": 6, "color": "#6a5a40",
-              "if": "factory_cleared", "dialogue": "floor.lunchbox" },
-            { "id": "lost_backpack", "name": "Discarded backpack", "x": 282, "w": 16, "h": 14, "color": "#4c4a3c",
-              "sprite": "props/lost_backpack.png", "if": "factory_won && !backpack_looted", "dialogue": "floor.backpack" }
+            { "id": "lost_backpack", "name": "Discarded backpack", "x": 282, "y": 135, "w": 16, "h": 16, "color": "#4c4a3c",
+              "sprite": "props/backpack.png", "if": "factory_won && !backpack_looted", "dialogue": "floor.backpack" }
         ]
     }
 }

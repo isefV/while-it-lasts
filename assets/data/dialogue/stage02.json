@@ -161,7 +161,7 @@
     ],
 
     "shelter.arrive": [
-        { "narration": "{y} sits {x} down beside a ruined wall." },
+        { "narration": "{y} sets {x} down at the foot of the steps.", "_changed": "was the Sheltered Wall, now the foot of the mountain" },
         { "narration": "Back down the road, at the edge of what they can see, something tall stands and waits.", "do": ["reaper show 26 46 3"], "_added": "the Reaper waits for them" },
         { "x": "It's still there, isn't it?" },
         { "y": "...Yeah." },
@@ -221,6 +221,7 @@
     "shelter.go": [
         { "x": "Let's go home." },
         { "y": "...Yeah." },
-        { "do": ["stage02_done = true", "x_down = false", "pose x idle", "companion follow", "reaper hide 2"] }
+        { "do": ["stage02_done = true", "x_down = false", "pose x idle", "companion follow", "reaper hide 2"] },
+        { "goto": "foot.arrive" }
     ]
 }

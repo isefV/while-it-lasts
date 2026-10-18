@@ -20,8 +20,6 @@ expect item.last_bandage
 use cigarette_pack
 choose Take
 expect cig_count == 1
-use moon
-use tracks
 use fire
 use backpack
 use forest_exit               # locked until the fire is out
@@ -30,7 +28,6 @@ inventory
 talk
 choose Apply
 expect wound_dressed && fire_out && !item.last_bandage
-use blanket
 use forest_exit
 
 # --- Stage 01: the factory --------------------------------------------------
@@ -52,7 +49,6 @@ use notice
 expect notes_read == 2
 use window
 use window
-use poster
 use first_aid_cabinet
 choose Use the key
 expect cabinet_open && !noisy_entry && cig_count == 2 && bandages == 2
@@ -66,18 +62,17 @@ room factory_floor
 use bolt
 use bottles
 expect bottles == 3
-use claw_marks
 walk 110                      # walks into the creature
 choose Throw the bolt
 expect factory_won && !item.bolt
-use lunchbox
 use lost_backpack
 expect backpack_looted && cig_count == 3 && bandages == 3
 use exit_office
 room factory_office
 use exit_entrance
-choose Share                  # back at the entrance: the dressing, then the cigarette
 room factory_entrance
+talk                          # back at the entrance: talking to X starts the dressing, then the cigarette
+choose Share
 expect stage01_done && x_condition == 3 && antibiotics_given && smoked_with_x == 1 && cig_count == 2 && bandages == 2
 item painkillers              # nobody hurts yet: kept
 expect painkillers == 2
@@ -95,7 +90,6 @@ use exit_road                 # straight across while it is gone
 room barricade
 expect spotted_count == 0
 use car
-use posters
 use slab                      # no rod yet
 choose Push
 use rod
@@ -107,33 +101,23 @@ expect gap_open && barricade_fought && reaper_touched == 0 && x_down && !draggin
 grab                          # take hold of him
 expect dragging
 use exit_road                 # pulled through the gap
-room sheltered_wall
-use graffiti
+
+# --- Stage 03: the mountain steps -------------------------------------------
+room foot                     # pulled in and set down; the Reaper waits down the road
 use fire_ring
-use mountain_path             # locked until the cigarette scene
+use steps                     # locked until the cigarette scene
 use crushed_pack
 choose Save
 expect stage02_done && cig_count == 3 && !x_down
-use mountain_path
-
-# --- Stage 03: the mountain steps -------------------------------------------
-room foot
 use lantern_1
-use stream
-use lantern_2
-use shrine
 use steps
 room landing
 use lantern
-use ribbon
-use stone_marker
 use broken_sign
-use footprints
 use steps
 room collapse
 revive                        # the second time, harder
 expect reaper_touched == 0 && dragging && x_down
-use edge
 grab                          # let go of him...
 expect !dragging
 grab                          # ...and take hold again
@@ -147,7 +131,6 @@ room broken_stairs
 walk 105                      # the wall: a hint to leave him here
 grab                          # let go of him behind it
 expect !dragging && stairs_left_x
-use claws
 use creature
 choose Fight
 fight                         # two crawlers up the path, then the creature
@@ -167,7 +150,6 @@ use summit_path
 
 # --- Stage 04: the summit ---------------------------------------------------
 room summit
-use ground
 talk
 expect cig_scene_done && cig_lit && cig_count == 2
 use horizon

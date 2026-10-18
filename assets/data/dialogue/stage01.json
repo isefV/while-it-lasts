@@ -7,7 +7,7 @@
     "factory.arrive": [
         { "x": "How long have we been walking?" },
         { "y": "Since midnight.", "_added": "was \"Since this morning\": the night starts at the campsite" },
-        { "x": "It feels like since birth." },
+        { "x": "It feels like forever." },
         { "narration": "{x} leans against the wall, breathing hard.", "do": ["pose x sit"] },
         { "y": "Sit. I'll look around." },
         { "x": "Find me a cigarette." },
@@ -18,12 +18,17 @@
     ],
 
     "factory.x": [
-        { "if": "stage01_done",
-          "then": [ { "x": "After you, doctor." } ],
+        { "if": "factory_cleared && !stage01_done",
+          "then": [ { "goto": "factory.return" } ],
+          "_changed": "back from the floor: talking to X starts the return, it no longer plays on entering",
           "else": [
-            { "x": "Find anything?", "_added": "talking to X before the floor is done" },
-            { "y": "Not yet." },
-            { "x": "Then why are you looking at me? Go." }
+            { "if": "stage01_done",
+              "then": [ { "x": "After you, doctor." } ],
+              "else": [
+                { "x": "Find anything?", "_added": "talking to X before the floor is done" },
+                { "y": "Not yet." },
+                { "x": "Then why are you looking at me? Go." }
+              ] }
           ] }
     ],
 
@@ -54,7 +59,7 @@
         { "if": "item.antibiotics",
           "then": [
             { "y": "These are antibiotics. Take them." },
-            { "x": "Dealer, doctor, hero. What can't you do?" },
+            { "x": "You know, I might not need this at all." },
             { "y": "Quit talking and swallow." },
             { "narration": "{x} sits up straighter. His voice is clearer.", "do": ["x_condition += 1", "take antibiotics", "antibiotics_given = true"] },
             { "x": "Hm. That's... a little better, actually." },
@@ -167,7 +172,7 @@
         { "y": "Just a clock. It stopped at ten past four.", "_added": "second look" }
     ],
     "office.filing": [
-        { "y": "Shift logs, safety memos... \"Reminder: do not enter Sublevel 2 under any circumstances.\" Great. Love that for me.", "do": ["notes_read += 1"] }
+        { "y": "Shift logs, safety memos... \"Reminder: do not enter Sublevel 2 under any circumstances.\" Great. Love that for me.", "do": ["notes_read += 1", "filing_read = true"] }
     ],
     "office.filing_again": [
         { "y": "I'm still not going to Sublevel 2.", "_added": "second look" }

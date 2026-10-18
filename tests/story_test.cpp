@@ -103,7 +103,7 @@ TEST(Story, DataLoadsAndChecks)
         ADD_FAILURE() << e;
     for (const auto& w : diag.warnings)
         ADD_FAILURE() << "warning: " << w;
-    EXPECT_EQ(data().rooms.size(), 13u);
+    EXPECT_EQ(data().rooms.size(), 12u); // the Sheltered Wall's scene moved to the foot of the mountain
 }
 
 TEST(Story, CampsiteNeedsTheBandageThenEndsWithTheFireOut)
@@ -138,7 +138,7 @@ TEST(Story, FactoryAntibioticsNeedTheShelfThenTheSink)
     s.state.set("factory_cleared", 1);
     s.play("factory.return");
     EXPECT_EQ(s.state.get("x_condition"), 3);
-    EXPECT_TRUE(s.saw("Dealer, doctor, hero"));
+    EXPECT_TRUE(s.saw("I might not need this at all"));
     EXPECT_EQ(s.state.get("stage01_done"), 1);
 }
 

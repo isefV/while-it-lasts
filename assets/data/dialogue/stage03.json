@@ -13,7 +13,7 @@
         { "narration": "{y} offers his arm. {x} takes it." },
         { "x": "Fine. But if I die, I'm blaming the stairs." },
         { "y": "Noted." },
-        { "thought": "I wish he'd stop saying that." }
+        { "thought": "I wish he'd stop saying that.", "do": ["reaper follow 150"] }
     ],
 
     "foot.lantern": [
@@ -152,7 +152,7 @@
 
     "stairs.safe_hint": [
         { "narration": "A creature blocks the collapsed stairs ahead." },
-        { "thought": "Behind that wall, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" }
+        { "thought": "Behind that log, he'd be out of its sight. (G lets go of him.)", "_added": "where to leave X" }
     ],
     "stairs.release": [
         { "if": "!stairs_left_x && !creature_cleared", "then": [

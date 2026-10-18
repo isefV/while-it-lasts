@@ -7,36 +7,44 @@
     "foot": {
         "name": "Foot of the Mountain",
         "background": "backgrounds/mountain_steps.png",
+        "frame": true,
         "color": "#182027",
         "tint": "#9fa8bc",
+        "fog": 1,
         "ambient": ["wind", "footsteps", "leaves", "insects", "stream"],
         "music": "music_mountain",
         "player_x": 24,
         "idle_barks": ["y_idle", "x_idle_good", "x_idle_weak", "x_reaper"],
+        // Arriving from the barricade, Y drags X in and sets him down here (what
+        // was the Sheltered Wall): the Reaper waits down the road, and the
+        // crushed pack's cigarette is smoked or saved before the climb.
+        // shelter.go then plays foot.arrive and the Reaper starts following.
         "enter": [
-            { "dialogue": "foot.arrive" },
-            { "do": ["reaper follow 150"], "once": false }
+            { "if": "!stage02_done", "dialogue": "shelter.arrive" },
+            { "if": "stage02_done", "do": ["reaper follow 150"], "once": false }
         ],
         "companion": { "mode": "follow", "bark": "x_idle_good" },
         "objects": [
-            { "id": "lantern_1", "name": "Stone lantern", "x": 70, "w": 16, "h": 32, "color": "#2e343e",
+            { "id": "lantern_1", "name": "Stone lantern", "x": 70, "y": 116, "w": 16, "h": 32, "color": "#2e343e",
               "sprite": "props/lantern.png", "dialogue": "foot.lantern" },
-            { "id": "stream", "name": "Stream", "x": 104, "y": 146, "w": 30, "h": 4, "color": "#28343e",
-              "dialogue": "foot.stream", "again": "foot.stream_again" },
-            { "id": "lantern_2", "name": "Broken lantern", "x": 150, "w": 16, "h": 20, "color": "#2b3039",
-              "dialogue": "foot.lantern_broken" },
-            { "id": "shrine", "name": "Shrine", "x": 190, "w": 18, "h": 22, "color": "#3a3632",
-              "dialogue": "foot.shrine" },
-            { "id": "lantern_3", "x": 230, "w": 16, "h": 32, "color": "#2e343e", "sprite": "props/lantern.png", "interactive": false },
-            { "id": "steps", "name": "Stone steps", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#11161c", "exit": "landing" }
+            { "id": "fire_ring", "name": "Old fire ring", "x": 96, "y": 119, "w": 32, "h": 32, "color": "#2a2826",
+              "sprite": "props/bonfire_dead.png", "dialogue": "shelter.ring" },
+            { "id": "crushed_pack", "name": "Crushed pack", "x": 208, "y": 136, "w": 16, "h": 16, "color": "#6a6458",
+              "sprite": "props/cigarette_pack_crushed.png", "if": "!wall_pack_found", "dialogue": "shelter.pack" },
+            { "id": "lantern_3", "x": 230, "y": 119, "w": 16, "h": 32, "color": "#2e343e", "sprite": "props/lantern.png", "interactive": false },
+            { "id": "steps", "name": "Stone steps", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#11161c", "hidden": true,
+              "exit": "landing", "exit_if": "stage02_done", "locked": "shelter.not_yet" }
         ]
     },
 
     "landing": {
         "name": "The First Landing",
         "background": "backgrounds/mountain_steps.png",
+        "flip": true,
+        "frame": true,
         "color": "#1a2128",
         "tint": "#9ca4b8",
+        "fog": 1,
         "ambient": ["wind", "footsteps", "leaves", "insects"],
         "music": "music_mountain",
         "player_x": 24,
@@ -46,26 +54,21 @@
         ],
         "companion": { "mode": "follow", "bark": "x_idle_good" },
         "objects": [
-            { "id": "lantern", "name": "Mossy lantern", "x": 56, "w": 16, "h": 32, "color": "#3a4438",
+            { "id": "lantern", "name": "Mossy lantern", "x": 56, "y": 119, "w": 16, "h": 32, "color": "#3a4438",
               "sprite": "props/lantern.png", "dialogue": "landing.lantern" },
-            { "id": "tree", "x": 110, "y": 20, "w": 20, "h": 130, "color": "#141a20", "interactive": false },
-            { "id": "ribbon", "name": "Old ribbon", "x": 124, "y": 78, "w": 10, "h": 14, "color": "#6a5a6a",
-              "sprite": "props/ribbon.png", "dialogue": "landing.ribbon" },
-            { "id": "stone_marker", "name": "Stone marker", "x": 184, "w": 16, "h": 16, "color": "#4a4e54",
-              "sprite": "props/stone_marker.png", "dialogue": "landing.marker" },
-            { "id": "broken_sign", "name": "Broken sign", "x": 236, "y": 118, "w": 32, "h": 32, "color": "#4a4236",
+            { "id": "broken_sign", "name": "Broken sign", "x": 236, "y": 120, "w": 32, "h": 32, "color": "#4a4236",
               "sprite": "props/broken_sign.png", "dialogue": "landing.sign" },
-            { "id": "footprints", "name": "Footprints", "x": 276, "y": 147, "w": 14, "h": 3, "color": "#20262c",
-              "dialogue": "landing.footprints" },
-            { "id": "steps", "name": "Stone steps", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#11161c", "exit": "collapse" }
+            { "id": "steps", "name": "Stone steps", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#11161c", "hidden": true, "exit": "collapse" }
         ]
     },
 
     "collapse": {
         "name": "The Collapse",
         "background": "backgrounds/mountain_steps.png",
+        "frame": true,
         "color": "#1b1f27",
         "tint": "#9a9fb4",
+        "fog": 1,
         "ambient": ["wind", "footsteps", "leaves"],
         "music": "music_mountain",
         "player_x": 40,
@@ -75,17 +78,13 @@
         ],
         "companion": { "mode": "follow" },
         "objects": [
-            { "id": "edge", "name": "Edge of the path", "x": 64, "y": 144, "w": 20, "h": 6, "color": "#10141a",
-              "dialogue": "collapse.edge" },
-            { "id": "rest_rock", "name": "Flat rock", "x": 96, "y": 142, "w": 26, "h": 8, "color": "#3a3f47",
+            { "id": "rest_rock", "name": "Flat rock", "x": 96, "y": 142, "w": 26, "h": 8, "hidden": true, "color": "#3a3f47",
               "rest": true, "if": "dragging", "once": true, "dialogue": "mountain.rest" },
-            { "id": "rock_left", "x": 150, "y": 60, "w": 14, "h": 90, "color": "#151a20", "interactive": false, "front": true },
-            { "id": "rock_right", "x": 176, "y": 70, "w": 14, "h": 80, "color": "#151a20", "interactive": false, "front": true },
             { "id": "narrow", "x": 158, "w": 6, "h": 60, "hidden": true, "block": "dragging && !turned_x",
               "blocked": "collapse.narrow" },
-            { "id": "rest_stump", "name": "Tree stump", "x": 236, "y": 140, "w": 18, "h": 10, "color": "#3a3530",
+            { "id": "rest_stump", "name": "Tree stump", "x": 236, "y": 140, "w": 18, "h": 10, "hidden": true, "color": "#3a3530",
               "rest": true, "if": "dragging", "once": true, "dialogue": "mountain.rest" },
-            { "id": "steps", "name": "Stone steps", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#11161c",
+            { "id": "steps", "name": "Stone steps", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#11161c", "hidden": true,
               "exit": "broken_stairs", "exit_if": "dragging", "locked": "mountain.not_without" }
         ]
     },
@@ -93,8 +92,10 @@
     "broken_stairs": {
         "name": "The Broken Stairs",
         "background": "backgrounds/mountain_steps.png",
+        "frame": true,
         "color": "#1c1e26",
         "tint": "#9a9aae",
+        "fog": 1,
         "ambient": ["wind", "footsteps", "groan"],
         "music": "music_mountain",
         "script": "creature",
@@ -114,22 +115,20 @@
             "lose": "stairs.fight_lost"
         },
         "objects": [
-            { "id": "low_wall", "x": 70, "y": 124, "w": 30, "h": 26, "color": "#2c3139", "interactive": false, "front": true,
+            { "id": "low_wall", "x": 60, "y": 135, "w": 64, "h": 16, "color": "#2c3139", "sprite": "props/beam_2.png", "interactive": false, "front": true,
               "cover": true },
             { "id": "safe_spot", "x": 98, "w": 14, "h": 60, "trigger": true, "if": "dragging && !creature_cleared",
               "dialogue": "stairs.safe_hint" },
             { "id": "no_drag", "x": 132, "w": 4, "h": 60, "hidden": true, "block": "dragging && !creature_cleared",
               "blocked": "stairs.cant_drag" },
-            { "id": "claws", "name": "Scratched stone", "x": 176, "y": 118, "w": 10, "h": 14, "color": "#2a2e36",
-              "dialogue": "stairs.claws" },
             { "id": "creature", "name": "Creature", "x": 210, "y": 96, "w": 32, "h": 54, "hidden": true,
               "if": "!creature_cleared", "dialogue": "stairs.creature" },
             { "id": "creature_block", "x": 216, "w": 4, "h": 60, "hidden": true, "block": "!creature_cleared" },
             { "id": "fallen_beam", "name": "Fallen beam", "x": 246, "y": 134, "w": 64, "h": 16, "color": "#3a3128",
-              "sprite": "props/fallen_beam.png", "if": "!beam_moved", "block": "!beam_moved", "dialogue": "stairs.beam" },
-            { "id": "rest_step", "name": "Mossy step", "x": 262, "y": 144, "w": 22, "h": 6, "color": "#34403a",
+              "sprite": "props/beam_1.png", "if": "!beam_moved", "block": "!beam_moved", "dialogue": "stairs.beam" },
+            { "id": "rest_step", "name": "Mossy step", "x": 262, "y": 144, "w": 22, "h": 6, "hidden": true, "color": "#34403a",
               "rest": true, "if": "dragging && beam_moved", "once": true, "dialogue": "mountain.rest" },
-            { "id": "steps", "name": "Stone steps", "x": 304, "y": 70, "w": 16, "h": 80, "color": "#11161c",
+            { "id": "steps", "name": "Stone steps", "x": 304, "y": 70, "w": 16, "h": 80, "color": "#11161c", "hidden": true,
               "exit": "final_ascent", "exit_if": "dragging", "locked": "mountain.not_without" }
         ]
     },
@@ -137,8 +136,10 @@
     "final_ascent": {
         "name": "The Final Ascent",
         "background": "backgrounds/mountain_steps.png",
+        "frame": true,
         "color": "#22222c",
         "tint": "#8a8ca8",
+        "fog": 1,
         "ambient": ["wind", "footsteps"],
         "script": "sunrise",
         "player_x": 24,
@@ -147,12 +148,12 @@
         ],
         "companion": { "mode": "drag" },
         "objects": [
-            { "id": "rest_bench", "name": "Stone bench", "x": 70, "y": 140, "w": 30, "h": 10, "color": "#3a3a44",
+            { "id": "rest_bench", "name": "Stone bench", "x": 70, "y": 140, "w": 30, "h": 10, "hidden": true, "color": "#3a3a44",
               "rest": true, "if": "dragging", "once": true, "dialogue": "mountain.rest" },
             { "id": "talk", "x": 140, "w": 16, "h": 60, "trigger": true, "dialogue": "ascent.talk" },
             { "id": "sky", "name": "The sky", "x": 200, "y": 14, "w": 60, "h": 24, "hidden": true,
               "dialogue": "ascent.sky" },
-            { "id": "summit_path", "name": "The summit", "x": 304, "y": 60, "w": 16, "h": 90, "color": "#15151c",
+            { "id": "summit_path", "name": "The summit", "x": 304, "y": 60, "w": 16, "h": 90, "color": "#15151c", "hidden": true,
               "exit": "summit", "exit_if": "dragging", "locked": "mountain.not_without" }
         ]
     }

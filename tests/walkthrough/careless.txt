@@ -39,8 +39,9 @@ expect factory_lost && !factory_won && y_health == 1 && y_hurt
 use exit_office
 room factory_office
 use exit_entrance
-choose Share
 room factory_entrance
+talk
+choose Share
 expect !has_antibiotics && x_condition == 2 && cig_count == 0 && smoked_with_x == 1 && bandages == 1
 item bandages                 # Y binds his own cuts
 choose Bind
@@ -63,14 +64,12 @@ revive slow                   # and nobody keeps him breathing: the Reaper reach
 expect reaper_touched == 1 && x_condition == 0 && y_health == 1
 grab
 use exit_road
-room sheltered_wall
-use crushed_pack
-choose Smoke
-expect smoked_with_x == 2 && cig_count == 0
-use mountain_path
 
 # --- Stage 03 ---------------------------------------------------------------
 room foot
+use crushed_pack
+choose Smoke
+expect smoked_with_x == 2 && cig_count == 0
 use steps
 room landing
 use lantern                   # X's line for a low condition
