@@ -17,9 +17,9 @@ add_executable(
     walkthrough.cpp
 )
 
-# The program carries the game's name: "The Hollow Dawn.exe" (the target is
+# The program carries the game's name: "While It Lasts.exe" (the target is
 # still "game" in CMake, the tasks and the tests).
-set_target_properties(game PROPERTIES OUTPUT_NAME "The Hollow Dawn")
+set_target_properties(game PROPERTIES OUTPUT_NAME "While It Lasts")
 
 # The logo as the program's own icon, and its name in Windows (game.rc, game.ico).
 if(WIN32)

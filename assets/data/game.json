@@ -1,7 +1,7 @@
-// The Hollow Dawn: what the game loads first. The format is described in
+// While It Lasts: what the game loads first. The format is described in
 // docs/DATA-FORMAT.md. Comments like this one are allowed in every data file.
 {
-    "title": "THE HOLLOW DAWN",
+    "title": "WHILE IT LASTS",
     "start_room": "campsite",
     "start_items": ["bat", "pistol"],
 

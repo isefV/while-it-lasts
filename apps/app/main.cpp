@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
     SetConfigFlags(scripted ? FLAG_WINDOW_HIDDEN : FLAG_VSYNC_HINT);
     SetTraceLogLevel(LOG_WARNING);
-    InitWindow(1280, 720, "The Hollow Dawn");
+    InitWindow(1280, 720, "While It Lasts");
     // The logo on the window and the taskbar (the .exe's own icon is game.rc).
     if (Image icon = LoadImage((assets + "icons/logo.png").c_str()); icon.data)
     {

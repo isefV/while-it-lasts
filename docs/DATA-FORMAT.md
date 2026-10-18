@@ -1,4 +1,4 @@
-# The Hollow Dawn: data format
+# While It Lasts: data format
 
 Everything the story needs is in `assets/data/`. Writing and art never wait for
 code: a new line, choice, room object or item is a change to these files only.
@@ -13,7 +13,7 @@ assets/data/
 └── rooms/stage00.json … stage04.json      rooms and what is in them
 ```
 
-**Checking your work.** Run `"The Hollow Dawn" --check` (or the `CMake: ctest` task).
+**Checking your work.** Run `"While It Lasts" --check` (or the `CMake: ctest` task).
 It reads every file and prints each mistake with its file and place, for
 example:
 
@@ -367,7 +367,7 @@ size is the font's ascent + descent in pixels, which is how raylib sizes it:
 Pixeloid Sans and Greybeard-11px are both 11. Any other size draws it off the
 pixel grid, blurred. `fonts`: a list of `{ "name", "file", "size" }` that a
 debug build's Settings (title or pause menu) switches between, to compare
-them; `"The Hollow Dawn" --font <name>` starts with one of them. An empty `file` is
+them; `"While It Lasts" --font <name>` starts with one of them. An empty `file` is
 raylib's built-in font. Without `font`, the game uses Pixeloid Sans
 (`fonts/pixeloid_sans.ttf`, size 11).
 
@@ -390,8 +390,8 @@ and X's condition (`x_condition`, 0 to 3). A bar flashes when it changes.
 ## 5. Testing a branch
 
 ```
-"The Hollow Dawn" --room factory_office --set noisy_entry=true --set cig_count=2
-"The Hollow Dawn" --walkthrough tests/walkthrough/full.txt
+"While It Lasts" --room factory_office --set noisy_entry=true --set cig_count=2
+"While It Lasts" --walkthrough tests/walkthrough/full.txt
 ```
 
 `--room` starts a new game in any room, `--set` presets variables. A

@@ -11,7 +11,7 @@ submodule, `FetchContent`), including debugging into its sources.
 - Building, internals and contributing: [docs/README-Guideline.md](docs/README-Guideline.md)
 - History of changes: [docs/README-Catalog.md](docs/README-Catalog.md)
 
-## The game: The Hollow Dawn
+## The game: While It Lasts
 
 A short narrative game: Rob half-carries his friend Jace up the mountain where they
 grew up. Five stages (campfire, factory, perimeter, mountain steps, summit),
@@ -39,10 +39,10 @@ coloured rectangle until its image exists in `assets/`, so art never blocks a
 playable build (file names: visual-asset-config.txt).
 
 ```
-"The Hollow Dawn"                  fullscreen; --windowed for a 1280 x 720 window
-"The Hollow Dawn" --check          read and check every data file, no window
-"The Hollow Dawn" --room summit --set cig_count=0      start anywhere, with any state
-"The Hollow Dawn" --walkthrough tests/walkthrough/full.txt   play the game by itself
+"While It Lasts"                  fullscreen; --windowed for a 1280 x 720 window
+"While It Lasts" --check          read and check every data file, no window
+"While It Lasts" --room summit --set cig_count=0      start anywhere, with any state
+"While It Lasts" --walkthrough tests/walkthrough/full.txt   play the game by itself
 ```
 
 Where the code is:
@@ -93,7 +93,7 @@ themselves; gcc and clang must be on `PATH`.
 |---|---|
 | `CMake: configure` | configure `build/<toolchain>-<config>` from scratch (new CMake cache) |
 | `CMake: build` | configure, then build the library |
-| `Build game` | configure, then build the game, `bin/The Hollow Dawn.exe` (library and assets with it) |
+| `Build game` | configure, then build the game, `bin/While It Lasts.exe` (library and assets with it) |
 | `CMake: rebuild` | configure, then clean and build the library |
 | `CMake: clean` | delete the build outputs; the configuration stays |
 | `CMake: install` | build the library and install it to `install/<toolchain>` |
