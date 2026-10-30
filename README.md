@@ -1,6 +1,6 @@
-# hollow
+# While It Lasts
 
-**Hollow** is a C++20 game built with [raylib](https://www.raylib.com).
+**While It Lasts** is a C++20 game built with [raylib](https://www.raylib.com).
 
 The game code lives in the `hollow` library (static or shared, on Windows and
 Linux); the program in `apps/app` links it with raylib, opens the window and
