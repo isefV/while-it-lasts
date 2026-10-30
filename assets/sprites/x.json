@@ -1,0 +1,24 @@
+// X's sheet (128 x 352): three rows of 32 x 48 frames, facing right, then
+// the lying frame (48 x 32, head to the right) at pixel line 144, the
+// kneeling frame (32 x 48) at 176, the frame of him being dragged
+// (48 x 32, head raised) at 224, the crouch frames (32 x 48) at 256
+// and the smoking frame (32 x 48) at 304.
+{
+    "texture": "sprites/x.png",
+    "frame":  { "w": 32, "h": 48 },
+    "origin": { "x": 16, "y": 47 },
+    "animations": {
+        "idle":  { "row": 0, "frames": 4, "fps": 3, "loop": true },
+        "walk":  { "row": 1, "frames": 4, "fps": 5, "loop": true, "steps": [1, 3] },
+        "sit":   { "row": 2, "frames": 1 },
+        "lying": { "top": 144, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } },
+        "kneel": { "top": 176, "frames": 1 },
+
+        // While {y} drags him (companion drag).
+        "dragged": { "top": 224, "frame": { "w": 48, "h": 32 }, "origin": { "x": 24, "y": 31 } },
+        "crouch" : { "top": 256, "frames": 3, "fps": 3, "loop": true },
+
+        // Sitting with the cigarette; smoke rises from its tip ("emit").
+        "smoke"  : { "top": 304, "frames": 1, "emit": { "x": 24, "y": 22 } }
+    }
+}

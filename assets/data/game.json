@@ -1,0 +1,159 @@
+// While It Lasts: what the game loads first. The format is described in
+// docs/DATA-FORMAT.md. Comments like this one are allowed in every data file.
+{
+    "title": "WHILE IT LASTS",
+    "start_room": "campsite",
+    "start_items": ["bat", "pistol"],
+
+    // The names are written once, here. In any line, {y} and {x} become them.
+    "player": "y",
+    "companion": "x",
+    "characters": {
+        "y": { "name": "Rob", "color": "#6f8296", "text_color": "#c9d6e2", "w": 14, "h": 40, "speed": 48, "sprite": "sprites/y.json" },
+        "x": { "name": "Jace", "color": "#7d8a74", "text_color": "#b9c9a9", "w": 14, "h": 40, "speed": 43, "sprite": "sprites/x.json" }
+    },
+
+    "files": {
+        "items": "data/items.json",
+        "barks": "data/barks.json",
+        "dialogue": [
+            "data/dialogue/items.json",
+            "data/dialogue/stage00.json",
+            "data/dialogue/stage01.json",
+            "data/dialogue/stage02.json",
+            "data/dialogue/stage03.json",
+            "data/dialogue/stage04.json"
+        ],
+        "rooms": [
+            "data/rooms/stage00.json",
+            "data/rooms/stage01.json",
+            "data/rooms/stage02.json",
+            "data/rooms/stage03.json",
+            "data/rooms/stage04.json"
+        ]
+    },
+
+    // Every variable a condition or effect uses. true/false, a number, or
+    // { "value", "min", "max" } (values are kept inside that range).
+    "variables": {
+        "_story": "From the script's state table",
+        "x_condition":    { "value": 3, "min": 0, "max": 3 },
+        "y_health":       { "value": 5, "min": 0, "max": 5 },
+        "reaper_touched": { "value": 0, "min": 0, "max": 3 },
+        "has_antibiotics": false,
+        "cig_count":      { "value": 0, "min": 0, "max": 4 },
+        "smoked_with_x":  { "value": 0, "min": 0, "max": 3 },
+        "noisy_entry":    false,
+        "spotted_count":  { "value": 0, "min": 0, "max": 3 },
+        "notes_read":     { "value": 0, "min": 0, "max": 2 },
+
+        "_items": "Supplies that are counted (items.json \"count\")",
+        "bandages":       { "value": 0, "min": 0, "max": 9 },
+        "painkillers":    { "value": 0, "min": 0, "max": 4 },
+        "bottles":        { "value": 0, "min": 0, "max": 6 },
+        "antibiotics_given": false,
+
+        "_game": "Set by the game itself: X is dragged, X is in the room, a fight is on, the checkpoint creature can be distracted",
+        "dragging": false,
+        "x_here": false,
+        "fighting": false,
+        "stealth_active": false,
+
+        "_x_down": "X cannot walk: G takes hold of him and lets go (set by the story)",
+        "x_down": false,
+
+        "_stage00": "The campsite",
+        "kit_taken": false,
+        "cig_pack_taken": false,
+        "x_woken": false,
+        "wound_dressed": false,
+        "fire_out": false,
+        "water_taken": false,
+
+        "_stage01": "The factory",
+        "ammo":           { "value": 0, "min": 0, "max": 9 },
+        "window_figure": false,
+        "key_found": false,
+        "cabinet_open": false,
+        "shelf_searched": false,
+        "filing_read": false,
+        "factory_cleared": false,
+        "factory_won": false,
+        "factory_lost": false,
+        "y_hurt": false,
+        "bolt_taken": false,
+        "backpack_looted": false,
+        "dressed_at_factory": false,
+        "booth_searched": false,
+        "locker_open": false,
+        "pretzels": false,
+        "floor_bottles_taken": false,
+        "stage01_done": false,
+
+        "_stage02": "The perimeter",
+        "gap_open": false,
+        "rod_taken": false,
+        "wall_pack_found": false,
+        "checkpoint_bottles_taken": false,
+        "barricade_fought": false,
+        "stage02_done": false,
+
+        "_stage03": "The mountain steps",
+        "turned_x": false,
+        "creature_cleared": false,
+        "beam_moved": false,
+        "rests":          { "value": 0, "min": 0, "max": 4 },
+        "stairs_left_x": false,
+        "stairs_back": false,
+
+        "_stage04": "The summit",
+        "cig_lit": false,
+        "cig_held": false,
+        "cig_scene_done": false,
+        "summit_moments": { "value": 0, "min": 0, "max": 9 },
+        "ember_out": false
+    },
+
+    // Dark and cold, with one warm accent (fire, ember, sunrise).
+    "ui": {
+        "text_speed": 45,
+        // The font the game uses. "size" is the font's ascent + descent in pixels
+        // (how raylib sizes it): any other size puts it off the pixel grid.
+        "font": "fonts/pixeloid_sans.ttf",
+        "font_size": 11,
+        // A debug build's Settings switches between these, to compare them
+        // (licences: fonts/pixeloid_license.txt, fonts/greybeard_license.txt).
+        "fonts": [
+            { "name": "Pixeloid",  "file": "fonts/pixeloid_sans.ttf", "size": 11 },
+            { "name": "Greybeard", "file": "fonts/greybeard_11px.ttf", "size": 11 },
+            { "name": "Built-in",  "file": "", "size": 10 }
+        ],
+        "text": "#c8d2da",
+        "thought": "#7aa0c4",
+        "narration": "#707a88",
+        "dim": "#4a5664",
+        "box": "#0a0d12",
+        "frame": "#3a4654",
+        "highlight": "#e2e8ee",
+        "accent": "#e0873a"
+    },
+
+    // Up to 3 bars, top left: Y's health (fights cost it; bandages,
+    // antiseptic and painkillers give it back) and X's condition.
+    "bars": [
+        { "label": "Rob", "var": "y_health",    "max": 5, "color": "#8fa4b8" },
+        { "label": "Jace", "var": "x_condition", "max": 3, "color": "#9aab8c" }
+    ],
+
+    // The last screen: only this line.
+    "end_card": [
+        "You're gonna carry that weight."
+    ],
+
+    // Who made the game, bottom left of the title screen.
+    "credits": [
+        "Developed by N2 Team",
+        "Art: Faeze, Danial",
+        "Code: Isef"
+    ]
+}

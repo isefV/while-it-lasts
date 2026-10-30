@@ -1,0 +1,155 @@
+# The whole game on a careful route: every item and thing to look at, the
+# key, the antibiotics, the bottle thrown at the checkpoint, both fights won,
+# X kept breathing both times, one shared cigarette, two saved for the
+# summit, both notes.
+#   "While It Lasts" --walkthrough tests/walkthrough/full.txt
+# The commands are explained in apps/app/walkthrough.hpp.
+
+# --- Stage 00: the campsite -------------------------------------------------
+room campsite
+use jacket
+use car
+use map
+use magazines
+use magazines                 # a second look plays another line
+use water_bottle
+expect bottles == 1
+use pot
+use medical_kit
+expect item.last_bandage
+use cigarette_pack
+choose Take
+expect cig_count == 1
+use fire
+use backpack
+use forest_exit               # locked until the fire is out
+expect !fire_out
+inventory
+talk
+choose Apply
+expect wound_dressed && fire_out && !item.last_bandage
+use forest_exit
+
+# --- Stage 01: the factory --------------------------------------------------
+room factory_entrance
+use road                      # locked until the floor is done
+talk
+use door                      # the vending machine and the booth are out until they have art
+room factory_office
+use desk
+use radio
+use mug
+use clock
+expect item.key
+use locker
+expect painkillers == 2
+use filing_cabinet
+use calendar
+use notice
+expect notes_read == 2
+use window
+use window
+use first_aid_cabinet
+choose Use the key
+expect cabinet_open && !noisy_entry && cig_count == 2 && bandages == 2
+use sink                      # nothing yet: the shelf has the hint
+expect !has_antibiotics
+use shelves
+use sink
+expect has_antibiotics && item.antibiotics
+use floor_door
+room factory_floor
+use bolt
+use bottles
+expect bottles == 3
+walk 110                      # walks into the creature
+choose Throw the bolt
+expect factory_won && !item.bolt
+use lost_backpack
+expect backpack_looted && cig_count == 3 && bandages == 3
+use exit_office
+room factory_office
+use exit_entrance
+room factory_entrance
+talk                          # back at the entrance: talking to X starts the dressing, then the cigarette
+choose Share
+expect stage01_done && x_condition == 3 && antibiotics_given && smoked_with_x == 1 && cig_count == 2 && bandages == 2
+item painkillers              # nobody hurts yet: kept
+expect painkillers == 2
+use road
+
+# --- Stage 02: the perimeter ------------------------------------------------
+room checkpoint
+use sign
+use bottles
+expect bottles == 5
+item bottle                   # thrown into the trees: the creature goes after it
+choose Throw
+expect bottles == 4
+use exit_road                 # straight across while it is gone
+room barricade
+expect spotted_count == 0
+use car
+use slab                      # no rod yet
+choose Push
+use rod
+use slab
+choose Lever                  # the noise brings two waves of crawlers
+fight                         # then X collapses at once...
+revive                        # ...and E on the beat keeps him breathing
+expect gap_open && barricade_fought && reaper_touched == 0 && x_down && !dragging
+grab                          # take hold of him
+expect dragging
+use exit_road                 # pulled through the gap
+
+# --- Stage 03: the mountain steps -------------------------------------------
+room foot                     # pulled in and set down; the Reaper waits down the road
+use fire_ring
+use steps                     # locked until the cigarette scene
+use crushed_pack
+choose Save
+expect stage02_done && cig_count == 3 && !x_down
+use lantern_1
+use lantern
+use broken_sign
+use steps
+room collapse
+revive                        # the second time, harder
+expect reaper_touched == 0 && dragging && x_down
+grab                          # let go of him...
+expect !dragging
+grab                          # ...and take hold again
+expect dragging
+use rest_rock
+walk 200                      # the narrow gap asks to turn him first
+expect turned_x
+use rest_stump
+use steps
+room broken_stairs
+walk 105                      # the wall: a hint to leave him here
+grab                          # let go of him behind it
+expect !dragging && stairs_left_x
+walk 200                      # walking up to it starts the fight
+fight                         # two crawlers up the path, then the creature
+expect creature_cleared && y_health >= 1   # won (losing is death)
+use fallen_beam
+expect beam_moved
+talk
+expect dragging && stairs_back
+use rest_step
+use steps
+room final_ascent
+use rest_bench
+expect rests == 4
+use sky
+walk 160                      # the last talk on the way
+use summit_path
+
+# --- Stage 04: the summit ---------------------------------------------------
+room summit
+talk
+expect cig_scene_done && cig_lit && cig_count == 2
+use horizon
+use cigarette                 # the second moment starts the Reaper scene
+ended
+expect ember_out

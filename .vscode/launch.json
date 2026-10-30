@@ -1,39 +1,83 @@
 {
-    // The programs come from the Debug static build with tests and apps: run
-    // "CMake: ctest" > Debug > static library first; folder
-    // build/<hollow.toolchain>-Debug-static.
-    // The entries use the MSVC debugger (cppvsdbg); for GDB (gcc on Windows,
-    // or Linux) use "type": "cppdbg", "MIMode": "gdb" (no ".exe" on Linux), map
-    // "/hollow" instead of "\hollow".
+    // Run and Debug (F5): pick the compiler in the drop-down. Each entry first
+    // runs its "Debug build: <compiler>" task (tasks.json), which configures
+    // and builds the library, tests and game in build/<compiler>-Debug, then
+    // starts the program from there. The game reads assets/ next to it.
     //
-    // hollow's debug info names its sources \hollow\src\... (the same on every
-    // PC); "sourceFileMap" points that root at the folder holding them: this
-    // checkout, or an installed Debug package (it ships src/).
+    //   MSVC  - the Visual Studio debugger (cppvsdbg)
+    //   GCC   - GDB (cppdbg), from w64devkit on the PATH
+    //
+    // Both debuggers come with the C/C++ extension (ms-vscode.cpptools).
+    //
+    // The library's debug info names its sources \while_it_lasts\src\... (MSVC)
+    // or /while_it_lasts/src/... (GCC), the same on every PC; "sourceFileMap"
+    // points that root at this checkout.
+    //
+    // The game starts in a 1280 x 720 window here (--windowed). Other options
+    // for "args": "--room", "summit", "--set", "cig_count=0" (see README.md).
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "App: hollow_app",
+            "name": "Game (MSVC)",
             "type": "cppvsdbg",
             "request": "launch",
-            "sourceFileMap": { "\\hollow": "${workspaceFolder}" },
-            "program": "${workspaceFolder}/build/${config:hollow.toolchain}-Debug-static/bin/hollow_app.exe",
-            "args": [],
+            "preLaunchTask": "Debug build: msvc",
+            "sourceFileMap": { "\\while_it_lasts": "${workspaceFolder}" },
+            "program": "${workspaceFolder}/build/msvc-Debug/bin/While It Lasts.exe",
+            "args": ["--windowed"],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/${config:hollow.toolchain}-Debug-static/bin",
+            "cwd": "${workspaceFolder}/build/msvc-Debug/bin",
             "environment": [],
             "console": "integratedTerminal"
         },
         {
-            "name": "Tests: hollow_tests",
+            "name": "Game (GCC)",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "Debug build: gcc",
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "sourceFileMap": { "/while_it_lasts": "${workspaceFolder}" },
+            "program": "${workspaceFolder}/build/gcc-Debug/bin/While It Lasts.exe",
+            "args": ["--windowed"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/gcc-Debug/bin",
+            "environment": [],
+            "externalConsole": false,
+            "setupCommands": [
+                { "description": "Pretty-print STL containers", "text": "-enable-pretty-printing", "ignoreFailures": true }
+            ]
+        },
+        {
+            "name": "Tests (MSVC)",
             "type": "cppvsdbg",
             "request": "launch",
-            "sourceFileMap": { "\\hollow": "${workspaceFolder}" },
-            "program": "${workspaceFolder}/build/${config:hollow.toolchain}-Debug-static/bin/hollow_tests.exe",
+            "preLaunchTask": "Debug build: msvc",
+            "sourceFileMap": { "\\while_it_lasts": "${workspaceFolder}" },
+            "program": "${workspaceFolder}/build/msvc-Debug/bin/while_it_lasts_tests.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/${config:hollow.toolchain}-Debug-static/bin",
+            "cwd": "${workspaceFolder}/build/msvc-Debug/bin",
             "environment": [],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Tests (GCC)",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "Debug build: gcc",
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "sourceFileMap": { "/while_it_lasts": "${workspaceFolder}" },
+            "program": "${workspaceFolder}/build/gcc-Debug/bin/while_it_lasts_tests.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/gcc-Debug/bin",
+            "environment": [],
+            "externalConsole": false,
+            "setupCommands": [
+                { "description": "Pretty-print STL containers", "text": "-enable-pretty-printing", "ignoreFailures": true }
+            ]
         }
     ]
 }

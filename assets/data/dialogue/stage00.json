@@ -1,0 +1,177 @@
+// STAGE 00: THE CAMPFIRE. Lines are the script's; entries marked "_added"
+// are new (hints, second looks, variants) and can be rewritten freely.
+{
+    "campsite.start": [
+        { "narration": "Midnight.", "_added": "the night starts here and ends at sunrise on the summit" },
+        { "narration": "{x} and {y} have had a long journey. They've spent days together surviving this brutal world.", "_changed": "opening text, rewritten 18 October" },
+        { "narration": "Now they want only one thing: to head back to their childhood hideaway, perhaps to reminisce about warm memories." },
+        { "narration": "{x} is badly wounded, and his condition is only getting worse. Supplies are running low, and they can feel a dark entity hunting them." },
+        { "thought": "He's been asleep a while. Probably a good sign. Probably." }
+    ],
+
+    "campsite.magazines": [
+        { "y": "Hometown magazines. Look at this, the one with the bridge on the cover." },
+        { "y": "You must have read this a hundred times." },
+        { "thought": "I read it a hundred and one. Not telling him that." }
+    ],
+    "campsite.jacket": [
+        { "narration": "A photo in the inside pocket. The two of them on the summit, fourteen and sunburnt.", "_added": "new thing to look at" },
+        { "y": "He's carried this the whole way." },
+        { "thought": "Of course he has." }
+    ],
+    "campsite.jacket_again": [
+        { "thought": "Fourteen. Not a scratch on either of us.", "_added": "second look" }
+    ],
+
+    "campsite.map": [
+        { "y": "The old trail map. Somebody circled the summit in pen. Twice.", "_added": "new thing to look at; sets up the plan" },
+        { "thought": "He did. The night he stopped pretending the wound was getting better." }
+    ],
+    "campsite.map_again": [
+        { "thought": "Two circles. In case I missed the first one.", "_added": "second look" }
+    ],
+
+    "campsite.bottle": [
+        { "y": "Empty water bottle. Might be good for something.", "_added": "new item: an empty bottle can be thrown to make noise (stage 02)" },
+        { "narration": "Got: an empty bottle.", "do": ["bottles += 1", "water_taken = true"] }
+    ],
+
+    "campsite.pot": [
+        { "y": "Beans, burnt on. Last night's dinner and tomorrow's breakfast.", "_added": "new thing to look at" }
+    ],
+
+    "campsite.tracks": [
+        { "y": "Tracks in the mud. Too big for a dog. Too many toes for a bear.", "_added": "new thing to look at" },
+        { "y": "I'm going to stop looking at these now." }
+    ],
+    "campsite.tracks_again": [
+        { "thought": "Still there. Still too many toes.", "_added": "second look" }
+    ],
+
+    "campsite.magazines_again": [
+        { "thought": "The bridge one. Still a hundred and one.", "_added": "second look" }
+    ],
+
+    "campsite.car": [
+        { "y": "Dead battery, cracked belt, and I'm pretty sure a raccoon lives in here now." },
+        { "y": "Okay. We're walking." }
+    ],
+    "campsite.car_again": [
+        { "y": "Still dead. Still a raccoon.", "_added": "second look" }
+    ],
+
+    "campsite.kit": [
+        { "y": "One bandage. A few gauze scraps. Some tape that's mostly lint." },
+        { "y": "This is not going to be enough." },
+        { "narration": "Got: Last Bandage.", "do": ["give last_bandage", "kit_taken = true"] }
+    ],
+    "campsite.kit_again": [
+        { "y": "Empty. Well. Emptier.", "_added": "second look" }
+    ],
+
+    "campsite.cigarettes": [
+        { "y": "One left. Of course there's one left. Just one." },
+        { "choice": [
+            { "text": "Take it.", "do": ["cig_count += 1", "cig_pack_taken = true"], "next": "campsite.cig_taken" },
+            { "text": "Leave it." }
+        ] }
+    ],
+    "campsite.cig_taken": [
+        { "narration": "Got: a cigarette." },
+        { "thought": "Later. Maybe." }
+    ],
+
+    "campsite.fire": [
+        { "y": "Still warm. I'd stay if I could." }
+    ],
+    "campsite.ashes": [
+        { "thought": "Cold already.", "_added": "the fire after it is put out" }
+    ],
+    "campsite.backpack": [
+        { "y": "Everything we own, and it still weighs less than my bad decisions." }
+    ],
+    "campsite.blanket": [
+        { "y": "Hold onto that. It's getting cold." }
+    ],
+
+    "campsite.x": [
+        { "if": "wound_dressed",
+          "then": [
+            { "x": "I'm right behind you. Go.", "_added": "talking to X while leaving" }
+          ],
+          "else": [
+            { "if": "!x_woken", "then": [
+                { "y": "Hey. Rise and shine." },
+                { "x": "Mm. Five more minutes." },
+                { "y": "You said that an hour ago." },
+                { "x": "And I meant it then too." },
+                { "narration": "{x} tries to sit up and winces.", "do": ["pose x sit", "x_woken = true"] },
+                { "y": "Easy. Let me see it." },
+                { "narration": "{y} peels back the old dressing." },
+                { "x": "Be honest. How bad is it?" },
+                { "y": "It's... not great." },
+                { "x": "There it is." },
+                { "y": "I've seen worse." },
+                { "x": "On who?" },
+                { "y": "On people who whined less." },
+                { "x": "I'm not whining. I'm giving a detailed report." }
+            ] },
+            { "if": "item.last_bandage",
+              "then": [
+                { "choice": [
+                    { "text": "Apply the Last Bandage.", "next": "campsite.dressing" },
+                    { "text": "Wait a moment.", "next": "campsite.x_wait" }
+                ] }
+              ],
+              "else": [
+                { "y": "Hang on. Let me find the kit.", "_added": "the player has not taken the bandage yet" }
+              ] }
+          ] }
+    ],
+    "campsite.x_wait": [
+        { "x": "Take your time. I'm not going anywhere.", "_added": "" }
+    ],
+
+    "campsite.dressing": [
+        { "y": "Hold still." },
+        { "x": "I am holding still." },
+        { "y": "You're flinching." },
+        { "x": "It hurts, man. That's what it does." },
+        { "y": "Almost done. Breathe." },
+        { "x": "Breathing. Look at me, I'm a professional." },
+        { "narration": "The dressing is done. The kit is empty now.", "do": ["take last_bandage", "wound_dressed = true"] },
+        { "thought": "That was the last clean one. We need antibiotics, more bandages, anything." },
+        { "pause": 1.2, "do": ["sound low_call", "ambient campfire@0.45 wind@0.6", "event reaper_hint"] },
+        { "narration": "A low, long sound from the trees. The insects stop. The fire flickers slower." },
+        { "x": "...Please tell me you heard that." },
+        { "y": "Yeah." },
+        { "x": "Maybe it's a deer." },
+        { "y": "Deer don't make that noise." },
+        { "x": "Then maybe it's a very sad deer." },
+        { "y": "{x}." },
+        { "x": "Yeah. I know. We should go." },
+        { "y": "You can barely stand." },
+        { "x": "And you can barely think. We're a great team." },
+        { "narration": "{y} reaches for the medical kit." },
+        { "x": "Leave it. It's empty anyway." },
+        { "y": "...Yeah. Fair." },
+        { "x": "Grab what you can carry. I'll walk." },
+        { "y": "You'll lean on me." },
+        { "x": "Fine. I'll graciously lean on you." },
+        { "narration": "{y} kicks dirt over the fire. The warm light drains away. Only the cold dark is left.", "do": ["fire_out = true", "event fire_out"] },
+        { "pause": 1.2 },
+        { "do": ["pose x idle", "companion follow", "event escape_start"] }
+    ],
+
+    "campsite.exit_locked": [
+        { "thought": "Not without him.", "_added": "the forest path before the sound" }
+    ],
+    "campsite.hurry": [
+        { "narration": "Branches snap, close by." },
+        { "x": "{y}. Now. Please." }
+    ],
+    "campsite.figure": [
+        { "narration": "A tall silhouette stands between the trees." },
+        { "thought": "Don't look at it. Just go.", "_added": "" }
+    ]
+}

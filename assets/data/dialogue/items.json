@@ -1,0 +1,115 @@
+// Using items from the inventory (E on the item): the "use" conversations
+// named in items.json. All of these are new ("_added" throughout), written
+// for the playtest note "items can be more useful".
+// X_HERE is 1 while X is in the room; Y_HEALTH and X_CONDITION are the bars.
+{
+    "use.bandages": [
+        { "if": "(!x_here || x_condition >= 3) && y_health >= 5",
+          "then": [ { "thought": "Nobody's bleeding right now. Save them." } ],
+          "else": [
+            { "choice": [
+                { "text": "Change {x}'s dressing.", "if": "x_here && x_condition < 3", "next": "use.bandages_x" },
+                { "text": "Bind my own cuts.", "if": "y_health < 5", "next": "use.bandages_y" },
+                { "text": "Put them away." }
+            ] }
+          ] }
+    ],
+    "use.bandages_x": [
+        { "narration": "{y} peels off the old dressing and wraps a clean one, tight.", "do": ["bandages -= 1", "x_condition += 1"] },
+        { "if": "x_condition >= 3",
+          "then": [ { "x": "Ow. Okay. Better. Don't tell anyone I said that." } ],
+          "else": [ { "x": "...Thanks. That's. Yeah." } ] }
+    ],
+    "use.bandages_y": [
+        { "narration": "{y} wraps his forearm and pulls the knot tight with his teeth.", "do": ["bandages -= 1", "y_health += 2"] },
+        { "thought": "Good as new. Ish." }
+    ],
+
+    "use.antiseptic": [
+        { "if": "(!x_here || x_condition >= 3) && y_health >= 5",
+          "then": [ { "thought": "Nothing to clean right now." } ],
+          "else": [
+            { "choice": [
+                { "text": "Clean {x}'s wound.", "if": "x_here && x_condition < 3", "next": "use.antiseptic_x" },
+                { "text": "Clean my cuts.", "if": "y_health < 5", "next": "use.antiseptic_y" },
+                { "text": "Put it away." }
+            ] }
+          ] }
+    ],
+    "use.antiseptic_x": [
+        { "narration": "{y} pours it over the wound.", "do": ["take antiseptic", "x_condition += 1"] },
+        { "x": "That stings like a grudge." },
+        { "y": "That's how you know it's working." },
+        { "x": "That's how I know you're enjoying it." }
+    ],
+    "use.antiseptic_y": [
+        { "narration": "{y} splashes it over his knuckles and says a word his mother wouldn't like.", "do": ["take antiseptic", "y_health += 1"] }
+    ],
+
+    "use.antibiotics": [
+        { "if": "!x_here",
+          "then": [ { "thought": "These are for {x}. He's waiting." } ],
+          "else": [
+            { "choice": [
+                { "text": "Give them to {x}.", "next": "use.antibiotics_x" },
+                { "text": "Not yet." }
+            ] }
+          ] }
+    ],
+    "use.antibiotics_x": [
+        { "y": "These are antibiotics. Take them." },
+        { "x": "You know, I might not need this at all." },
+        { "y": "Quit talking and swallow." },
+        { "narration": "{x} sits up straighter. His voice is clearer.", "do": ["x_condition += 1", "take antibiotics", "antibiotics_given = true"] },
+        { "x": "Hm. That's... a little better, actually." }
+    ],
+
+    "use.painkillers": [
+        { "if": "(!x_here || x_condition >= 3) && y_health >= 5",
+          "then": [ { "thought": "Save them for when it really hurts." } ],
+          "else": [
+            { "choice": [
+                { "text": "Give {x} two.", "if": "x_here && x_condition < 3", "next": "use.painkillers_x" },
+                { "text": "Take two myself.", "if": "y_health < 5", "next": "use.painkillers_y" },
+                { "text": "Put them away." }
+            ] }
+          ] }
+    ],
+    "use.painkillers_x": [
+        { "narration": "{x} dry-swallows them and makes a face.", "do": ["painkillers -= 1", "x_condition += 1"] },
+        { "x": "Tastes like chalk and bad decisions." },
+        { "y": "So, like you." },
+        { "x": "...I'll allow it." }
+    ],
+    "use.painkillers_y": [
+        { "narration": "{y} takes two. The edges of everything go a little softer.", "do": ["painkillers -= 1", "y_health += 1"] }
+    ],
+
+    "use.bottle": [
+        { "if": "stealth_active",
+          "then": [
+            { "choice": [
+                { "text": "Throw it into the trees past it.", "do": ["bottles -= 1"], "next": "use.throw" },
+                { "text": "Not yet." }
+            ] }
+          ],
+          "else": [ { "thought": "Empty. Good for making noise somewhere I'm not. Later." } ] }
+    ],
+    "use.bolt": [
+        { "if": "stealth_active",
+          "then": [
+            { "choice": [
+                { "text": "Throw it into the trees past it.", "do": ["take bolt"], "next": "use.throw" },
+                { "text": "Not yet." }
+            ] }
+          ],
+          "else": [ { "thought": "Heavy. Good for throwing, when there's something to throw it past." } ] }
+    ],
+    "use.pistol": [
+        { "thought": "Not wasting a round on nothing. In a fight, R fires it." }
+    ],
+    "use.throw": [
+        { "narration": "It sails over the road and smashes somewhere in the trees. The creature's head snaps toward the sound, and it lumbers off after it.", "do": ["event distract"] },
+        { "thought": "Go. Now. Before it remembers us." }
+    ]
+}

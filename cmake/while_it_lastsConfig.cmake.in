@@ -1,0 +1,42 @@
+# -----------------------------------------------------------------------------
+# while_it_lastsConfig.cmake - CMake package for an installed While It Lasts library.
+#
+#   find_package(while_it_lasts CONFIG REQUIRED)
+#   target_link_libraries(my_app PRIVATE while_it_lasts::while_it_lasts)
+#
+# Provides:
+#
+#   while_it_lasts::while_it_lasts   the library (static)
+#
+#   while_it_lasts_SOURCE_ROOT       this package's folder. The library's debug
+#                                    info names its sources
+#                                    /while_it_lasts/src/... (MSVC:
+#                                    \while_it_lasts\src\...); a Debug package
+#                                    ships them in src/ here, so map
+#                                    /while_it_lasts to this folder in your
+#                                    debugger to step into the library
+#
+# Dependencies are found again here, with the find modules the library's own
+# build uses (Threads: CMake's own; Raylib: FindRaylib.cmake, installed beside
+# this file). raylib is linked to while_it_lasts::while_it_lasts here rather than in the
+# exported targets, because the build compiles raylib as part of itself.
+# nlohmann/json is header-only and private to the library's .cpp files.
+# -----------------------------------------------------------------------------
+
+@PACKAGE_INIT@
+
+set(while_it_lasts_SOURCE_ROOT "${PACKAGE_PREFIX_DIR}")
+
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+find_dependency(Threads)
+find_dependency(Raylib)
+
+if(NOT TARGET while_it_lasts::while_it_lasts)
+    include("${CMAKE_CURRENT_LIST_DIR}/while_it_lastsTargets.cmake")
+    target_link_libraries(while_it_lasts::while_it_lasts INTERFACE raylib)
+endif()
+
+check_required_components(while_it_lasts)

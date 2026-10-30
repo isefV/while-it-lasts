@@ -3,18 +3,17 @@
     // item again (this also brings it back into search).
     "files.exclude": {
         ".git": true,
-        "build": true,
+        "build": false,
         "install": true,
         "extern": false
     },
 
-    // Compiler for the CMake tasks (tasks.json): "msvc", "gcc" or "clang",
-    // one of the files in .vscode/cmake/. Also part of the build and install
-    // folder names.
-    "hollow.toolchain": "msvc",
-
-    // The build is driven by the CMake tasks; CMake Tools, if installed,
-    // doesn't configure on its own.
+    // The build is driven by the CMake tasks (tasks.json), which ask for the
+    // compiler each time; CMake Tools, if installed, doesn't configure on
+    // its own. Its "CMake: Select a Kit" offers the kits in cmake-kits.json,
+    // named like the tasks' toolchains, and it builds in the same folders
+    // as the tasks.
     "cmake.useCMakePresets": "never",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.buildDirectory": "${workspaceFolder}/build/${buildKit}-${buildType}"
 }

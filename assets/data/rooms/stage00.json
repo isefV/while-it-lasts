@@ -1,0 +1,56 @@
+// STAGE 00 rooms. Positions are scene pixels (320 x 180); the ground line is
+// y = 150, and an object without "y" stands on it (small things are set a
+// pixel or three off it, so they do not line up). Every object is a coloured
+// rectangle until its "sprite" file exists.
+{
+    "campsite": {
+        "name": "The Campsite",
+        "background": "backgrounds/campsite.png",
+        "frame": true,
+        "color": "#18202c",
+        "tint": "#c4c8dc",
+        // Midnight: no music, no voices, only the quiet of the jungle (an
+        // insect hum, one cricket) and the fire, low. "campfire@0.45" plays
+        // that loop at 45 %.
+        "ambient": ["night_quiet", "campfire@0.45"],
+        "script": "campsite",
+        "player_x": 118,
+        "walk": [8, 312],
+        "idle_barks": ["y_idle"],
+        "enter": [
+            { "dialogue": "campsite.start" }
+        ],
+        "companion": { "x": 268, "mode": "stay", "pose": "lying", "dialogue": "campsite.x" },
+        "objects": [
+            // The car runs off the left edge; the jacket hangs on its side.
+            { "id": "car", "name": "Broken car", "x": -34, "y": 86, "w": 112, "h": 64, "color": "#2c333d",
+              "sprite": "props/car.png", "dialogue": "campsite.car", "again": "campsite.car_again" },
+            { "id": "jacket", "name": "{x}'s jacket", "x": 30, "y": 108, "w": 16, "h": 24, "color": "#3c4636",
+              "sprite": "props/jacket.png", "dialogue": "campsite.jacket", "again": "campsite.jacket_again" },
+            { "id": "backpack", "name": "Backpack", "x": 82, "y": 135, "w": 16, "h": 16, "color": "#4a4f45",
+              "sprite": "props/backpack.png", "dialogue": "campsite.backpack" },
+            { "id": "map", "name": "Trail map", "x": 100, "y": 132, "w": 16, "h": 16, "color": "#8a8470",
+              "sprite": "props/document.png", "dialogue": "campsite.map", "again": "campsite.map_again" },
+            { "id": "magazines", "name": "Magazines", "x": 117, "y": 135, "w": 16, "h": 16, "color": "#6b6250",
+              "sprite": "props/magazine.png", "dialogue": "campsite.magazines", "again": "campsite.magazines_again" },
+            { "id": "water_bottle", "name": "Water bottle", "x": 132, "y": 131, "w": 16, "h": 16, "color": "#5c7a6c",
+              "sprite": "props/water_bottle.png", "if": "!water_taken", "dialogue": "campsite.bottle" },
+
+            // Put out, the fire smoulders where it burned.
+            { "id": "fire", "name": "Fire", "x": 150, "y": 119, "w": 32, "h": 31, "color": "#3a2a20",
+              "sprite": "sprites/bonfire.json", "effect": "fire", "if": "!fire_out", "dialogue": "campsite.fire" },
+            { "id": "ashes", "name": "Ashes", "x": 150, "y": 119, "w": 32, "h": 31, "color": "#2a2a2c",
+              "sprite": "sprites/bonfire_ember.json", "effect": "ember", "if": "fire_out", "dialogue": "campsite.ashes" },
+            { "id": "pot", "name": "Cooking pot", "x": 182, "y": 136, "w": 16, "h": 16, "color": "#3a3e44",
+              "sprite": "props/cooking_pot_burnt.png", "dialogue": "campsite.pot" },
+
+            { "id": "medical_kit", "name": "Medical kit", "x": 200, "y": 132, "w": 16, "h": 16, "color": "#6a4c4c",
+              "sprite": "props/medkit.png", "dialogue": "campsite.kit", "again": "campsite.kit_again" },
+            { "id": "cigarette_pack", "name": "Cigarette pack", "x": 222, "y": 136, "w": 16, "h": 16, "color": "#9a9488",
+              "sprite": "props/cigarette_pack.png", "if": "!cig_pack_taken", "dialogue": "campsite.cigarettes" },
+
+            { "id": "forest_exit", "name": "Forest path", "x": 300, "y": 70, "w": 20, "h": 80, "color": "#0b0f15", "hidden": true,
+              "exit": "factory_entrance", "exit_if": "fire_out", "locked": "campsite.exit_locked" }
+        ]
+    }
+}

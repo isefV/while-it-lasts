@@ -1,0 +1,10 @@
+// The campfire (128 x 32): 4 frames of 32 x 32, fire and smoke, 100 ms each.
+// A room object with "sprite": "sprites/bonfire.json" plays "idle".
+{
+    "texture": "sprites/bonfire.png",
+    "frame":  { "w": 32, "h": 32 },
+    "origin": { "x": 16, "y": 31 },
+    "animations": {
+        "idle": { "row": 0, "frames": 4, "fps": 10, "loop": true }
+    }
+}

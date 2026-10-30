@@ -1,0 +1,105 @@
+// STAGE 02 rooms. The checkpoint's creature runs an 8-second loop twice (two
+// positions): faces the road (watch), turns to the forest (turned), walks
+// behind the barriers (walk), pauses and listens (listen). A thrown bottle or
+// bolt sends it off into the trees instead (data/dialogue/items.json).
+// At the barricade the noise of the slab brings two waves of crawlers, then
+// X collapses (the first near-death scene) and has to be dragged through,
+// straight to the foot of the mountain (stage03.json).
+{
+    "checkpoint": {
+        "name": "The Checkpoint",
+        "background": "backgrounds/checkpoint.png",
+        "frame": true,
+        "color": "#1b2027",
+        "tint": "#a9b3c4",
+        "fog": 1,
+        "ambient": ["groan", "wind"],
+        "music": "music_perimeter",
+        "script": "checkpoint",
+        "player_x": 20,
+        "enter": [
+            { "dialogue": "checkpoint.arrive" }
+        ],
+        "companion": { "mode": "follow", "bark": "x_idle_good" },
+        "creature": {
+            // On the far side of the road, so drawn smaller.
+            "x": 270, "y": 134, "w": 22, "h": 36, "speed": 26, "color": "#0e1116",
+            "sprite": "sprites/creature.json", "scale": 0.6, "patrol": [150, 280],
+            "phases": [
+                { "state": "turned", "time": 2.5 },
+                { "state": "walk",   "time": 1.5, "to": 180 },
+                { "state": "listen", "time": 1.5 },
+                { "state": "watch",  "time": 2.5 },
+                { "state": "turned", "time": 2.5 },
+                { "state": "walk",   "time": 1.5, "to": 270 },
+                { "state": "listen", "time": 1.5 },
+                { "state": "watch",  "time": 2.5 }
+            ]
+        },
+        "objects": [
+            // The road and the fences are in the background art.
+            { "id": "sign", "name": "Warning sign", "x": 2, "y": 118, "w": 32, "h": 32, "color": "#6a5e48",
+              "sprite": "props/warning_sign.png", "dialogue": "checkpoint.sign" },
+            { "id": "bottles", "name": "Empty bottles", "x": 34, "y": 135, "w": 16, "h": 16, "sprite": "props/water_bottle.png", "color": "#5c7a6c",
+              "if": "!checkpoint_bottles_taken", "dialogue": "checkpoint.bottles" },
+
+            { "id": "barrier", "name": "Concrete barrier", "x": 56, "y": 119, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier_1.png", "cover": true, "interactive": false, "front": true },
+            { "id": "sandbags", "name": "Sandbag wall", "x": 126, "y": 120, "w": 48, "h": 32, "color": "#4f4a3c",
+              "sprite": "props/sandbags.png", "cover": true, "interactive": false },
+            // Still a hiding spot, but drawn behind them: they crouch by the car, not inside it.
+            // The road's two cars (here and at the barricade) are drawn at 1.5 x, a
+            // little taller than the two of them.
+            { "id": "vehicle", "name": "Ruined vehicle", "x": 177, "y": 100, "w": 96, "h": 48, "color": "#3a3530",
+              "sprite": "props/car_v1.png", "scale": 1.5, "cover": true, "interactive": false },
+
+            { "id": "exit_road", "name": "Road beyond", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217", "hidden": true,
+              "exit": "barricade" }
+        ]
+    },
+
+    "barricade": {
+        "name": "The Barricade",
+        "background": "backgrounds/checkpoint.png",
+        "frame": true,
+        "color": "#1d2229",
+        "tint": "#a9b3c4",
+        "fog": 1,
+        "ambient": ["wind"],
+        "music": "music_perimeter",
+        "player_x": 24,
+        "idle_barks": ["y_idle", "x_idle_weak", "y_hurt"],
+        "enter": [
+            { "dialogue": "barricade.arrive" }
+        ],
+        "companion": { "mode": "follow", "dialogue": "barricade.x" },
+        // Levering the slab is loud: two waves of crawlers, the second from
+        // both sides (the ones from X's side go for him).
+        "fight": {
+            "waves": [ { "crawlers": 2, "from": "right" }, { "crawlers": 3, "from": "both" } ],
+            "win": "barricade.waves_won"
+        },
+        "objects": [
+            { "id": "car", "name": "Abandoned car", "x": 0, "y": 103, "w": 96, "h": 48, "color": "#2e343c",
+              "sprite": "props/car_v2.png", "scale": 1.5, "dialogue": "barricade.car", "again": "barricade.car_again" },
+            { "id": "barrier", "x": 120, "y": 117, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier_2.png", "interactive": false },
+            { "id": "suitcase", "x": 156, "y": 136, "w": 16, "h": 16, "color": "#7a6a40",
+              "sprite": "props/abandoned_suitcase.png", "interactive": false },
+            { "id": "rod", "name": "Metal rod", "x": 100, "y": 135, "w": 16, "h": 16, "color": "#6c747c",
+              "sprite": "props/iron_rod.png", "if": "!rod_taken", "dialogue": "barricade.rod" },
+            { "id": "slab", "name": "Concrete slab", "x": 168, "y": 136, "w": 28, "h": 14, "color": "#4a4d50", "hidden": true,
+              "if": "!gap_open", "dialogue": "barricade.slab" },
+            { "id": "fallen_gate", "name": "Fallen gate", "x": 200, "y": 102, "w": 64, "h": 48, "color": "#363b41",
+              "sprite": "props/fallen_gate.png", "dialogue": "barricade.gate", "if": "!gap_open",
+              "block": "!gap_open", "blocked": "barricade.gate" },
+            { "id": "barrier_far", "x": 266, "y": 120, "w": 48, "h": 32, "color": "#4a4e52",
+              "sprite": "props/barrier_3.png", "interactive": false },
+            { "id": "through", "x": 236, "w": 10, "h": 60, "trigger": true, "if": "gap_open && dragging",
+              "dialogue": "barricade.through" },
+
+            { "id": "exit_road", "name": "Road", "x": 306, "y": 90, "w": 14, "h": 60, "color": "#0e1217", "hidden": true,
+              "exit": "foot", "exit_if": "!x_down || dragging", "locked": "mountain.not_without" }
+        ]
+    }
+}

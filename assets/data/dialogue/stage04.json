@@ -1,0 +1,163 @@
+// STAGE 04: THE SUMMIT. Lines are the script's, except where "_added" or
+// "_changed" says otherwise. Branches: a saved cigarette or none (CIG_COUNT),
+// two or more shared (SMOKED_WITH_X), both factory notes read (notes_read >=
+// 2, the script's READ_ALL_NOTES). The room's script starts "summit.reaper".
+//
+// Playtest note (15 October): at the end Y knows. They planned this at the
+// barricade and the Collapse ("Up there. Like we said."). X knows he is
+// dying, and Y does not lie to him to make him feel better: no "We still
+// can", no "Wake up". The lines marked "_changed" replace those.
+{
+    "summit.arrive": [
+        { "narration": "{y} lowers {x} onto a flat rock. Below them lies their town. Behind it, the sky is turning pale.", "do": ["pose x sit", "x_down = false"], "_changed": "sunrise, not sunset" },
+        { "y": "There. Made it." },
+        { "narration": "{y} catches his breath." },
+        { "y": "Told you we would." },
+        { "x": "(eyes opening slowly) Looks the same." },
+        { "y": "Yeah." },
+        { "x": "I thought it'd look different." },
+        { "y": "Different how?" },
+        { "x": "I don't know. Smaller?" },
+        { "y": "It's a pretty dumb place." },
+        { "x": "(faint smile) Yeah. It is." },
+        { "pause": 2.0 },
+        { "x": "I missed it." },
+        { "y": "Me too." },
+        { "y": "We should've come back sooner." },
+        { "x": "We had stuff going on." },
+        { "y": "Still." },
+        { "x": "Hey." },
+        { "y": "Yeah?" },
+        { "x": "We made it." },
+        { "y": "(trying to smile) Yeah. We made it." }
+    ],
+
+    "summit.ground": [
+        { "if": "notes_read >= 2",
+          "then": [
+            { "y": "Hey, remember that note at the factory? \"Don't let them follow you home.\"" },
+            { "x": "I remember." },
+            { "y": "I think we did it anyway." },
+            { "x": "Maybe it's not following us. Maybe it just wanted to see the view." },
+            { "y": "That's not funny." },
+            { "x": "It's a little funny." }
+          ],
+          "else": [
+            { "y": "Our old fire ring. Still here.", "_added": "the ground without the notes" }
+          ] }
+    ],
+
+    "summit.x": [
+        { "if": "!cig_scene_done",
+          "then": [ { "goto": "summit.cigarette_scene" } ],
+          "else": [
+            { "y": "Sleep if you want. I'll keep watch.", "_changed": "was \"You can sleep when we get home\"" },
+            { "narration": "{x} doesn't respond.", "do": ["summit_moments += 1"] }
+          ] }
+    ],
+
+    "summit.cigarette_scene": [
+        { "do": ["place y 76", "face y right"] },
+        { "if": "cig_count >= 1",
+          "then": [
+            { "narration": "{y} finds the cigarette he saved and looks at it." },
+            { "y": "I kept one." },
+            { "x": "Selfish." },
+            { "y": "Learned from the best." },
+            { "x": "(quiet laugh) True." },
+            { "narration": "{y} lights it and holds it out.", "do": ["cig_count -= 1", "cig_lit = true", "cig_held = true", "sound lighter", "pose y smoke"] },
+            { "narration": "{x} takes it with shaking fingers, inhales weakly, and hands it back.", "do": ["pose y idle", "pose x smoke"] }
+          ],
+          "else": [
+            { "narration": "{y} checks his pockets and finds nothing. A small, crumpled cigarette falls from the lining of {x}'s blanket." },
+            { "x": "I was saving that." },
+            { "y": "You were saving one?" },
+            { "x": "It was for a special occasion." },
+            { "y": "Well." },
+            { "x": "Yeah. Well." },
+            { "narration": "{y} lights it. They share it.", "do": ["cig_lit = true", "cig_held = true", "sound lighter", "pose y smoke"] }
+          ] },
+        { "x": "You know what's funny?", "do": ["pose x sit", "pose y idle", "cig_held = false"] },
+        { "y": "What?" },
+        { "x": "All the things we used to worry about." },
+        { "y": "School. Money. Getting out of here." },
+        { "x": "All our stupid arguments." },
+        { "y": "We had some good ones." },
+        { "x": "You were always wrong." },
+        { "y": "You wish." },
+        { "narration": "{x} smiles, then closes his eyes." },
+        { "x": "Remember when we said we'd leave together?" },
+        { "y": "...Yeah." },
+        { "x": "See the whole world." },
+        { "y": "I'll see it. For both of us. That was the deal.", "_changed": "was \"We still can.\": Y does not lie to him" },
+        { "narration": "{x} opens his eyes." },
+        { "x": "You didn't even try to lie.", "_changed": "was \"You're a terrible liar.\"" },
+        { "y": "You'd have caught me." },
+        { "x": "Always have." },
+        { "narration": "{y} laughs. It only breaks a little.", "_changed": "" },
+        { "x": "You remember the rest of the deal?", "_changed": "was \"Come on, man. Don't do this.\"" },
+        { "y": "No speeches. No crying where you can see it. I take the long way home." },
+        { "x": "And?" },
+        { "y": "And I stay until the sun's all the way up." },
+        { "x": "Good. That's good." },
+        { "narration": "{x} leans against his shoulder." },
+        { "x": "I'm tired." },
+        { "y": "I know. It's okay." },
+        { "x": "Just for a minute." },
+        { "y": "Take as long as you want. I'm right here.", "_changed": "was \"Okay. Just rest.\"" },
+        { "if": "smoked_with_x >= 2", "then": [
+            { "x": "Hey. Thanks for all the cigarettes." },
+            { "y": "That sounds like goodbye.", "_changed": "Y says it plainly instead of asking him not to" },
+            { "x": "It's a little bit goodbye." },
+            { "y": "...Then you're welcome. For all of them." }
+        ] },
+        { "do": ["cig_scene_done = true"] }
+    ],
+
+    "summit.horizon": [
+        { "y": "We used to think we'd never get out of here.", "do": ["summit_moments += 1"] }
+    ],
+    "summit.cigarette": [
+        { "narration": "{y} takes another drag. The ember flickers in the wind.", "do": ["summit_moments += 1", "sound inhale", "pose y smoke", "cig_held = true"] },
+        { "do": ["pose y idle", "cig_held = false"] }
+    ],
+
+    "summit.reaper": [
+        { "do": ["event wind_stop"] },
+        { "narration": "The wind stops. The grass and the trees go still." },
+        { "pause": 2.0, "do": ["event reaper_appear"] },
+        { "narration": "At the edge of the clearing, a tall figure appears. It does not move toward them." },
+        { "narration": "{y} sees it. This time he doesn't look away.", "_changed": "Y knows what it is" },
+        { "y": "It's here." },
+        { "pause": 1.5 },
+        { "narration": "No reply. {x}'s breathing is very slow now." },
+        { "y": "Remember the place behind the house? Where we used to hide?" },
+        { "y": "You always said nobody would find us there." },
+        { "narration": "A small, broken laugh." },
+        { "y": "You were wrong about that too." },
+        { "y": "{x}?" },
+        { "narration": "{x}'s head slips gently against his shoulder. {y} catches him.", "do": ["pose x lying"] },
+        { "y": "Hey. It's okay. I've got you.", "_changed": "was \"Come on. Wake up.\"" },
+        { "narration": "{y} doesn't shake him. He doesn't ask him to wake up.", "_changed": "" },
+        { "y": "You don't have to hold on for me. We said." },
+        { "pause": 1.5 },
+        { "y": "I'll take the long way home. Like we planned." },
+        { "narration": "His voice breaks, once." },
+        { "y": "Go on. I'll be okay." },
+        { "y": "...Mostly." },
+        { "narration": "{y} rests his forehead against {x}'s." },
+        { "pause": 2.0, "do": ["event spirit_rise"] },
+        { "narration": "A faint light rises from {x}. It takes a familiar shape. {y} reaches for it, and his hand passes through." },
+        { "pause": 1.5, "do": ["event spirit_to_reaper"] },
+        { "narration": "It looks down at him for a last moment, then drifts toward the tall figure." },
+        { "pause": 2.5, "do": ["pose y smoke", "sound inhale"], "_added": "a moment after X is gone, Y smokes" },
+        { "narration": "{y} raises the cigarette and takes a long, slow drag.", "_added": "" },
+        { "pause": 4.0, "do": ["event reaper_vanish"] },
+        { "narration": "The figure turns and is gone." },
+        { "narration": "{y} does not move. The cigarette burns down between his fingers." },
+        { "pause": 2.0, "do": ["event final_image"] },
+        { "narration": "The sun comes up over the town, the way {x} wanted to see it.", "_changed": "sunrise: the final image" },
+        { "pause": 5.0 },
+        { "do": ["end"] }
+    ]
+}

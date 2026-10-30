@@ -1,0 +1,27 @@
+// STAGE 04: the summit. After the cigarette the player may look at the
+// horizon, X or the cigarette; the room's script starts the Reaper scene
+// after two of those, or after half a minute.
+{
+    "summit": {
+        "name": "The Summit",
+        "background": "backgrounds/summit.png",
+        // No foliage frame: at the end, only the open sky.
+        "color": "#26242e",
+        "tint": "#e6c6ae",
+        "ambient": ["wind"],
+        "script": "summit",
+        "player_x": 56,
+        "walk": [40, 80],
+        "enter": [
+            { "dialogue": "summit.arrive" }
+        ],
+        "companion": { "x": 92, "mode": "stay", "pose": "sit", "dialogue": "summit.x" },
+        "objects": [
+            { "id": "horizon", "name": "Horizon", "x": 30, "y": 24, "w": 286, "h": 70, "hidden": true,
+              "if": "cig_scene_done", "dialogue": "summit.horizon" },
+            // Not drawn (no dot between them): only a place to use it again.
+            { "id": "cigarette", "name": "Cigarette", "x": 82, "y": 124, "w": 2, "h": 2, "color": "#d8d2c4", "hidden": true,
+              "if": "cig_lit && !ember_out && !cig_held", "dialogue": "summit.cigarette" }
+        ]
+    }
+}

@@ -1,13 +1,13 @@
 {
-    // hollow tasks: "Terminal > Run Task..." (Ctrl+Shift+B = CMake: build).
+    // While It Lasts tasks: "Terminal > Run Task..." (Ctrl+Shift+B = Build).
     // Each task is a short chain of plain cmake / ctest commands and asks:
     //
-    //   Debug | Release  >  static library | shared library
+    //   msvc | gcc | clang     then     Debug | Release
     //
-    // Folders: build/<hollow.toolchain>-<Debug|Release>-<static|shared> (programs
-    // in its bin/), packages in install/<hollow.toolchain>/<static|shared>.
-    // The compiler comes from "hollow.toolchain" in settings.json; the files in
-    // .vscode/cmake/ turn the choices into CMake settings (-C <file>).
+    // Folders: build/<toolchain>-<Debug|Release> (programs in its bin/),
+    // packages in install/<toolchain>.
+    // The files in .vscode/cmake/ turn the toolchain into CMake settings
+    // (-C <file>); a new file there needs its name added to "toolchain" below.
     //
     // Every build first runs the configure step: it creates the folder the
     // first time and takes a few seconds afterwards.
@@ -45,68 +45,93 @@
     },
     "tasks": [
         {
-            "label": "CMake: configure",
+            "label": "Configure",
             "detail": "Configure the build folder from scratch (new CMake cache)",
             "type": "shell",
-            "command": "cmake -E rm -f build/${config:hollow.toolchain}-${input:config}-${input:linkage}/CMakeCache.txt; cmake -S . -B build/${config:hollow.toolchain}-${input:config}-${input:linkage} -C .vscode/cmake/${config:hollow.toolchain}.cmake -C .vscode/cmake/${input:linkage}.cmake -DCMAKE_BUILD_TYPE=${input:config}",
+            "command": "cmake -E rm -f build/${input:toolchain}-${input:config}/CMakeCache.txt; cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}",
             "problemMatcher": []
         },
         {
-            "label": "CMake: build",
+            "label": "Build",
             "detail": "Configure, then build the library",
             "type": "shell",
-            "command": "cmake -S . -B build/${config:hollow.toolchain}-${input:config}-${input:linkage} -C .vscode/cmake/${config:hollow.toolchain}.cmake -C .vscode/cmake/${input:linkage}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${config:hollow.toolchain}-${input:config}-${input:linkage} --config ${input:config} --target hollow",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target while_it_lasts",
             "group": { "kind": "build", "isDefault": true },
             "problemMatcher": [ "$msCompile", "$gcc" ]
         },
         {
-            "label": "CMake: rebuild",
-            "detail": "Configure, clean, then build the library again",
+            "label": "Build game",
+            "detail": "Configure, then build the game (While It Lasts.exe, with the library and assets) in build/<toolchain>-<config>/bin",
             "type": "shell",
-            "command": "cmake -S . -B build/${config:hollow.toolchain}-${input:config}-${input:linkage} -C .vscode/cmake/${config:hollow.toolchain}.cmake -C .vscode/cmake/${input:linkage}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${config:hollow.toolchain}-${input:config}-${input:linkage} --config ${input:config} --target hollow --clean-first",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target game",
             "group": "build",
             "problemMatcher": [ "$msCompile", "$gcc" ]
         },
         {
-            "label": "CMake: clean",
+            "label": "Rebuild",
+            "detail": "Configure, clean, then build the library again",
+            "type": "shell",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target while_it_lasts --clean-first",
+            "group": "build",
+            "problemMatcher": [ "$msCompile", "$gcc" ]
+        },
+        {
+            "label": "Clean",
             "detail": "Delete the build outputs, keep the configuration",
             "type": "shell",
-            "command": "cmake --build build/${config:hollow.toolchain}-${input:config}-${input:linkage} --config ${input:config} --target clean",
+            "command": "cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target clean",
             "problemMatcher": []
         },
         {
-            "label": "CMake: install",
-            "detail": "Build the library and install it to install/<toolchain>/<linkage>",
+            "label": "Install",
+            "detail": "Build the library and install it to install/<toolchain>",
             "type": "shell",
-            "command": "cmake -S . -B build/${config:hollow.toolchain}-${input:config}-${input:linkage} -C .vscode/cmake/${config:hollow.toolchain}.cmake -C .vscode/cmake/${input:linkage}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${config:hollow.toolchain}-${input:config}-${input:linkage} --config ${input:config} --target hollow; cmake --install build/${config:hollow.toolchain}-${input:config}-${input:linkage} --config ${input:config} --prefix install/${config:hollow.toolchain}/${input:linkage}",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target while_it_lasts; cmake --install build/${input:toolchain}-${input:config} --config ${input:config} --prefix install/${input:toolchain}",
             "problemMatcher": [ "$msCompile", "$gcc" ]
         },
         {
-            "label": "CMake: ctest",
+            "label": "Ctest",
             "detail": "Build the library, tests and apps, and run all CTest tests",
             "type": "shell",
-            "command": "cmake -S . -B build/${config:hollow.toolchain}-${input:config}-${input:linkage} -C .vscode/cmake/${config:hollow.toolchain}.cmake -C .vscode/cmake/${input:linkage}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${config:hollow.toolchain}-${input:config}-${input:linkage} --config ${input:config}; ctest --test-dir build/${config:hollow.toolchain}-${input:config}-${input:linkage} -C ${input:config} --output-on-failure --timeout 300",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config}; ctest --test-dir build/${input:toolchain}-${input:config} -C ${input:config} --output-on-failure --timeout 300",
             "group": "test",
             "problemMatcher": [ "$msCompile", "$gcc" ]
+        },
+        {
+            // Used by launch.json (preLaunchTask): everything, Debug, with MSVC.
+            "label": "Debug build: msvc",
+            "detail": "Configure and build the library, tests and game (Debug) with MSVC, in build/msvc-Debug",
+            "type": "shell",
+            "command": "cmake -S . -B build/msvc-Debug -C .vscode/cmake/msvc.cmake -DCMAKE_BUILD_TYPE=Debug; cmake --build build/msvc-Debug --config Debug",
+            "problemMatcher": [ "$msCompile" ]
+        },
+        {
+            // Used by launch.json (preLaunchTask): everything, Debug, with GCC.
+            "label": "Debug build: gcc",
+            "detail": "Configure and build the library, tests and game (Debug) with GCC, in build/gcc-Debug",
+            "type": "shell",
+            "command": "cmake -S . -B build/gcc-Debug -C .vscode/cmake/gcc.cmake -DCMAKE_BUILD_TYPE=Debug; cmake --build build/gcc-Debug --config Debug",
+            "problemMatcher": [ "$gcc" ]
         }
     ],
     "inputs": [
+        {
+            "id": "toolchain",
+            "type": "pickString",
+            "description": "Compiler (a file in .vscode/cmake/)",
+            "default": "msvc",
+            "options": [
+                { "label": "msvc   (Visual Studio cl)", "value": "msvc" },
+                { "label": "gcc    (g++ on PATH, e.g. MinGW)", "value": "gcc" },
+                { "label": "clang  (clang++ on PATH)", "value": "clang" }
+            ]
+        },
         {
             "id": "config",
             "type": "pickString",
             "description": "Configuration",
             "default": "Debug",
             "options": [ "Debug", "Release" ]
-        },
-        {
-            "id": "linkage",
-            "type": "pickString",
-            "description": "Library type",
-            "default": "static",
-            "options": [
-                { "label": "static library", "value": "static" },
-                { "label": "shared library", "value": "shared" }
-            ]
         }
     ]
 }
