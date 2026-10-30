@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hollow Code Guide</title>
+<title>While It Lasts Code Guide</title>
 <style>
 :root {
   --bg: #f6f7f9; --panel: #ffffff; --ink: #1d232b; --muted: #5d6875; --line: #c9d0d8;
@@ -77,7 +77,7 @@ svg .ext  { fill: var(--c-ext);  stroke: var(--c-ext-l);  stroke-width: 1.5; }
 svg .plain { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
 svg .edge { stroke: var(--arrow); stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
 svg .edge.dash { stroke-dasharray: 5 4; }
-svg .inherit { stroke: var(--arrow); stroke-width: 1.5; fill: none; marker-end: url(#hollow); }
+svg .inherit { stroke: var(--arrow); stroke-width: 1.5; fill: none; marker-end: url(#open-arrow); }
 svg .accent { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
 svg.canvasmap { max-width: 720px; margin: 0 auto; }
 svg.canvasmap text { font-size: 9px; }
@@ -92,7 +92,7 @@ svg.canvasmap .small { font-size: 8px; }
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" style="fill: var(--arrow)"/>
     </marker>
-    <marker id="hollow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+    <marker id="open-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto">
       <path d="M1,1 L11,6 L1,11 z" style="fill: var(--panel); stroke: var(--arrow); stroke-width: 1.2"/>
     </marker>
   </defs>
@@ -100,8 +100,8 @@ svg.canvasmap .small { font-size: 8px; }
 
 <div class="wrap">
 <header>
-  <h1>Hollow: how the code works</h1>
-  <p>While It Lasts, a C++20 / raylib game. A guide to <code>include/hollow</code>, <code>src</code> and <code>apps/app</code>: every class, how they connect, and what happens in a frame.</p>
+  <h1>While It Lasts: how the code works</h1>
+  <p>A C++20 / raylib game. A guide to <code>include/while_it_lasts</code>, <code>src</code> and <code>apps/app</code>: every class, how they connect, and what happens in a frame.</p>
 </header>
 
 <nav>
@@ -121,10 +121,10 @@ svg.canvasmap .small { font-size: 8px; }
 
 <!-- ================================================================== -->
 <h2 id="big-picture">1. The big picture</h2>
-<p>The project has three layers. The <strong>story</strong> is data: JSON files in <code>assets/data/</code>. The <strong>library</strong> (<code>include/hollow</code> + <code>src</code>, the static library <code>hollow::hollow</code>) holds systems that know nothing about this particular story: a dialogue runner, a dialogue box, rooms, actors, effects. The <strong>game</strong> (<code>apps/app</code>) ties them together: the main loop, the rules for walking and using things, and small scripts for the rooms that need code.</p>
+<p>The project has three layers. The <strong>story</strong> is data: JSON files in <code>assets/data/</code>. The <strong>library</strong> (<code>include/while_it_lasts</code> + <code>src</code>, the static library <code>while_it_lasts::while_it_lasts</code>) holds systems that know nothing about this particular story: a dialogue runner, a dialogue box, rooms, actors, effects. The <strong>game</strong> (<code>apps/app</code>) ties them together: the main loop, the rules for walking and using things, and small scripts for the rooms that need code.</p>
 
 <figure class="figure">
-<svg viewBox="0 0 760 400" role="img" aria-label="Layers: JSON data and the game app use the hollow library, which uses raylib and nlohmann/json">
+<svg viewBox="0 0 760 400" role="img" aria-label="Layers: JSON data and the game app use the library, which uses raylib and nlohmann/json">
   <rect class="data" x="20" y="20" width="210" height="76" rx="6"/>
   <text x="34" y="44" class="title">assets/data/*.json</text>
   <text x="34" y="64" class="small">game, items, barks,</text>
@@ -136,7 +136,7 @@ svg.canvasmap .small { font-size: 8px; }
   <text x="286" y="80" class="small">Walkthrough (scripted playthroughs)</text>
 
   <rect class="lib" x="20" y="130" width="720" height="176" rx="6"/>
-  <text x="34" y="152" class="title">hollow library: include/hollow/ (declarations) + src/ (code)</text>
+  <text x="34" y="152" class="title">The library: include/while_it_lasts/ (declarations) + src/ (code)</text>
   <rect class="plain" x="36" y="164" width="222" height="58" rx="4"/>
   <text x="48" y="186" class="title">system/</text><text x="48" y="206" class="small">canvas, input, assets, audio, story, dialogue</text>
   <rect class="plain" x="269" y="164" width="222" height="58" rx="4"/>
@@ -183,7 +183,7 @@ svg.canvasmap .small { font-size: 8px; }
       <li>Each declared variable goes into the <code>StoryState</code>; a <code>DialogueRunner</code> is created over all conversations, with <code>Game::onCommand</code> as its command handler.</li>
     </ul>
   </li>
-  <li>With <code>--check</code> it prints the problems and stops here (no window). This is the CTest test <code>hollow.app</code>.</li>
+  <li>With <code>--check</code> it prints the problems and stops here (no window). This is the CTest test <code>while_it_lasts.app</code>.</li>
   <li>Otherwise it opens the window (borderless fullscreen unless <code>--windowed</code>), then <code>Game::initGraphics()</code> creates the 480×270 canvas, the 320×180 scene layer, the font, the audio device and the character sprite sheets.</li>
   <li>The loop: <code>while (!WindowShouldClose() &amp;&amp; !game.quitRequested()) game.frame(GetFrameTime());</code> In a walkthrough, <code>Walkthrough::step()</code> runs before each frame to press virtual keys.</li>
 </ol>
@@ -431,13 +431,13 @@ svg.canvasmap .small { font-size: 8px; }
 </figure>
 <ul>
   <li><strong>Scene pixels</strong> (0–320, 0–180, <code>layout::SceneWidth</code>, <code>SceneHeight</code>): rooms, objects, actors, apparitions, the foliage frame. The game draws them into the <code>RenderLayer scene_</code>, which <code>Canvas::present()</code> shows on the screen in the scene box (1.25 canvas pixels per scene pixel), shifted by the screen shake, <em>under</em> the canvas. <code>Game::toCanvas()</code> turns a scene point into canvas pixels; prompts and barks are drawn on the canvas with it, so all text has the same pixels.</li>
-  <li><strong>Canvas pixels</strong> (0–480, 0–270): the HUD, dialogue box, inventory, menus, title and end card, prompts and barks. Constants are in <code>hollow::layout</code> (<code>ui/theme.hpp</code>). In a room the canvas is cleared see-through and drawn with colours multiplied by alpha, so a fade or a dimmed scene covers the scene under it as it should.</li>
+  <li><strong>Canvas pixels</strong> (0–480, 0–270): the HUD, dialogue box, inventory, menus, title and end card, prompts and barks. Constants are in <code>while_it_lasts::layout</code> (<code>ui/theme.hpp</code>). In a room the canvas is cleared see-through and drawn with colours multiplied by alpha, so a fade or a dimmed scene covers the scene under it as it should.</li>
   <li><strong>Screen pixels</strong>: only <code>Canvas::present()</code> and <code>Canvas::toCanvas()</code> know them. <code>Input</code> converts the mouse to canvas pixels at once; the game subtracts the scene box origin to test clicks on objects.</li>
 </ul>
 
 <!-- ================================================================== -->
 <h2 id="lib-classes">7. Library classes, folder by folder</h2>
-<p>Everything is in namespace <code>hollow</code>. File names are relative to <code>include/hollow/</code>; the code is in the same path under <code>src/</code>.</p>
+<p>Everything is in namespace <code>while_it_lasts</code>. File names are relative to <code>include/while_it_lasts/</code>; the code is in the same path under <code>src/</code>.</p>
 
 <h3><span class="tag lib">utility/</span> small helpers</h3>
 <div class="tablewrap"><table>

@@ -1,11 +1,11 @@
-#include <hollow/ui/bark.hpp>
-#include <hollow/ui/text_renderer.hpp>
-#include <hollow/ui/theme.hpp>
+#include <while_it_lasts/ui/bark.hpp>
+#include <while_it_lasts/ui/text_renderer.hpp>
+#include <while_it_lasts/ui/theme.hpp>
 
 #include <algorithm>
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -66,4 +66,4 @@ namespace hollow
             y += 10.0f;
         }
     }
-} // namespace hollow
+} // namespace while_it_lasts

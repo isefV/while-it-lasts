@@ -1,12 +1,12 @@
-#include <hollow/system/input.hpp>
-#include <hollow/ui/dialogue_box.hpp>
-#include <hollow/ui/text_renderer.hpp>
-#include <hollow/ui/widgets.hpp>
+#include <while_it_lasts/system/input.hpp>
+#include <while_it_lasts/ui/dialogue_box.hpp>
+#include <while_it_lasts/ui/text_renderer.hpp>
+#include <while_it_lasts/ui/widgets.hpp>
 
 #include <algorithm>
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -179,4 +179,4 @@ namespace hollow
             }
         }
     }
-} // namespace hollow
+} // namespace while_it_lasts

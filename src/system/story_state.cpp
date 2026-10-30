@@ -1,9 +1,9 @@
-#include <hollow/system/story_state.hpp>
+#include <while_it_lasts/system/story_state.hpp>
 
 #include <algorithm>
 #include <map>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -119,4 +119,4 @@ namespace hollow
     {
         *d_ = *from.d_;
     }
-} // namespace hollow
+} // namespace while_it_lasts

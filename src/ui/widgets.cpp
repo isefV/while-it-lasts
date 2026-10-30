@@ -1,12 +1,12 @@
-#include <hollow/system/assets.hpp>
-#include <hollow/system/input.hpp>
-#include <hollow/ui/text_renderer.hpp>
-#include <hollow/ui/widgets.hpp>
+#include <while_it_lasts/system/assets.hpp>
+#include <while_it_lasts/system/input.hpp>
+#include <while_it_lasts/ui/text_renderer.hpp>
+#include <while_it_lasts/ui/widgets.hpp>
 
 #include <algorithm>
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     void drawPanel(Assets& assets, Rectangle rect, const UiConfig& ui)
     {
@@ -103,4 +103,4 @@ namespace hollow
             text.draw(items[static_cast<std::size_t>(i)], Vector2{r.x + 10, r.y + 1}, active ? ui.highlight : ui.dim);
         }
     }
-} // namespace hollow
+} // namespace while_it_lasts

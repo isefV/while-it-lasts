@@ -1,10 +1,10 @@
-#include <hollow/system/assets.hpp>
-#include <hollow/ui/text_renderer.hpp>
+#include <while_it_lasts/system/assets.hpp>
+#include <while_it_lasts/ui/text_renderer.hpp>
 
 #include <cmath>
 #include <string>
 
-namespace hollow
+namespace while_it_lasts
 {
     TextRenderer::~TextRenderer()
     {
@@ -87,4 +87,4 @@ namespace hollow
     {
         return [this](std::string_view text) { return measure(text); };
     }
-} // namespace hollow
+} // namespace while_it_lasts

@@ -1,8 +1,8 @@
-#include <hollow/objects/actor.hpp>
+#include <while_it_lasts/objects/actor.hpp>
 
 #include <gtest/gtest.h>
 
-using namespace hollow;
+using namespace while_it_lasts;
 
 namespace
 {

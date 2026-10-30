@@ -4,7 +4,7 @@
 // Public headers never include this, so nlohmann/json stays an internal
 // dependency.
 
-#include <hollow/utility/diagnostics.hpp>
+#include <while_it_lasts/utility/diagnostics.hpp>
 
 #include <raylib.h>
 
@@ -15,7 +15,7 @@
 #include <string_view>
 #include <vector>
 
-namespace hollow::detail
+namespace while_it_lasts::detail
 {
     // ordered_json keeps the order the writer used (conversations, rooms,
     // items in the inventory).
@@ -54,4 +54,4 @@ namespace hollow::detail
     /// "dialog" for "dialogue"). Keys starting with "_" are comments.
     void checkKeys(const Json& obj, std::initializer_list<std::string_view> known, const std::string& where,
                    Diagnostics& diag);
-} // namespace hollow::detail
+} // namespace while_it_lasts::detail

@@ -1,11 +1,11 @@
-#include <hollow/objects/sprite.hpp>
-#include <hollow/system/assets.hpp>
+#include <while_it_lasts/objects/sprite.hpp>
+#include <while_it_lasts/system/assets.hpp>
 
 #include "../utility/json_util.hpp"
 
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     using detail::child;
     using detail::Json;
@@ -149,4 +149,4 @@ namespace hollow
         DrawTexturePro(*sheet.texture, frameSource(*animation, animator, flipX), dest, Vector2{0, 0}, 0.0f, tint);
         return true;
     }
-} // namespace hollow
+} // namespace while_it_lasts

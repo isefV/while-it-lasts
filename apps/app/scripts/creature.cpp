@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-using namespace hollow;
+using namespace while_it_lasts;
 
 void Creature::reset(Game& game, const CreatureDef& creature)
 {

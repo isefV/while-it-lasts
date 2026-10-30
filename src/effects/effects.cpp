@@ -1,10 +1,10 @@
-#include <hollow/effects/effects.hpp>
-#include <hollow/utility/math.hpp>
+#include <while_it_lasts/effects/effects.hpp>
+#include <while_it_lasts/utility/math.hpp>
 
 #include <algorithm>
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     void Fade::to(float target, float seconds)
     {
@@ -158,4 +158,4 @@ namespace hollow
                              ColorAlpha(p.color, a));
         }
     }
-} // namespace hollow
+} // namespace while_it_lasts

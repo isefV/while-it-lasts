@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cstdlib>
 
-using namespace hollow;
+using namespace while_it_lasts;
 
 namespace
 {
@@ -349,13 +349,13 @@ bool Game::startAt(const std::string& room, const std::vector<std::pair<std::str
 {
     if (!room.empty() && !data_.rooms.contains(room))
     {
-        TraceLog(LOG_ERROR, "Hollow: --room: no room \"%s\"", room.c_str());
+        TraceLog(LOG_ERROR, "While It Lasts: --room: no room \"%s\"", room.c_str());
         return false;
     }
     newGame(room);
     for (const auto& [name, value] : values)
     {
-        if (!state_.defined(name)) TraceLog(LOG_WARNING, "Hollow: --set: no variable \"%s\"", name.c_str());
+        if (!state_.defined(name)) TraceLog(LOG_WARNING, "While It Lasts: --set: no variable \"%s\"", name.c_str());
         state_.set(name, value);
     }
     saveCheckpoint(room_->id, -1.0f); // with the values set
@@ -611,7 +611,7 @@ bool Game::startDialogue(const std::string& id)
     input_.consume();
     const bool started = runner_->start(id);
     if (!started && !data_.conversations.contains(id))
-        TraceLog(LOG_WARNING, "Hollow: no conversation \"%s\"", id.c_str());
+        TraceLog(LOG_WARNING, "While It Lasts: no conversation \"%s\"", id.c_str());
     return started;
 }
 
@@ -708,7 +708,7 @@ void Game::onCommand(const Effect& effect)
     else if (verb == "fight")
     {
         if (room_->fight.present) fight_.start(*this);
-        else TraceLog(LOG_WARNING, "Hollow: fight: the room \"%s\" has no \"fight\"", room_->id.c_str());
+        else TraceLog(LOG_WARNING, "While It Lasts: fight: the room \"%s\" has no \"fight\"", room_->id.c_str());
     }
     else if (verb == "revive")
     {
@@ -1641,7 +1641,7 @@ void Game::drawTitle()
     const std::string title = data_.title;
     const float w = text_.measureScaled(title, 2);
     text_.drawScaled(title, Vector2{std::round(240 - w / 2), 90}, data_.ui.highlight, 2);
-    const std::string version = "v" + std::string(hollow::version());
+    const std::string version = "v" + std::string(while_it_lasts::version());
     text_.draw(version, Vector2{std::round(240 - text_.measure(version) / 2), 112}, data_.ui.dim);
 
     // The one warm thing on a cold screen.

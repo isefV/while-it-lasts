@@ -9,9 +9,9 @@
     //
     // Both debuggers come with the C/C++ extension (ms-vscode.cpptools).
     //
-    // hollow's debug info names its sources \hollow\src\... (MSVC) or
-    // /hollow/src/... (GCC), the same on every PC; "sourceFileMap" points that
-    // root at this checkout.
+    // The library's debug info names its sources \while_it_lasts\src\... (MSVC)
+    // or /while_it_lasts/src/... (GCC), the same on every PC; "sourceFileMap"
+    // points that root at this checkout.
     //
     // The game starts in a 1280 x 720 window here (--windowed). Other options
     // for "args": "--room", "summit", "--set", "cig_count=0" (see README.md).
@@ -22,7 +22,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "preLaunchTask": "Debug build: msvc",
-            "sourceFileMap": { "\\hollow": "${workspaceFolder}" },
+            "sourceFileMap": { "\\while_it_lasts": "${workspaceFolder}" },
             "program": "${workspaceFolder}/build/msvc-Debug/bin/While It Lasts.exe",
             "args": ["--windowed"],
             "stopAtEntry": false,
@@ -37,7 +37,7 @@
             "preLaunchTask": "Debug build: gcc",
             "MIMode": "gdb",
             "miDebuggerPath": "gdb",
-            "sourceFileMap": { "/hollow": "${workspaceFolder}" },
+            "sourceFileMap": { "/while_it_lasts": "${workspaceFolder}" },
             "program": "${workspaceFolder}/build/gcc-Debug/bin/While It Lasts.exe",
             "args": ["--windowed"],
             "stopAtEntry": false,
@@ -53,8 +53,8 @@
             "type": "cppvsdbg",
             "request": "launch",
             "preLaunchTask": "Debug build: msvc",
-            "sourceFileMap": { "\\hollow": "${workspaceFolder}" },
-            "program": "${workspaceFolder}/build/msvc-Debug/bin/hollow_tests.exe",
+            "sourceFileMap": { "\\while_it_lasts": "${workspaceFolder}" },
+            "program": "${workspaceFolder}/build/msvc-Debug/bin/while_it_lasts_tests.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/msvc-Debug/bin",
@@ -68,8 +68,8 @@
             "preLaunchTask": "Debug build: gcc",
             "MIMode": "gdb",
             "miDebuggerPath": "gdb",
-            "sourceFileMap": { "/hollow": "${workspaceFolder}" },
-            "program": "${workspaceFolder}/build/gcc-Debug/bin/hollow_tests.exe",
+            "sourceFileMap": { "/while_it_lasts": "${workspaceFolder}" },
+            "program": "${workspaceFolder}/build/gcc-Debug/bin/while_it_lasts_tests.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/gcc-Debug/bin",

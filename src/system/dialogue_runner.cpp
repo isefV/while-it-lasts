@@ -1,7 +1,7 @@
-#include <hollow/system/dialogue_runner.hpp>
-#include <hollow/system/story_state.hpp>
+#include <while_it_lasts/system/dialogue_runner.hpp>
+#include <while_it_lasts/system/story_state.hpp>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -248,4 +248,4 @@ namespace hollow
     {
         return d_->currentId;
     }
-} // namespace hollow
+} // namespace while_it_lasts

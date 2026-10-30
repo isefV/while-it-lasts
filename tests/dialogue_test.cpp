@@ -1,6 +1,6 @@
-#include <hollow/data/game_data.hpp>
-#include <hollow/system/dialogue_runner.hpp>
-#include <hollow/system/story_state.hpp>
+#include <while_it_lasts/data/game_data.hpp>
+#include <while_it_lasts/system/dialogue_runner.hpp>
+#include <while_it_lasts/system/story_state.hpp>
 
 #include <gtest/gtest.h>
 
@@ -43,27 +43,27 @@ namespace
 
     struct Fixture
     {
-        hollow::ConversationMap conversations;
-        hollow::StoryState state;
+        while_it_lasts::ConversationMap conversations;
+        while_it_lasts::StoryState state;
         std::vector<std::string> commands;
-        std::unique_ptr<hollow::DialogueRunner> runner;
+        std::unique_ptr<while_it_lasts::DialogueRunner> runner;
 
         Fixture()
         {
-            hollow::Diagnostics diag;
-            hollow::parseDialogueText(Sample, "sample.json", conversations, diag);
+            while_it_lasts::Diagnostics diag;
+            while_it_lasts::parseDialogueText(Sample, "sample.json", conversations, diag);
             EXPECT_TRUE(diag.ok()) << (diag.errors.empty() ? "" : diag.errors.front());
 
             state.define("cig_count", 0, 0, 3);
             state.define("noisy_entry", 0, 0, 1);
             state.define("x_condition", 3, 0, 3);
-            runner = std::make_unique<hollow::DialogueRunner>(conversations, state, [this](const hollow::Effect& e) {
+            runner = std::make_unique<while_it_lasts::DialogueRunner>(conversations, state, [this](const while_it_lasts::Effect& e) {
                 commands.push_back(e.name + (e.args.empty() ? "" : " " + e.args[0]));
             });
             runner->setTokens({{"x", "Sam"}, {"y", "Ash"}});
         }
 
-        const hollow::DialogueView& view() const { return runner->view(); }
+        const while_it_lasts::DialogueView& view() const { return runner->view(); }
     };
 } // namespace
 
@@ -71,16 +71,16 @@ TEST(Dialogue, PlaysLinesWithStylesAndNames)
 {
     Fixture f;
     ASSERT_TRUE(f.runner->start("intro"));
-    EXPECT_EQ(f.view().style, hollow::LineStyle::Narration);
+    EXPECT_EQ(f.view().style, while_it_lasts::LineStyle::Narration);
     f.runner->advance();
     EXPECT_EQ(f.view().speaker, "y");
     EXPECT_EQ(f.view().text, "Hey, Sam.");
     f.runner->advance();
-    EXPECT_EQ(f.view().style, hollow::LineStyle::Thought);
+    EXPECT_EQ(f.view().style, while_it_lasts::LineStyle::Thought);
     f.runner->advance();
 
     // The conditional line is skipped; the hidden option is not shown.
-    ASSERT_EQ(f.view().kind, hollow::DialogueView::Kind::Choice);
+    ASSERT_EQ(f.view().kind, while_it_lasts::DialogueView::Kind::Choice);
     EXPECT_EQ(f.view().options, (std::vector<std::string>{"Take it.", "Leave it."}));
 }
 
@@ -94,7 +94,7 @@ TEST(Dialogue, ChoiceWithNextAppliesEffectsAndJumps)
     EXPECT_EQ(f.state.get("cig_count"), 1);
     EXPECT_EQ(f.view().text, "Later. Maybe.");
     f.runner->advance();
-    EXPECT_EQ(f.view().kind, hollow::DialogueView::Kind::Pause);
+    EXPECT_EQ(f.view().kind, while_it_lasts::DialogueView::Kind::Pause);
     f.runner->update(0.6f);
     EXPECT_EQ(f.view().text, "Bye.");
     EXPECT_EQ(f.commands, (std::vector<std::string>{"sound lighter", "event done"}));
@@ -118,7 +118,7 @@ TEST(Dialogue, TimedChoiceTakesTheTimeoutOption)
     f.runner->start("timed");
     EXPECT_EQ(f.view().options.size(), 1u); // the timeout option has no text
     f.runner->update(1.0f);
-    EXPECT_EQ(f.view().kind, hollow::DialogueView::Kind::Choice);
+    EXPECT_EQ(f.view().kind, while_it_lasts::DialogueView::Kind::Choice);
     f.runner->update(1.5f);
     EXPECT_EQ(f.state.get("x_condition"), 2);
     EXPECT_EQ(f.view().text, "Too slow.");
@@ -126,16 +126,16 @@ TEST(Dialogue, TimedChoiceTakesTheTimeoutOption)
 
 TEST(Dialogue, ReportsMistakesWithTheirPlace)
 {
-    hollow::ConversationMap out;
-    hollow::Diagnostics diag;
-    hollow::parseDialogueText(R"({ "a": [ { "y": "hi", "x": "both?" }, { "if": "a = 1", "y": "x" } ] })", "bad.json",
+    while_it_lasts::ConversationMap out;
+    while_it_lasts::Diagnostics diag;
+    while_it_lasts::parseDialogueText(R"({ "a": [ { "y": "hi", "x": "both?" }, { "if": "a = 1", "y": "x" } ] })", "bad.json",
                               out, diag);
     ASSERT_EQ(diag.errors.size(), 2u);
     EXPECT_NE(diag.errors[0].find("bad.json: a[0]"), std::string::npos);
     EXPECT_NE(diag.errors[1].find("bad.json: a[1].if"), std::string::npos);
 
-    hollow::Diagnostics syntax;
-    hollow::parseDialogueText("{\n  \"a\": [\n    { \"y\": \"hi\" },,\n  ]\n}", "broken.json", out, syntax);
+    while_it_lasts::Diagnostics syntax;
+    while_it_lasts::parseDialogueText("{\n  \"a\": [\n    { \"y\": \"hi\" },,\n  ]\n}", "broken.json", out, syntax);
     ASSERT_EQ(syntax.errors.size(), 1u);
     EXPECT_EQ(syntax.errors[0].rfind("broken.json:3:", 0), 0u) << syntax.errors[0];
 }

@@ -1,11 +1,11 @@
-#include <hollow/system/script.hpp>
-#include <hollow/system/story_state.hpp>
-#include <hollow/utility/text.hpp>
+#include <while_it_lasts/system/script.hpp>
+#include <while_it_lasts/system/story_state.hpp>
+#include <while_it_lasts/utility/text.hpp>
 
 #include <cctype>
 #include <charconv>
 
-namespace hollow
+namespace while_it_lasts
 {
     // -------------------------------------------------------------------------
     // Conditions: a recursive-descent parser over a short token list
@@ -423,4 +423,4 @@ namespace hollow
         }
         return false;
     }
-} // namespace hollow
+} // namespace while_it_lasts

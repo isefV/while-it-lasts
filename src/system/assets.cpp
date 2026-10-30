@@ -1,6 +1,6 @@
-#include <hollow/system/assets.hpp>
+#include <while_it_lasts/system/assets.hpp>
 
-namespace hollow
+namespace while_it_lasts
 {
     Assets::Assets(std::string root)
         : root_(std::move(root))
@@ -49,4 +49,4 @@ namespace hollow
             if (texture.id != 0) UnloadTexture(texture);
         textures_.clear();
     }
-} // namespace hollow
+} // namespace while_it_lasts

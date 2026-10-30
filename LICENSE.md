@@ -1,9 +1,9 @@
 # License
 
-Copyright (c) 2026 the hollow authors. All rights reserved.
+Copyright (c) 2026 the While It Lasts authors. All rights reserved.
 
-No open-source license has been chosen for hollow yet. Until this file is
-replaced by one (for example the MIT or Apache-2.0 license text), no rights
+No open-source license has been chosen for While It Lasts yet. Until this file
+is replaced by one (for example the MIT or Apache-2.0 license text), no rights
 to use, copy, modify or distribute the code are granted beyond those of its
 authors.
 

@@ -1,6 +1,6 @@
-#include <hollow/utility/random.hpp>
+#include <while_it_lasts/utility/random.hpp>
 
-namespace hollow
+namespace while_it_lasts
 {
     Random::Random(unsigned seed)
         : engine_(seed)
@@ -39,4 +39,4 @@ namespace hollow
         last_ = index;
         return index;
     }
-} // namespace hollow
+} // namespace while_it_lasts

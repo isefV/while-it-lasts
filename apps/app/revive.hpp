@@ -14,7 +14,7 @@
 // presses: good presses needed (default 8); seconds: how long the Reaper
 // takes to reach him (default 14).
 
-#include <hollow/hollow.hpp>
+#include <while_it_lasts/while_it_lasts.hpp>
 
 #include <string>
 
@@ -53,7 +53,7 @@ private:
     float reaperSpeed_ = 0.0f; // scene pixels per second
     int reaperSide_ = 1;       // it comes from this side of X
     float reaperAlpha_ = 0.0f;
-    hollow::Animator reaperFrames_;
+    while_it_lasts::Animator reaperFrames_;
     float closeness_ = 0.0f;   // 0 far, 1 at X
     float done_ = -1.0f;       // seconds since the end
     bool touched_ = false;

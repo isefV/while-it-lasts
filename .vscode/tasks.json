@@ -1,5 +1,5 @@
 {
-    // hollow tasks: "Terminal > Run Task..." (Ctrl+Shift+B = CMake: build).
+    // While It Lasts tasks: "Terminal > Run Task..." (Ctrl+Shift+B = Build).
     // Each task is a short chain of plain cmake / ctest commands and asks:
     //
     //   msvc | gcc | clang     then     Debug | Release
@@ -55,7 +55,7 @@
             "label": "Build",
             "detail": "Configure, then build the library",
             "type": "shell",
-            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target hollow",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target while_it_lasts",
             "group": { "kind": "build", "isDefault": true },
             "problemMatcher": [ "$msCompile", "$gcc" ]
         },
@@ -71,7 +71,7 @@
             "label": "Rebuild",
             "detail": "Configure, clean, then build the library again",
             "type": "shell",
-            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target hollow --clean-first",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target while_it_lasts --clean-first",
             "group": "build",
             "problemMatcher": [ "$msCompile", "$gcc" ]
         },
@@ -86,7 +86,7 @@
             "label": "Install",
             "detail": "Build the library and install it to install/<toolchain>",
             "type": "shell",
-            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target hollow; cmake --install build/${input:toolchain}-${input:config} --config ${input:config} --prefix install/${input:toolchain}",
+            "command": "cmake -S . -B build/${input:toolchain}-${input:config} -C .vscode/cmake/${input:toolchain}.cmake -DCMAKE_BUILD_TYPE=${input:config}; cmake --build build/${input:toolchain}-${input:config} --config ${input:config} --target while_it_lasts; cmake --install build/${input:toolchain}-${input:config} --config ${input:config} --prefix install/${input:toolchain}",
             "problemMatcher": [ "$msCompile", "$gcc" ]
         },
         {

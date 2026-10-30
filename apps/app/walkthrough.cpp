@@ -7,7 +7,7 @@
 #include <fstream>
 #include <iostream>
 
-using namespace hollow;
+using namespace while_it_lasts;
 
 namespace
 {

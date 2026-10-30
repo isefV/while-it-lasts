@@ -13,7 +13,7 @@
 // When Y_HEALTH reaches 0, Y goes down and the game's death screen follows.
 // Y cannot fight while dragging X: G lets go of him first.
 
-#include <hollow/hollow.hpp>
+#include <while_it_lasts/while_it_lasts.hpp>
 
 #include <optional>
 #include <string>
@@ -108,10 +108,10 @@ private:
     [[nodiscard]] float targetX(Game& game, const Foe& foe) const;
 
     bool active_ = false;
-    const hollow::FightDef* def_ = nullptr;
-    const hollow::CreatureDef* creature_ = nullptr;
-    std::optional<hollow::SpriteSheet> bruteSheet_; // the room creature's art, while it fights
-    hollow::Animator bruteFrames_;
+    const while_it_lasts::FightDef* def_ = nullptr;
+    const while_it_lasts::CreatureDef* creature_ = nullptr;
+    std::optional<while_it_lasts::SpriteSheet> bruteSheet_; // the room creature's art, while it fights
+    while_it_lasts::Animator bruteFrames_;
     float bruteSpeed_ = 1.0f;
     std::vector<Foe> foes_;
     std::size_t wave_ = 0;    // waves sent so far

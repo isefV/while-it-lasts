@@ -1,4 +1,4 @@
-#include <hollow/data/game_data.hpp>
+#include <while_it_lasts/data/game_data.hpp>
 
 #include "../utility/json_util.hpp"
 
@@ -6,7 +6,7 @@
 #include <array>
 #include <filesystem>
 
-namespace hollow
+namespace while_it_lasts
 {
     using detail::child;
     using detail::Json;
@@ -551,7 +551,7 @@ namespace hollow
                                "variables", "ui", "bars", "end_card", "credits"},
                               where, diag);
 
-            data.title = detail::readString(root, "title", where, diag, "Hollow");
+            data.title = detail::readString(root, "title", where, diag, "While It Lasts");
             data.startRoom = detail::readString(root, "start_room", where, diag);
             data.startItems = detail::readStrings(root, "start_items", where, diag);
             data.player = detail::readString(root, "player", where, diag, data.player);
@@ -958,4 +958,4 @@ namespace hollow
     {
         Checker(data, commands, diag).run();
     }
-} // namespace hollow
+} // namespace while_it_lasts

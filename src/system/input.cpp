@@ -1,8 +1,8 @@
-#include <hollow/system/input.hpp>
+#include <while_it_lasts/system/input.hpp>
 
 #include <span>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -84,4 +84,4 @@ namespace hollow
             if (IsKeyDown(key)) return true;
         return false;
     }
-} // namespace hollow
+} // namespace while_it_lasts

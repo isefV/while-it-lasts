@@ -1,11 +1,11 @@
-#include <hollow/system/canvas.hpp>
+#include <while_it_lasts/system/canvas.hpp>
 
 #include <rlgl.h>
 
 #include <algorithm>
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     RenderLayer::~RenderLayer()
     {
@@ -174,4 +174,4 @@ namespace hollow
     {
         return Vector2{(screen.x - destination_.x) / scale_, (screen.y - destination_.y) / scale_};
     }
-} // namespace hollow
+} // namespace while_it_lasts

@@ -1,11 +1,11 @@
-#include <hollow/objects/actor.hpp>
-#include <hollow/utility/color.hpp>
-#include <hollow/utility/math.hpp>
+#include <while_it_lasts/objects/actor.hpp>
+#include <while_it_lasts/utility/color.hpp>
+#include <while_it_lasts/utility/math.hpp>
 
 #include <algorithm>
 #include <cmath>
 
-namespace hollow
+namespace while_it_lasts
 {
     void Actor::walkTo(float targetX)
     {
@@ -138,4 +138,4 @@ namespace hollow
             DrawRectangleRec(Rectangle{eyeX, r.y + 3, 1, 2}, Color{12, 14, 18, body.a});
         }
     }
-} // namespace hollow
+} // namespace while_it_lasts

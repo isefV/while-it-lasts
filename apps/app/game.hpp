@@ -7,7 +7,7 @@
 #include "reaper.hpp"
 #include "revive.hpp"
 
-#include <hollow/hollow.hpp>
+#include <while_it_lasts/while_it_lasts.hpp>
 
 #include <array>
 #include <map>
@@ -36,7 +36,7 @@ public:
     Game& operator=(const Game&) = delete;
 
     /// Reads and checks assets/data/. Works without a window (--check).
-    bool load(hollow::Diagnostics& diag);
+    bool load(while_it_lasts::Diagnostics& diag);
 
     /// Window-dependent parts: canvas, font, sprites, sound.
     void initGraphics();
@@ -64,26 +64,26 @@ public:
     // For the room scripts
     // ------------------------------------------------------------------
 
-    hollow::StoryState& state() { return state_; }
-    [[nodiscard]] const hollow::GameData& data() const { return data_; }
-    [[nodiscard]] const hollow::RoomDef& room() const { return *room_; }
-    hollow::Assets& assets() { return assets_; }
-    [[nodiscard]] const hollow::Input& input() const { return input_; }
-    [[nodiscard]] const hollow::TextRenderer& text() const { return text_; }
+    while_it_lasts::StoryState& state() { return state_; }
+    [[nodiscard]] const while_it_lasts::GameData& data() const { return data_; }
+    [[nodiscard]] const while_it_lasts::RoomDef& room() const { return *room_; }
+    while_it_lasts::Assets& assets() { return assets_; }
+    [[nodiscard]] const while_it_lasts::Input& input() const { return input_; }
+    [[nodiscard]] const while_it_lasts::TextRenderer& text() const { return text_; }
     [[nodiscard]] RoomScript* script() { return script_.get(); }
     [[nodiscard]] Color tint() const { return tint_; }
     [[nodiscard]] const Fight& fight() const { return fight_; }
-    hollow::Random& random() { return random_; }
-    hollow::Particles& particles() { return particles_; }
-    [[nodiscard]] const hollow::UiConfig& ui() const { return data_.ui; }
+    while_it_lasts::Random& random() { return random_; }
+    while_it_lasts::Particles& particles() { return particles_; }
+    [[nodiscard]] const while_it_lasts::UiConfig& ui() const { return data_.ui; }
     /// Switches to the font of that name in game.json "ui" "fonts" (--font).
     bool setFont(const std::string& name);
 
     /// sprites/reaper.json, or nullptr while it does not exist.
-    [[nodiscard]] const hollow::SpriteSheet* reaperSheet() const;
+    [[nodiscard]] const while_it_lasts::SpriteSheet* reaperSheet() const;
 
-    hollow::Actor& player() { return player_; }
-    hollow::Actor& companion() { return companion_; }
+    while_it_lasts::Actor& player() { return player_; }
+    while_it_lasts::Actor& companion() { return companion_; }
     [[nodiscard]] CompanionMode companionMode() const { return companionMode_; }
     void setCompanionMode(CompanionMode mode, float x = -1.0f);
 
@@ -101,8 +101,8 @@ public:
     void endGame();
 
     /// The hiding spot the player stands in, or nullptr.
-    [[nodiscard]] const hollow::ObjectDef* coverAt(float x) const;
-    [[nodiscard]] bool present(const hollow::ObjectDef& object) const;
+    [[nodiscard]] const while_it_lasts::ObjectDef* coverAt(float x) const;
+    [[nodiscard]] bool present(const while_it_lasts::ObjectDef& object) const;
     [[nodiscard]] float timeInRoom() const { return timeInRoom_; }
 
 private:
@@ -132,8 +132,8 @@ private:
     void updateWarnings(float dt);
     void drawWarning();
     void runEnterRules();
-    void onCommand(const hollow::Effect& effect);
-    hollow::Actor* actor(const std::string& id);
+    void onCommand(const while_it_lasts::Effect& effect);
+    while_it_lasts::Actor* actor(const std::string& id);
 
     void update(float dt);
     void toTitle();
@@ -144,22 +144,22 @@ private:
     void updateExploring(float dt);
     void updateCompanion(float dt);
     void updateTriggers();
-    void interact(const hollow::ObjectDef* object);
+    void interact(const while_it_lasts::ObjectDef* object);
     void talkToCompanion();
     void grabOrRelease();
     [[nodiscard]] bool canGrab() const;
-    [[nodiscard]] std::vector<hollow::InventoryEntry> inventory() const;
+    [[nodiscard]] std::vector<while_it_lasts::InventoryEntry> inventory() const;
 
     // What the player can use: the things in reach. E uses the nearest one,
     // or the one picked with W/S when several are in reach.
     struct Target
     {
-        const hollow::ObjectDef* object = nullptr; // nullptr + companion = X
+        const while_it_lasts::ObjectDef* object = nullptr; // nullptr + companion = X
         bool companion = false;
         [[nodiscard]] bool valid() const { return object || companion; }
         bool operator==(const Target&) const = default;
     };
-    [[nodiscard]] bool usable(const hollow::ObjectDef& object) const;
+    [[nodiscard]] bool usable(const while_it_lasts::ObjectDef& object) const;
     [[nodiscard]] bool companionUsable() const;
     [[nodiscard]] Rectangle targetRect(const Target& target) const;
     [[nodiscard]] bool inReach(Rectangle rect) const;
@@ -168,28 +168,28 @@ private:
 
     void draw();
     void drawScene();
-    void drawObject(const hollow::ObjectDef& object, bool highlighted);
-    void drawEffect(const hollow::ObjectDef& object);
+    void drawObject(const while_it_lasts::ObjectDef& object, bool highlighted);
+    void drawEffect(const while_it_lasts::ObjectDef& object);
     void drawFrame();
     void drawSceneLabels(); ///< barks and the "[E] thing" prompt, over the scene
     [[nodiscard]] Vector2 toCanvas(Vector2 scenePoint) const;
-    [[nodiscard]] const hollow::SpriteSheet* objectSheet(const hollow::ObjectDef& object) const;
+    [[nodiscard]] const while_it_lasts::SpriteSheet* objectSheet(const while_it_lasts::ObjectDef& object) const;
     void drawHud();
     void drawTitle();
     void drawPause();
     void drawSettings();
     void drawEndCard();
 
-    std::string objectKey(const hollow::ObjectDef& object) const;
+    std::string objectKey(const while_it_lasts::ObjectDef& object) const;
 
-    hollow::Assets assets_;
-    hollow::Audio audio_;
-    hollow::GameData data_;
-    hollow::StoryState state_;
-    std::unique_ptr<hollow::DialogueRunner> runner_;
-    hollow::Random random_;
+    while_it_lasts::Assets assets_;
+    while_it_lasts::Audio audio_;
+    while_it_lasts::GameData data_;
+    while_it_lasts::StoryState state_;
+    std::unique_ptr<while_it_lasts::DialogueRunner> runner_;
+    while_it_lasts::Random random_;
 
-    hollow::Canvas canvas_;
+    while_it_lasts::Canvas canvas_;
     // Entering a room still pulling X: Y walks him in before anything starts.
     struct HaulIn
     {
@@ -202,31 +202,31 @@ private:
     void updateHaulIn();
     HaulIn haul_;
 
-    hollow::RenderLayer scene_;
+    while_it_lasts::RenderLayer scene_;
     bool sceneShown_ = false; // this frame: the scene is under the canvas,
     Rectangle sceneAt_{};     // here (canvas pixels, shaken)
-    hollow::Input input_;
-    hollow::TextRenderer text_;
-    hollow::DialogueBox dialogueBox_;
-    hollow::InventoryPanel inventoryPanel_;
-    hollow::BarkPlayer barks_;
-    std::map<std::string, hollow::NoRepeatPicker, std::less<>> barkPickers_;
-    hollow::Menu titleMenu_;
-    hollow::Menu pauseMenu_;
-    hollow::Menu settingsMenu_;
+    while_it_lasts::Input input_;
+    while_it_lasts::TextRenderer text_;
+    while_it_lasts::DialogueBox dialogueBox_;
+    while_it_lasts::InventoryPanel inventoryPanel_;
+    while_it_lasts::BarkPlayer barks_;
+    std::map<std::string, while_it_lasts::NoRepeatPicker, std::less<>> barkPickers_;
+    while_it_lasts::Menu titleMenu_;
+    while_it_lasts::Menu pauseMenu_;
+    while_it_lasts::Menu settingsMenu_;
     Screen settingsFrom_ = Screen::Title; // where Back returns to
     std::size_t fontIndex_ = 0;           // in ui().fonts
-    std::map<std::string, hollow::SpriteSheet, std::less<>> sheets_; // characters by id, and "reaper"
-    std::map<std::string, hollow::SpriteSheet, std::less<>> objectSheets_; // sheet config path -> sheet
+    std::map<std::string, while_it_lasts::SpriteSheet, std::less<>> sheets_; // characters by id, and "reaper"
+    std::map<std::string, while_it_lasts::SpriteSheet, std::less<>> objectSheets_; // sheet config path -> sheet
 
     Screen screen_ = Screen::Title;
     bool quit_ = false;
     bool graphics_ = false;
 
-    const hollow::RoomDef* room_ = nullptr;
+    const while_it_lasts::RoomDef* room_ = nullptr;
     std::unique_ptr<RoomScript> script_;
-    hollow::Actor player_;
-    hollow::Actor companion_;
+    while_it_lasts::Actor player_;
+    while_it_lasts::Actor companion_;
     CompanionMode companionMode_ = CompanionMode::Absent;
     int dragSide_ = -1;
 
@@ -238,7 +238,7 @@ private:
     std::set<std::string> enterRulesDone_;
 
     // Room change and the end.
-    hollow::Fade fade_;
+    while_it_lasts::Fade fade_;
     std::string pendingRoom_;
     float pendingX_ = -1.0f;
     bool ending_ = false;
@@ -254,7 +254,7 @@ private:
         std::string room;
         float spawnX = -1.0f;
         CompanionMode mode = CompanionMode::Absent; // entering still pulling X, or not
-        hollow::StoryState state;
+        while_it_lasts::StoryState state;
         std::set<std::string> usedOnce;
         std::map<std::string, int> useCount;
         std::set<std::string> firedTriggers;
@@ -274,11 +274,11 @@ private:
     std::array<float, 3> barFlash_{};
     std::array<bool, 3> barDown_{};
 
-    hollow::Shake shake_;
-    hollow::Particles particles_;
+    while_it_lasts::Shake shake_;
+    while_it_lasts::Particles particles_;
     std::map<std::string, float> glow_;     // object key -> strength, for fading lights
-    std::map<std::string, hollow::Flicker> flicker_;
-    std::map<std::string, hollow::Animator> objectAnimators_; // object key -> its animated sprite
+    std::map<std::string, while_it_lasts::Flicker> flicker_;
+    std::map<std::string, while_it_lasts::Animator> objectAnimators_; // object key -> its animated sprite
     Color tint_{255, 255, 255, 255};
     Color tintFrom_{255, 255, 255, 255};
     Color tintTo_{255, 255, 255, 255};

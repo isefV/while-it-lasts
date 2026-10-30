@@ -1,6 +1,6 @@
-#include <hollow/system/assets.hpp>
-#include <hollow/system/audio.hpp>
-#include <hollow/utility/math.hpp>
+#include <while_it_lasts/system/assets.hpp>
+#include <while_it_lasts/system/audio.hpp>
+#include <while_it_lasts/utility/math.hpp>
 
 #include <raylib.h>
 
@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <map>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -153,4 +153,4 @@ namespace hollow
             UpdateMusicStream(loop.music);
         }
     }
-} // namespace hollow
+} // namespace while_it_lasts

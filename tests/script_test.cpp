@@ -1,23 +1,23 @@
-#include <hollow/system/script.hpp>
-#include <hollow/system/story_state.hpp>
+#include <while_it_lasts/system/script.hpp>
+#include <while_it_lasts/system/story_state.hpp>
 
 #include <gtest/gtest.h>
 
 namespace
 {
-    hollow::StoryState makeState()
+    while_it_lasts::StoryState makeState()
     {
-        hollow::StoryState state;
+        while_it_lasts::StoryState state;
         state.define("x_condition", 3, 0, 3);
         state.define("cig_count", 0, 0, 3);
         state.define("noisy_entry", 0, 0, 1);
         return state;
     }
 
-    bool eval(const char* text, const hollow::StoryState& state)
+    bool eval(const char* text, const while_it_lasts::StoryState& state)
     {
         std::string error;
-        const auto condition = hollow::Condition::parse(text, error);
+        const auto condition = while_it_lasts::Condition::parse(text, error);
         EXPECT_TRUE(condition.has_value()) << text << ": " << error;
         return condition && condition->evaluate(state);
     }
@@ -27,7 +27,7 @@ TEST(Condition, EmptyIsTrue)
 {
     const auto state = makeState();
     EXPECT_TRUE(eval("", state));
-    EXPECT_TRUE(hollow::Condition{}.evaluate(state));
+    EXPECT_TRUE(while_it_lasts::Condition{}.evaluate(state));
 }
 
 TEST(Condition, ComparesAndCombines)
@@ -59,17 +59,17 @@ TEST(Condition, ItemsAndSeen)
 TEST(Condition, ReportsMistakes)
 {
     std::string error;
-    EXPECT_FALSE(hollow::Condition::parse("x_condition = 3", error));
+    EXPECT_FALSE(while_it_lasts::Condition::parse("x_condition = 3", error));
     EXPECT_NE(error.find("=="), std::string::npos);
-    EXPECT_FALSE(hollow::Condition::parse("(x_condition > 1", error));
-    EXPECT_FALSE(hollow::Condition::parse("x_condition >", error));
-    EXPECT_FALSE(hollow::Condition::parse("a $ b", error));
+    EXPECT_FALSE(while_it_lasts::Condition::parse("(x_condition > 1", error));
+    EXPECT_FALSE(while_it_lasts::Condition::parse("x_condition >", error));
+    EXPECT_FALSE(while_it_lasts::Condition::parse("a $ b", error));
 }
 
 TEST(Condition, ListsItsNames)
 {
     std::string error;
-    const auto condition = hollow::Condition::parse("a > 1 && (b || !item.key)", error);
+    const auto condition = while_it_lasts::Condition::parse("a > 1 && (b || !item.key)", error);
     ASSERT_TRUE(condition);
     EXPECT_EQ(condition->names(), (std::vector<std::string>{"a", "b", "item.key"}));
 }
@@ -77,17 +77,17 @@ TEST(Condition, ListsItsNames)
 TEST(Effect, ChangesStateAndClamps)
 {
     auto state = makeState();
-    std::vector<hollow::Effect> effects;
+    std::vector<while_it_lasts::Effect> effects;
     std::string error;
     for (const char* text : {"cig_count += 1", "x_condition -= 5", "noisy_entry = true", "give bandage", "goto summit 40"})
     {
-        auto effect = hollow::Effect::parse(text, error);
+        auto effect = while_it_lasts::Effect::parse(text, error);
         ASSERT_TRUE(effect) << text << ": " << error;
         effects.push_back(*effect);
     }
 
     std::vector<std::string> commands;
-    hollow::applyEffects(effects, state, [&](const hollow::Effect& e) {
+    while_it_lasts::applyEffects(effects, state, [&](const while_it_lasts::Effect& e) {
         commands.push_back(e.name + ":" + e.args.at(0) + ":" + e.args.at(1));
     });
 
@@ -101,9 +101,9 @@ TEST(Effect, ChangesStateAndClamps)
 TEST(Effect, ReportsMistakes)
 {
     std::string error;
-    EXPECT_FALSE(hollow::Effect::parse("cig_count += lots", error));
-    EXPECT_FALSE(hollow::Effect::parse("2bad = 1", error));
-    EXPECT_FALSE(hollow::Effect::parse("give", error));
+    EXPECT_FALSE(while_it_lasts::Effect::parse("cig_count += lots", error));
+    EXPECT_FALSE(while_it_lasts::Effect::parse("2bad = 1", error));
+    EXPECT_FALSE(while_it_lasts::Effect::parse("give", error));
 }
 
 TEST(StoryState, ResetsToStartValues)

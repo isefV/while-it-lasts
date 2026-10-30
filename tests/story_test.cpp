@@ -1,9 +1,9 @@
 // The game's real data (assets/data/): it loads without mistakes, and key
 // branches of the story play the lines they should.
 
-#include <hollow/data/game_data.hpp>
-#include <hollow/system/dialogue_runner.hpp>
-#include <hollow/system/story_state.hpp>
+#include <while_it_lasts/data/game_data.hpp>
+#include <while_it_lasts/system/dialogue_runner.hpp>
+#include <while_it_lasts/system/story_state.hpp>
 
 #include <gtest/gtest.h>
 
@@ -12,11 +12,11 @@
 
 namespace
 {
-    const hollow::GameData& data()
+    const while_it_lasts::GameData& data()
     {
-        static const hollow::GameData loaded = [] {
-            hollow::Diagnostics diag;
-            auto d = hollow::loadGameData(HOLLOW_TEST_ASSETS, diag);
+        static const while_it_lasts::GameData loaded = [] {
+            while_it_lasts::Diagnostics diag;
+            auto d = while_it_lasts::loadGameData(WHILE_IT_LASTS_TEST_ASSETS, diag);
             for (const auto& e : diag.errors)
                 ADD_FAILURE() << e;
             return d;
@@ -26,7 +26,7 @@ namespace
 
     struct Story
     {
-        hollow::StoryState state;
+        while_it_lasts::StoryState state;
         std::vector<std::string> lines;    // every line shown, names replaced
         std::vector<std::string> commands; // "verb arg..."
 
@@ -52,7 +52,7 @@ namespace
         /// none are left).
         void play(const std::string& id, std::deque<std::string> picks = {})
         {
-            hollow::DialogueRunner runner(data().conversations, state, [this](const hollow::Effect& e) {
+            while_it_lasts::DialogueRunner runner(data().conversations, state, [this](const while_it_lasts::Effect& e) {
                 std::string text = e.name;
                 for (const auto& a : e.args) text += " " + a;
                 commands.push_back(text);
@@ -65,12 +65,12 @@ namespace
                 const auto& view = runner.view();
                 switch (view.kind)
                 {
-                case hollow::DialogueView::Kind::Line:
+                case while_it_lasts::DialogueView::Kind::Line:
                     lines.push_back(view.text);
                     runner.advance();
                     break;
-                case hollow::DialogueView::Kind::Pause: runner.update(view.timeLeft + 0.01f); break;
-                case hollow::DialogueView::Kind::Choice:
+                case while_it_lasts::DialogueView::Kind::Pause: runner.update(view.timeLeft + 0.01f); break;
+                case while_it_lasts::DialogueView::Kind::Choice:
                 {
                     int index = 0;
                     if (!picks.empty())
@@ -84,7 +84,7 @@ namespace
                     runner.choose(index);
                     break;
                 }
-                case hollow::DialogueView::Kind::None: break;
+                case while_it_lasts::DialogueView::Kind::None: break;
                 }
             }
             EXPECT_FALSE(runner.active()) << id << " did not end";
@@ -97,8 +97,8 @@ TEST(Story, DataLoadsAndChecks)
     const std::set<std::string, std::less<>> commands = {"goto", "sound", "ambient", "music", "pose", "companion", "place",
                                                          "step", "face", "shake", "tint", "event", "end", "bark",
                                                          "fight", "revive", "reaper"};
-    hollow::Diagnostics diag;
-    hollow::checkGameData(data(), commands, diag);
+    while_it_lasts::Diagnostics diag;
+    while_it_lasts::checkGameData(data(), commands, diag);
     for (const auto& e : diag.errors)
         ADD_FAILURE() << e;
     for (const auto& w : diag.warnings)

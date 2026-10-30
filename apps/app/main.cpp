@@ -12,7 +12,7 @@
 
 namespace
 {
-    void printDiagnostics(const hollow::Diagnostics& diag)
+    void printDiagnostics(const while_it_lasts::Diagnostics& diag)
     {
         for (const auto& e : diag.errors)
             std::cerr << "error: " << e << '\n';
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     const std::string assets = std::string(GetApplicationDirectory()) + "assets/";
 
     Game game(assets);
-    hollow::Diagnostics diag;
+    while_it_lasts::Diagnostics diag;
     const bool loaded = game.load(diag);
 
     // --check: read and check every data file, no window. Each problem is
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     if (check)
     {
         printDiagnostics(diag);
-        std::cout << "Hollow " << hollow::version() << ", raylib " << RAYLIB_VERSION << ", assets: " << assets << '\n'
+        std::cout << "While It Lasts " << while_it_lasts::version() << ", raylib " << RAYLIB_VERSION << ", assets: " << assets << '\n'
                   << (loaded ? "data OK" : "data has errors") << " (" << diag.errors.size() << " errors, "
                   << diag.warnings.size() << " warnings)\n";
         return loaded ? 0 : 1;

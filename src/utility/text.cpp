@@ -1,6 +1,6 @@
-#include <hollow/utility/text.hpp>
+#include <while_it_lasts/utility/text.hpp>
 
-namespace hollow
+namespace while_it_lasts
 {
     std::string replaceTokens(std::string_view text, const TokenMap& tokens)
     {
@@ -146,4 +146,4 @@ namespace hollow
         }
         return words;
     }
-} // namespace hollow
+} // namespace while_it_lasts

@@ -5,7 +5,7 @@
 
 #include "../game.hpp"
 
-using namespace hollow;
+using namespace while_it_lasts;
 
 namespace
 {

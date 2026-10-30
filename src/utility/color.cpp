@@ -1,8 +1,8 @@
-#include <hollow/utility/color.hpp>
+#include <while_it_lasts/utility/color.hpp>
 
 #include <algorithm>
 
-namespace hollow
+namespace while_it_lasts
 {
     namespace
     {
@@ -51,4 +51,4 @@ namespace hollow
         };
         return Color{channel(a.r, b.r), channel(a.g, b.g), channel(a.b, b.b), channel(a.a, b.a)};
     }
-} // namespace hollow
+} // namespace while_it_lasts

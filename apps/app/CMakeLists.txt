@@ -1,5 +1,5 @@
 # The game: the main loop, the rooms' logic (scripts/) and the screens. The
-# systems it is built from are in the library (hollow::hollow).
+# systems it is built from are in the library (while_it_lasts::while_it_lasts).
 
 add_executable(
     game
@@ -29,7 +29,7 @@ endif()
 target_link_libraries(
     game
     PRIVATE
-        hollow::hollow
+        while_it_lasts::while_it_lasts
 )
 
 target_compile_options(
@@ -51,21 +51,21 @@ endif()
 # The game loads its files from assets/ next to the program, so every build
 # copies the project's assets/ folder there (<build>/bin/assets). It is its own
 # target so that new or changed art is copied even when no code changed.
-add_custom_target(hollow_assets ALL
+add_custom_target(while_it_lasts_assets ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_SOURCE_DIR}/assets"
             "$<TARGET_FILE_DIR:game>/assets"
     COMMENT "Copying assets/ next to the game"
     VERBATIM
 )
-add_dependencies(game hollow_assets)
+add_dependencies(game while_it_lasts_assets)
 
 # A short run in CTest reads and checks every data file in assets/ (--check
 # doesn't open a window, so it also runs where there is no display). A
 # mistake in a JSON file fails this test with the file and the place.
-if(HOLLOW_BUILD_TESTS)
+if(WHILE_IT_LASTS_BUILD_TESTS)
     add_test(
-        NAME hollow.app
+        NAME while_it_lasts.app
         COMMAND game --check
     )
 
@@ -75,9 +75,9 @@ if(HOLLOW_BUILD_TESTS)
     # machine without one: ctest -LE window).
     foreach(route IN ITEMS full careless)
         add_test(
-            NAME hollow.walkthrough.${route}
+            NAME while_it_lasts.walkthrough.${route}
             COMMAND game --walkthrough "${PROJECT_SOURCE_DIR}/tests/walkthrough/${route}.txt"
         )
-        set_tests_properties(hollow.walkthrough.${route} PROPERTIES LABELS window TIMEOUT 120)
+        set_tests_properties(while_it_lasts.walkthrough.${route} PROPERTIES LABELS window TIMEOUT 120)
     endforeach()
 endif()

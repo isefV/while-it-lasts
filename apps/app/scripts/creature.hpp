@@ -3,7 +3,7 @@
 // The creature of stages 01 to 03: one shape reused in the factory, at the
 // checkpoint and on the mountain, with a loop of phases from its room's JSON.
 
-#include <hollow/hollow.hpp>
+#include <while_it_lasts/while_it_lasts.hpp>
 
 #include <optional>
 #include <string>
@@ -14,7 +14,7 @@ class Game;
 class Creature
 {
 public:
-    void reset(Game& game, const hollow::CreatureDef& def);
+    void reset(Game& game, const while_it_lasts::CreatureDef& def);
 
     void walkTo(float x);
     /// Walks to @p x and fades away.
@@ -26,7 +26,7 @@ public:
     [[nodiscard]] bool gone() const { return !visible || alpha <= 0.0f; }
     [[nodiscard]] Rectangle bounds() const;
 
-    const hollow::CreatureDef* def = nullptr;
+    const while_it_lasts::CreatureDef* def = nullptr;
     float x = 0.0f;
     float y = 150.0f;
     int facing = -1;
@@ -38,24 +38,24 @@ public:
 private:
     std::optional<float> target_;
     bool leaving_ = false;
-    std::optional<hollow::SpriteSheet> sheet_;
-    hollow::Animator animator_;
+    std::optional<while_it_lasts::SpriteSheet> sheet_;
+    while_it_lasts::Animator animator_;
 };
 
 /// Steps through a creature's phases, round and round.
 class PhaseLoop
 {
 public:
-    void reset(const std::vector<hollow::PatrolPhase>& phases);
+    void reset(const std::vector<while_it_lasts::PatrolPhase>& phases);
     /// Returns true when a new phase began.
     bool update(float dt);
 
-    [[nodiscard]] const hollow::PatrolPhase* current() const;
-    [[nodiscard]] const hollow::PatrolPhase* next() const;
+    [[nodiscard]] const while_it_lasts::PatrolPhase* current() const;
+    [[nodiscard]] const while_it_lasts::PatrolPhase* next() const;
     [[nodiscard]] float timeLeft() const;
 
 private:
-    const std::vector<hollow::PatrolPhase>* phases_ = nullptr;
+    const std::vector<while_it_lasts::PatrolPhase>* phases_ = nullptr;
     std::size_t index_ = 0;
     float time_ = 0.0f;
 };

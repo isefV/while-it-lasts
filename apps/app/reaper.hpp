@@ -23,7 +23,7 @@
 // 1, and knocks it back. Conversations pause both. Every room starts
 // without it.
 
-#include <hollow/hollow.hpp>
+#include <while_it_lasts/while_it_lasts.hpp>
 
 #include <string>
 #include <vector>
@@ -46,7 +46,7 @@ private:
     void updateStalk(Game& game, float dt);
     void updateChase(Game& game, float dt);
 
-    hollow::Apparition shape_;
+    while_it_lasts::Apparition shape_;
     bool stalking_ = false;
     bool stalkShown_ = false;
     float stalkTimer_ = 0.0f; // until it shows up, or until it fades

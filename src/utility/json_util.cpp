@@ -1,12 +1,12 @@
 #include "json_util.hpp"
 
-#include <hollow/utility/color.hpp>
+#include <while_it_lasts/utility/color.hpp>
 
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 
-namespace hollow::detail
+namespace while_it_lasts::detail
 {
     std::optional<Json> parseJson(std::string_view text, const std::string& display, Diagnostics& diag)
     {
@@ -201,4 +201,4 @@ namespace hollow::detail
                 diag.error(child(where, key) + ": unknown key \"" + key + "\"");
         }
     }
-} // namespace hollow::detail
+} // namespace while_it_lasts::detail
